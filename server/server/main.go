@@ -15,8 +15,8 @@ func main() {
 	}
 
 	utils.CheckEnvVars(".env.example")
-	r := router.SetupRoutes()
+	routes := router.SetupRoutes()
 
 	log.Println("Servidor ouvindo em http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":8080", routes))
 }
