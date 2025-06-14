@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// Create a new room with the given data
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	var roomName string = "teste"
 
