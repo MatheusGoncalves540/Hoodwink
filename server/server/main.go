@@ -5,9 +5,16 @@ import (
 	"net/http"
 
 	"github.com/MatheusGoncalves540/Hoodwink/router"
+	"github.com/MatheusGoncalves540/Hoodwink/utils"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal("Erro ao carregar .env")
+	}
+
+	utils.CheckEnvVars(".env.example")
 	r := router.SetupRoutes()
 
 	log.Println("Servidor ouvindo em http://localhost:8080")
