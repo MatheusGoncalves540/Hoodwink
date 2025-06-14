@@ -16,11 +16,21 @@ func SetupRoutes() http.Handler {
 		w.Write([]byte("OK"))
 	})
 
+	routes.Get("/login", func(w http.ResponseWriter, r *http.Request) {
+		jwtToken, err := auth.GenerateJWT(auth.UserClaims{Email: "mrbuugames@gmail.com", Username: "Matheus Gonçalves", Level: 1})
+		if err != nil {
+			http.Error(w, "Erro ao gerar token de autenticação", http.StatusInternalServerError)
+			return
+		}
+
+		w.Write([]byte(jwtToken))
+	})
+
 	// Rotas protegidas com JWT
 	routes.Group(func(r chi.Router) {
 		r.Use(auth.JWTMiddleware)
 
-		r.Post("/creating-room", routesFuncs.CreateRoom)
+		r.Post("/create-room", routesFuncs.CreateRoom)
 	})
 
 	return routes
