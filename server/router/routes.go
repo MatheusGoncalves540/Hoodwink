@@ -9,19 +9,19 @@ import (
 )
 
 func SetupRoutes() http.Handler {
-	r := chi.NewRouter()
+	routes := chi.NewRouter()
 
 	// Rotas públicas
-	r.Get("/alive", func(w http.ResponseWriter, r *http.Request) {
+	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
 
 	// Rotas protegidas com JWT
-	r.Group(func(r chi.Router) {
+	routes.Group(func(r chi.Router) {
 		r.Use(auth.JWTMiddleware)
 
 		r.Post("/creating-room", routesFuncs.CreateRoom)
 	})
 
-	return r
+	return routes
 }
