@@ -6,10 +6,16 @@ meta {
 
 post {
   url: {{url}}/create-room
-  body: none
+  body: json
   auth: none
 }
 
 headers {
   Authorization: {{token}}
+}
+
+body:json {
+  {
+    "roomName": "teste sala"
+  }
 }
