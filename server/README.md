@@ -84,12 +84,6 @@ A lista completa está disponível na seção `Habilidade das Cartas` do arquivo
 
 ---
 
-## 📄 Licença
-
-Este projeto é privado e não possui licença de distribuição pública.
-
----
-
 ## 👨‍💻 Contato
 
 Para dúvidas, sugestões ou contribuições, entre em contato com o mantenedor do projeto.
