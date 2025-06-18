@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/MatheusGoncalves540/Hoodwink/config"
 	"github.com/MatheusGoncalves540/Hoodwink/router"
-	"github.com/MatheusGoncalves540/Hoodwink/utils"
 	"github.com/joho/godotenv"
 )
 
@@ -14,7 +14,7 @@ func main() {
 		log.Fatal("Erro ao carregar .env")
 	}
 
-	utils.CheckEnvVars(".env.example")
+	config.CheckEnvVars(".env.example")
 	routes := router.SetupRoutes()
 
 	log.Println("Servidor ouvindo em http://localhost:8080")
