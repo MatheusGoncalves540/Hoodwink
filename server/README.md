@@ -80,7 +80,7 @@ A lista completa está disponível na seção `Habilidade das Cartas` do arquivo
 
 ## 📂 Estrutura do Projeto
 
-> Este repositório contém o código-fonte, regras completas e eventuais assets do jogo Hoodwink. Por ser privado, o conteúdo está restrito a colaboradores autorizados.
+> Este repositório contém o código-fonte, regras completas e eventuais assets do jogo Hoodwink.
 
 ---
 
