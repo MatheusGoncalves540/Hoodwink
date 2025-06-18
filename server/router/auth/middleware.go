@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"net/http"
-	"strings"
 )
 
 type contextKey string
@@ -14,13 +13,12 @@ const userEmailKey contextKey = "userEmail"
 func JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		if authHeader == "" {
 			http.Error(w, "Token não fornecido", http.StatusUnauthorized)
 			return
 		}
 
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		email, err := ValidateJWT(tokenStr)
+		email, err := ValidateJWT(authHeader)
 		if err != nil {
 			http.Error(w, "Token inválido", http.StatusUnauthorized)
 			return

@@ -9,3 +9,7 @@ get {
   body: none
   auth: inherit
 }
+
+script:post-response {
+  bru.setVar("token",res.body)
+}
