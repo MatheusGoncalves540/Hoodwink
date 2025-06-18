@@ -1,15 +1,21 @@
 meta {
   name: create-room
   type: http
-  seq: 2
+  seq: 4
 }
 
 post {
   url: {{url}}/create-room
-  body: none
+  body: json
   auth: none
 }
 
 headers {
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1yYnV1Z2FtZXNAZ21haWwuY29tIiwiZXhwIjoxNzUwMDAxNzYxLCJsdmwiOjEsInVzZXJuYW1lIjoiTWF0aGV1cyBHb27Dp2FsdmVzIn0.psb5m2e8JPUoHdvkZzKH3go3qEK-INbRhBuUTCh_rZ4
+  Authorization: {{token}}
+}
+
+body:json {
+  {
+    "roomName": "teste sala"
+  }
 }
