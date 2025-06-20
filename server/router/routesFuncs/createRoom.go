@@ -9,8 +9,8 @@ import (
 )
 
 type CreateRoomRequest struct {
-	RoomName string  `json:"roomName" validate:"required"`
-	Password *string `json:"password,omitempty" validate:"omitempty,max=6"`
+	RoomName string  `json:"roomName" validate:"required,max=30,min=3"`
+	Password *string `json:"password" validate:"omitempty,max=24"`
 }
 
 var validate = validator.New()
