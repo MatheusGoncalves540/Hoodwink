@@ -22,6 +22,7 @@ func SetupRoutes() http.Handler {
 		w.Write([]byte("OK"))
 	})
 
+	//TODO remover essa rota
 	routes.Get("/login", func(w http.ResponseWriter, r *http.Request) {
 		jwtToken, err := jwt.GenerateJWT(jwt.UserClaims{Email: "mrbuugames@gmail.com", Username: "Matheus Gonçalves", Level: 1})
 		if err != nil {
