@@ -3,23 +3,25 @@ package auth
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
+	"github.com/MatheusGoncalves540/Hoodwink/router/auth/jwt"
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
 )
 
-func init() {
-	key := []byte("segredo-muito-seguro")
-	store := sessions.NewCookieStore(key)
+func SetupOAuth() {
+	var sessionSecret = []byte(os.Getenv("SESSION_SECRET"))
+	store := sessions.NewCookieStore(sessionSecret)
 	gothic.Store = store
 
 	goth.UseProviders(
 		google.New(
-			"GOOGLE_CLIENT_ID",
-			"GOOGLE_CLIENT_SECRET",
-			"http://localhost:3000/auth/google/callback",
+			os.Getenv("GOOGLE_CLIENT_ID"),
+			os.Getenv("GOOGLE_CLIENT_SECRET"),
+			"http://localhost:8080/auth/google/callback",
 			"email", "profile",
 		),
 	)
@@ -37,7 +39,7 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Gere o JWT
-	token, err := GenerateJWT(UserClaims{Email: user.Email})
+	token, err := jwt.GenerateJWT(jwt.UserClaims{Email: user.Email})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
