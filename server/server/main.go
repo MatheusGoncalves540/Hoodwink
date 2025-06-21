@@ -6,7 +6,6 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink/config"
 	"github.com/MatheusGoncalves540/Hoodwink/router"
-	"github.com/MatheusGoncalves540/Hoodwink/router/auth"
 	"github.com/joho/godotenv"
 )
 
@@ -14,8 +13,6 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatal("Erro ao carregar .env")
 	}
-
-	auth.SetupOAuth()
 
 	config.CheckEnvVars(".env.example")
 	routes := router.SetupRoutes()

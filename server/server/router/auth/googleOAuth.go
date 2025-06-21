@@ -12,7 +12,7 @@ import (
 	"github.com/markbates/goth/providers/google"
 )
 
-func SetupOAuth() {
+func SetupGoogleOAuth() {
 	var sessionSecret = []byte(os.Getenv("SESSION_SECRET"))
 	store := sessions.NewCookieStore(sessionSecret)
 	gothic.Store = store

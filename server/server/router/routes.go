@@ -12,6 +12,9 @@ import (
 
 func SetupRoutes() http.Handler {
 	routes := chi.NewRouter()
+	
+	auth.SetupExternalAuths()
+
 	routes.Use(middlewares.RequestMiddleware)
 
 	// Rotas públicas
