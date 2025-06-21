@@ -35,15 +35,17 @@ db-up:
 
 ## Gera o arquivo redis.conf se não existir
 redis-conf:
-	@test -f $(REDIS_CONF) || echo 'requirepass redis\n\
-appendonly yes\n\
-appendfsync everysec\n\
-loadmodule /opt/redis-stack/lib/redisearch.so MAXSEARCHRESULTS 10000 MAXAGGREGATERESULTS 10000\n\
-loadmodule /opt/redis-stack/lib/rediscompat.so\n\
-loadmodule /opt/redis-stack/lib/redisbloom.so\n\
-loadmodule /opt/redis-stack/lib/redistimeseries.so\n\
-loadmodule /opt/redis-stack/lib/redisgears.so v8-plugin-path /opt/redis-stack/lib/libredisgears_v8_plugin.so\n\
-loadmodule /opt/redis-stack/lib/rejson.so' > $(REDIS_CONF)
+	@test -f $(REDIS_CONF) || printf '%s\n' \
+'requirepass redis' \
+'appendonly yes' \
+'appendfsync everysec' \
+'loadmodule /opt/redis-stack/lib/redisearch.so MAXSEARCHRESULTS 10000 MAXAGGREGATERESULTS 10000' \
+'loadmodule /opt/redis-stack/lib/rediscompat.so' \
+'loadmodule /opt/redis-stack/lib/redisbloom.so' \
+'loadmodule /opt/redis-stack/lib/redistimeseries.so' \
+'loadmodule /opt/redis-stack/lib/redisgears.so v8-plugin-path /opt/redis-stack/lib/libredisgears_v8_plugin.so' \
+'loadmodule /opt/redis-stack/lib/rejson.so' > $(REDIS_CONF)
+
 
 ## Cria a rede do Redis se não existir
 network:
