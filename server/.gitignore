@@ -31,5 +31,6 @@ go.work.sum
 # .idea/
 # .vscode/
 /server/tmp/
+/server/postgres/
 
 redis.conf
