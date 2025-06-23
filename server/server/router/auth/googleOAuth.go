@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/MatheusGoncalves540/Hoodwink/router/auth/jwt"
+	"github.com/MatheusGoncalves540/Hoodwink/router/auth/jwtoken"
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
@@ -39,7 +39,7 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Gere o JWT
-	token, err := jwt.GenerateJWT(jwt.UserClaims{Email: user.Email})
+	token, err := jwtoken.GenerateJWT(jwtoken.UserClaims{Email: user.Email})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
