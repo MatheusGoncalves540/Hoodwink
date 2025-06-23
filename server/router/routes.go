@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MatheusGoncalves540/Hoodwink/router/auth"
-	"github.com/MatheusGoncalves540/Hoodwink/router/auth/jwt"
+	"github.com/MatheusGoncalves540/Hoodwink/router/auth/jwtoken"
 	"github.com/MatheusGoncalves540/Hoodwink/router/middlewares"
 	"github.com/MatheusGoncalves540/Hoodwink/router/routesFuncs"
 	"github.com/go-chi/chi/v5"
@@ -12,7 +12,7 @@ import (
 
 func SetupRoutes() http.Handler {
 	routes := chi.NewRouter()
-	
+
 	auth.SetupExternalAuths()
 
 	routes.Use(middlewares.RequestMiddleware)
@@ -24,7 +24,7 @@ func SetupRoutes() http.Handler {
 
 	//TODO remover essa rota
 	routes.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		jwtToken, err := jwt.GenerateJWT(jwt.UserClaims{Email: "mrbuugames@gmail.com", Username: "Matheus Gonçalves", Level: 1})
+		jwtToken, err := jwtoken.GenerateJWT(jwtoken.UserClaims{Email: "mrbuugames@gmail.com", Username: "Matheus Gonçalves", Level: 1})
 		if err != nil {
 			http.Error(w, "Erro ao gerar token de autenticação", http.StatusInternalServerError)
 			return
@@ -41,7 +41,7 @@ func SetupRoutes() http.Handler {
 
 	// Rotas protegidas com JWT
 	routes.Group(func(r chi.Router) {
-		r.Use(jwt.JWTMiddleware)
+		r.Use(jwtoken.JWTMiddleware)
 
 		r.Post("/create-room", routesFuncs.CreateRoom)
 	})
