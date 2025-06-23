@@ -3,7 +3,7 @@ package router
 import (
 	"net/http"
 
-	"github.com/MatheusGoncalves540/Hoodwink/router/auth"
+	"github.com/MatheusGoncalves540/Hoodwink/router/auth/external"
 	"github.com/MatheusGoncalves540/Hoodwink/router/auth/jwtoken"
 	"github.com/MatheusGoncalves540/Hoodwink/router/middlewares"
 	"github.com/MatheusGoncalves540/Hoodwink/router/routesFuncs"
@@ -13,7 +13,7 @@ import (
 func SetupRoutes() http.Handler {
 	routes := chi.NewRouter()
 
-	auth.SetupExternalAuths()
+	external.SetupExternalAuths()
 
 	routes.Use(middlewares.RequestMiddleware)
 
@@ -35,8 +35,8 @@ func SetupRoutes() http.Handler {
 
 	routes.Group(func(r chi.Router) {
 		// Rotas de autenticação com provedores externos
-		r.Get("/auth/{provider}", auth.GoogleLogin)
-		r.Get("/auth/{provider}/callback", auth.GoogleCallback)
+		r.Get("/auth/{provider}", external.GoogleLogin)
+		r.Get("/auth/{provider}/callback", external.GoogleCallback)
 	})
 
 	// Rotas protegidas com JWT
