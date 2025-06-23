@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"github.com/MatheusGoncalves540/Hoodwink/router/auth"
 	"github.com/MatheusGoncalves540/Hoodwink/router/auth/external"
 	"github.com/MatheusGoncalves540/Hoodwink/router/auth/jwtoken"
 	"github.com/MatheusGoncalves540/Hoodwink/router/middlewares"
@@ -11,10 +12,10 @@ import (
 )
 
 func SetupRoutes() http.Handler {
-	routes := chi.NewRouter()
-
+	auth.InitSessionStore()
 	external.SetupExternalAuths()
 
+	routes := chi.NewRouter()
 	routes.Use(middlewares.RequestMiddleware)
 
 	// Rotas públicas
@@ -22,22 +23,12 @@ func SetupRoutes() http.Handler {
 		w.Write([]byte("OK"))
 	})
 
-	//TODO remover essa rota
-	routes.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		jwtToken, err := jwtoken.GenerateJWT(jwtoken.UserClaims{Email: "mrbuugames@gmail.com", Username: "Matheus Gonçalves", Level: 1})
-		if err != nil {
-			http.Error(w, "Erro ao gerar token de autenticação", http.StatusInternalServerError)
-			return
-		}
-
-		w.Write([]byte(jwtToken))
+	// OAuth
+	routes.Route("/auth/{provider}", func(r chi.Router) {
+		r.Get("/", external.BeginAuthHandler)
+		r.Get("/callback", external.CallbackHandler)
 	})
-
-	routes.Group(func(r chi.Router) {
-		// Rotas de autenticação com provedores externos
-		r.Get("/auth/{provider}", external.GoogleLogin)
-		r.Get("/auth/{provider}/callback", external.GoogleCallback)
-	})
+	routes.Post("/additionalUserData", external.AdditionalUserDataHandler)
 
 	// Rotas protegidas com JWT
 	routes.Group(func(r chi.Router) {
