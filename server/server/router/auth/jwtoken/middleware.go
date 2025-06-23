@@ -7,25 +7,24 @@ import (
 
 type contextKey string
 
-const userEmailKey contextKey = "userEmail"
+const UserContextKey contextKey = "user"
 
-// JWTMiddleware é um middleware que verifica se o token JWT está presente e válido no header da solicitação.
+// JWTMiddleware verifica o cookie JWT, valida, e injeta o struct UserClaims no contexto
 func JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
+		cookie, err := r.Cookie("jwt")
+		if err != nil {
 			http.Error(w, "Token não fornecido", http.StatusUnauthorized)
 			return
 		}
 
-		email, err := ValidateJWT(authHeader)
+		user, err := ValidateJWT(cookie.Value)
 		if err != nil {
 			http.Error(w, "Token inválido", http.StatusUnauthorized)
 			return
 		}
 
-		// Passa o e-mail do usuário no contexto
-		ctx := context.WithValue(r.Context(), userEmailKey, email)
+		ctx := context.WithValue(r.Context(), UserContextKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
