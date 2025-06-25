@@ -24,9 +24,10 @@ Em cada turno, o jogador pode realizar **uma das ações abaixo**:
 
 1. Passar o turno.
 2. Coletar 1 moeda (sem possibilidade de bloqueio).
-3. Pagar 6 moedas para matar 1 carta de um adversário (pode ser bloqueado pela Guardiã).
-4. Usar uma habilidade de carta (mesmo sem possuí-la, blefando).
-5. Trocar cartas por metade das suas moedas, desde que tenha no mínimo 6 moedas.
+3. Coletar 2 moeda (possibilidade de bloqueio pela carta "Egoísta").
+4. Pagar 6 moedas para matar 1 carta de um adversário (pode ser bloqueado pela Guardiã).
+5. Usar uma habilidade de carta (mesmo sem possuí-la, blefando).
+6. Trocar cartas por metade das suas moedas, desde que tenha no mínimo 6 moedas.
 
 ---
 
