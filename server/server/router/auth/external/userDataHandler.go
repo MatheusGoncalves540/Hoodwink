@@ -34,6 +34,7 @@ func AdditionalUserDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//user, err := h.UserService.FindOrCreateOAuthUser(email, provider, body.Username)
 	var user models.User
 	result := db.DB.Where("email = ? AND provider = ?", email, provider).First(&user)
 
