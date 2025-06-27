@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/MatheusGoncalves540/Hoodwink/config"
 	"github.com/MatheusGoncalves540/Hoodwink/db"
@@ -17,8 +19,8 @@ func main() {
 	config.CheckEnvVars(".env.example")
 	routes := router.SetupRoutes()
 
-	db.ConncetDB()
+	db.ConnectDB()
 
-	log.Println("Servidor ouvindo em http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", routes))
+	log.Printf("Servidor ouvindo em %s", os.Getenv("SERVER_URL"))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), routes))
 }

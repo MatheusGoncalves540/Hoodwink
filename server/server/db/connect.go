@@ -12,7 +12,7 @@ import (
 
 var DB *gorm.DB
 
-func ConncetDB() {
+func ConnectDB() {
 	dbHost := os.Getenv("PG_HOST")
 	dbName := os.Getenv("PG_NAME")
 	dbUser := os.Getenv("PG_USER")
