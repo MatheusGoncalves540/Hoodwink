@@ -1,4 +1,4 @@
-# Makefile para subir PostgreSQL, Redis Stack e Redis Commander com Podman
+# Makefile para subir PostgreSQL e Redis Stack com Podman
 
 # Diretórios locais
 POSTGRES_VOLUME := ./postgres
