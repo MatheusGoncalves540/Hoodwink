@@ -1,20 +1,21 @@
-package external
+package handlers
 
 import (
 	"net/http"
 
+	"github.com/MatheusGoncalves540/Hoodwink/routes/auth/external"
 	"github.com/markbates/goth/gothic"
 )
 
 func SetupExternalAuths() {
-	SetupGoogleOAuth()
+	external.SetupGoogleOAuth()
 }
 
-func BeginAuthHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) BeginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	gothic.BeginAuthHandler(w, r)
 }
 
-func CallbackHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	userInfo, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
 		http.Error(w, "Erro na autenticação: "+err.Error(), http.StatusInternalServerError)
