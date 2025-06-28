@@ -1,20 +1,20 @@
-# Card Game Frontend
+# Hoodwink
 
-Este projeto é um front-end leve e modular para um jogo de cartas multiplayer, feito com React e TypeScript, utilizando tecnologias modernas com foco em desempenho e manutenibilidade.
+Este projeto é o front-end leve e modular do jogo de cartas **Hoodwink**, feito com React e TypeScript, utilizando tecnologias modernas com foco em desempenho, modularidade e suporte a hot reload via Vite.
 
 ## 🚀 Tecnologias Utilizadas
 
-- **[React](https://reactjs.org/)** — biblioteca principal para interface
-- **[TypeScript](https://www.typescriptlang.org/)** — tipagem estática
-- **[Vite](https://vitejs.dev/)** — bundler moderno e rápido
-- **[TailwindCSS](https://tailwindcss.com/)** — utilitário de CSS leve e produtivo
-- **[Zustand](https://github.com/pmndrs/zustand)** — gerenciamento de estado global leve
+- **React** — biblioteca principal para interface
+- **TypeScript** — tipagem estática
+- **Vite** — bundler moderno e rápido, com hot reload automático
+- **TailwindCSS** — utilitário de CSS leve e produtivo
+- **Zustand** — gerenciamento de estado global leve
 - **WebSocket nativo** — comunicação em tempo real com o servidor
 
 ## 📁 Estrutura de Pastas
 
 ```
-card-game-frontend/
+hoodwink/
 ├── public/                 # Arquivos estáticos (index.html)
 ├── src/
 │   ├── assets/             # Imagens e recursos estáticos
@@ -38,19 +38,14 @@ card-game-frontend/
 
 ## 🛠️ Scripts via Makefile
 
+> O Vite já oferece **hot reload automático** em modo desenvolvimento com `make dev`.
+
 - `make install`: instala dependências via `pnpm`
-- `make dev`: roda o projeto em modo desenvolvimento
+- `make dev`: roda o projeto em modo desenvolvimento com hot reload
 - `make build`: gera o build de produção
 - `make preview`: roda o preview local do build
 - `make deploy`: faz deploy com `gh-pages` (requer configuração)
 - `make clean`: remove `node_modules` e `dist`
-
-## 🧱 Estrutura Modular
-
-- **Zustand** cuida do estado global de forma leve (ex: nickname, lista de jogadores)
-- **Hooks** isolam lógica reusável (como WebSocket)
-- **Tailwind** evita CSS excessivo e facilita prototipagem rápida
-- **Componentes** são pensados para serem simples e reusáveis
 
 ## 🌐 Deploy
 
@@ -64,4 +59,4 @@ Configure o `vite.config.ts` corretamente para o caminho do seu repositório cas
 
 ---
 
-Desenvolvido como base leve para projetos de front-end com foco em desempenho e modularidade.
+Desenvolvido como base leve para o projeto Hoodwink, com foco em desempenho, modularidade e suporte a hot reload via Vite.
