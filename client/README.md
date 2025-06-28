@@ -1,62 +1,69 @@
-# Hoodwink
+# React + TypeScript + Vite
 
-Este projeto é o front-end leve e modular do jogo de cartas **Hoodwink**, feito com React e TypeScript, utilizando tecnologias modernas com foco em desempenho, modularidade e suporte a hot reload via Vite.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## 🚀 Tecnologias Utilizadas
+Currently, two official plugins are available:
 
-- **React** — biblioteca principal para interface
-- **TypeScript** — tipagem estática
-- **Vite** — bundler moderno e rápido, com hot reload automático
-- **TailwindCSS** — utilitário de CSS leve e produtivo
-- **Zustand** — gerenciamento de estado global leve
-- **WebSocket nativo** — comunicação em tempo real com o servidor
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## 📁 Estrutura de Pastas
+## Expanding the ESLint configuration
 
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      ...tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      ...tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      ...tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-hoodwink/
-├── public/                 # Arquivos estáticos (index.html)
-├── src/
-│   ├── assets/             # Imagens e recursos estáticos
-│   ├── components/         # Componentes reutilizáveis (ex: Card, Button)
-│   ├── features/           # Funcionalidades específicas (lobby, jogo, etc.)
-│   ├── hooks/              # Custom hooks (ex: useSocket)
-│   ├── pages/              # Páginas da aplicação (Home, Lobby, Game)
-│   ├── state/              # Zustand stores
-│   ├── utils/              # Funções auxiliares
-│   ├── App.tsx             # Componente raiz
-│   └── main.tsx            # Ponto de entrada da aplicação
-├── index.html
-├── package.json
-├── vite.config.ts
-├── tailwind.config.ts
-├── postcss.config.js
-├── tsconfig.json
-├── Makefile
-└── README.md
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-## 🛠️ Scripts via Makefile
-
-> O Vite já oferece **hot reload automático** em modo desenvolvimento com `make dev`.
-
-- `make install`: instala dependências via `pnpm`
-- `make dev`: roda o projeto em modo desenvolvimento com hot reload
-- `make build`: gera o build de produção
-- `make preview`: roda o preview local do build
-- `make deploy`: faz deploy com `gh-pages` (requer configuração)
-- `make clean`: remove `node_modules` e `dist`
-
-## 🌐 Deploy
-
-Este projeto pode ser facilmente hospedado de forma gratuita usando:
-
-- [GitHub Pages](https://pages.github.com/)
-- [Vercel](https://vercel.com/)
-- [Netlify](https://netlify.com/)
-
-Configure o `vite.config.ts` corretamente para o caminho do seu repositório caso use GitHub Pages.
-
----
-
-Desenvolvido como base leve para o projeto Hoodwink, com foco em desempenho, modularidade e suporte a hot reload via Vite.
