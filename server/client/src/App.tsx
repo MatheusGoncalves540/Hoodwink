@@ -9,7 +9,7 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <h1 className="text-2xl font-bold mb-4">Jogo de Cartas</h1>
+      <h1 className="text-2xl font-bold mb-4">Hoodwink</h1>
       <input
         className="p-2 border rounded mb-2"
         placeholder="Digite seu nickname"

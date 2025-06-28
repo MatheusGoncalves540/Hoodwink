@@ -1,11 +1,10 @@
-
 .PHONY: install dev build preview deploy clean
 
 install:
 	pnpm install
 
 dev:
-	pnpm run dev
+	pnpm run dev  # Hot reload automático com Vite
 
 build:
 	pnpm run build
