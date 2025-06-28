@@ -1,19 +1,19 @@
 .PHONY: install dev build preview deploy clean
 
 install:
-	pnpm install
+	npm install
 
 dev:
-	pnpm run dev  # Hot reload automático com Vite
+	npm run dev
 
 build:
-	pnpm run build
+	npm run build
 
 preview:
-	pnpm run preview
+	npm run preview
 
 deploy:
-	pnpm run build && pnpm exec gh-pages -d dist
+	npm run build && npx gh-pages -d dist
 
 clean:
 	rm -rf node_modules dist
