@@ -12,7 +12,7 @@ import (
 
 var DB *gorm.DB
 
-func ConnectDB() {
+func ConnectDB() (*gorm.DB, error) {
 	dbHost := os.Getenv("PG_HOST")
 	dbName := os.Getenv("PG_NAME")
 	dbUser := os.Getenv("PG_USER")
@@ -28,5 +28,5 @@ func ConnectDB() {
 
 	database.AutoMigrate(&models.User{})
 
-	DB = database
+	return database, nil
 }

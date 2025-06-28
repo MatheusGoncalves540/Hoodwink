@@ -1,4 +1,4 @@
-package external
+package handlers
 
 import (
 	"encoding/json"
@@ -6,10 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MatheusGoncalves540/Hoodwink/db"
-	"github.com/MatheusGoncalves540/Hoodwink/db/models"
-	"github.com/MatheusGoncalves540/Hoodwink/router/auth/jwtoken"
-	"github.com/google/uuid"
+	"github.com/MatheusGoncalves540/Hoodwink/routes/auth/jwtoken"
 	"github.com/markbates/goth/gothic"
 )
 
@@ -17,7 +14,7 @@ type AdditionalUserDataPayload struct {
 	Username string `json:"username"`
 }
 
-func AdditionalUserDataHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AdditionalUserDataHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := gothic.Store.Get(r, "temp-auth-session")
 
 	email, ok1 := session.Values["email"].(string)
@@ -34,26 +31,10 @@ func AdditionalUserDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//user, err := h.UserService.FindOrCreateOAuthUser(email, provider, body.Username)
-	var user models.User
-	result := db.DB.Where("email = ? AND provider = ?", email, provider).First(&user)
-
-	if result.Error != nil {
-		if result.Error.Error() == "record not found" {
-			user = models.User{
-				ID:       uuid.New().String(),
-				Email:    email,
-				Provider: provider,
-				Username: body.Username,
-			}
-			if err := db.DB.Create(&user).Error; err != nil {
-				http.Error(w, "Erro ao criar usuário", http.StatusInternalServerError)
-				return
-			}
-		} else {
-			http.Error(w, "Erro ao buscar usuário", http.StatusInternalServerError)
-			return
-		}
+	user, err := h.UserService.FindOrCreateOAuthUser(email, provider, body.Username)
+	if err != nil {
+		http.Error(w, "Erro ao salvar usuário", http.StatusInternalServerError)
+		return
 	}
 
 	token, err := jwtoken.GenerateJWT(jwtoken.UserClaims{
