@@ -1,11 +1,11 @@
-package routesFuncs
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
+	"github.com/MatheusGoncalves540/Hoodwink/utils"
 )
 
 type CreateRoomRequest struct {
@@ -13,10 +13,8 @@ type CreateRoomRequest struct {
 	Password *string `json:"password" validate:"omitempty,max=24"`
 }
 
-var validate = validator.New()
-
 // Create a new room with the given data
-func CreateRoom(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	var reqBody CreateRoomRequest
 
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
@@ -25,18 +23,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validação com o validator
-	if err := validate.Struct(reqBody); err != nil {
-		// Formatar os erros de validação
-		var errorMessages []string
-		for _, err := range err.(validator.ValidationErrors) {
-			errorMessages = append(errorMessages, fmt.Sprintf("Campo '%s' inválido: %s", err.Field(), err.Tag()))
-		}
-
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"errors": errorMessages,
-		})
+	if !utils.ValidateInfos(w, reqBody) {
 		return
 	}
 
@@ -48,6 +35,6 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		msg += " sem senha."
 	}
 
+	utils.SendJSON(w, http.StatusCreated, map[string]string{"message": msg})
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": msg})
 }
