@@ -7,7 +7,6 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink/routes/auth/jwtoken"
 	"github.com/MatheusGoncalves540/Hoodwink/routes/handlers"
 	"github.com/MatheusGoncalves540/Hoodwink/routes/middlewares"
-	"github.com/MatheusGoncalves540/Hoodwink/routes/routesFuncs"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -34,7 +33,7 @@ func SetupRoutes(handler *handlers.Handler) http.Handler {
 	routes.Group(func(r chi.Router) {
 		r.Use(jwtoken.JWTMiddleware)
 
-		r.Post("/create-room", routesFuncs.CreateRoom)
+		r.Post("/create-room", handler.CreateRoom)
 	})
 
 	return routes
