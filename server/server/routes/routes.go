@@ -21,7 +21,7 @@ func SetupRoutes(handler *handlers.Handler) http.Handler {
 	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
-	a
+
 	// OAuth
 	routes.Route("/auth/{provider}", func(r chi.Router) {
 		r.Get("/", handler.BeginAuthHandler)
