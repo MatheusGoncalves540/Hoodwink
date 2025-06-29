@@ -12,9 +12,9 @@ REDIS_CONTAINER := redisdb
 POSTGRES_IMAGE := docker.io/library/postgres
 REDIS_IMAGE := docker.io/redis/redis-stack-server:latest
 
-.PHONY: all db-up redis-up start stop clean redis-conf network
+.PHONY: all db-up redis-up start stop clean redis-conf install dev
 
-all: db-up redis-up
+all: db-up redis-up install dev
 
 ## Cria o diretório e sobe o container do PostgreSQL
 db-up:
@@ -64,3 +64,11 @@ stop:
 clean: stop
 	-podman rm $(POSTGRES_CONTAINER)
 	-podman rm $(REDIS_CONTAINER)
+
+## Inicia o projeto
+install:
+	-go mod tidy
+
+## Inicia o projeto
+dev:
+	-air
