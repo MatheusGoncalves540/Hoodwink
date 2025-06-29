@@ -10,8 +10,8 @@ import (
 )
 
 func InitSessionStore() {
-	frontendURL := os.Getenv("REACT_APP_URL")
-	isSecure := !strings.HasPrefix(frontendURL, "http://localhost")
+	serverURL := os.Getenv("SERVER_URL")
+	isSecure := !strings.HasPrefix(serverURL, "http://localhost")
 
 	secret := os.Getenv("SESSION_SECRET")
 	store := sessions.NewCookieStore([]byte(secret))
