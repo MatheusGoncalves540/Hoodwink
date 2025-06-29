@@ -47,8 +47,8 @@ func (h *Handler) AdditionalUserDataHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	frontendURL := os.Getenv("REACT_APP_URL")
-	isSecure := !strings.HasPrefix(frontendURL, "http://localhost")
+	serverURL := os.Getenv("SERVER_URL")
+	isSecure := !strings.HasPrefix(serverURL, "http://localhost")
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
