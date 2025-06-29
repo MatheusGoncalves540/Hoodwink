@@ -8,6 +8,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var ErrMissingUsername = errors.New("username obrigatório para novo usuário")
+
 type UserService struct {
 	db *gorm.DB
 }
@@ -22,6 +24,9 @@ func (s *UserService) FindOrCreateOAuthUser(email, provider, username string) (*
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			if username == "" {
+				return nil, ErrMissingUsername
+			}
 			user = models.User{
 				ID:       uuid.New().String(),
 				Email:    email,

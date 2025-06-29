@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 
-	"github.com/MatheusGoncalves540/Hoodwink/routes/auth"
 	"github.com/MatheusGoncalves540/Hoodwink/routes/auth/jwtoken"
 	"github.com/MatheusGoncalves540/Hoodwink/routes/handlers"
 	"github.com/MatheusGoncalves540/Hoodwink/routes/middlewares"
@@ -11,28 +10,21 @@ import (
 )
 
 func SetupRoutes(handler *handlers.Handler) http.Handler {
-	auth.InitSessionStore()
-	handlers.SetupExternalAuths()
-
 	routes := chi.NewRouter()
 	routes.Use(middlewares.RequestMiddleware)
+	routes.Use(middlewares.CORSMiddleware)
 
 	// Rotas públicas
 	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
 
-	// OAuth
-	routes.Route("/auth/{provider}", func(r chi.Router) {
-		r.Get("/", handler.BeginAuthHandler)
-		r.Get("/callback", handler.CallbackHandler)
-	})
-	routes.Post("/additionalUserData", handler.AdditionalUserDataHandler)
+	// Rota universal de autenticação externa
+	routes.Post("/auth/external/{provider}", handler.ExternalAuthHandler)
 
 	// Rotas protegidas com JWT
 	routes.Group(func(r chi.Router) {
 		r.Use(jwtoken.JWTMiddleware)
-
 		r.Post("/create-room", handler.CreateRoom)
 	})
 

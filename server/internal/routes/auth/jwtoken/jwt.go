@@ -9,31 +9,40 @@ import (
 )
 
 var jwtSecret = os.Getenv("JWT_SECRET")
+var jwtExpiration = 24 * time.Hour // pode ser parametrizado via env
 
 // UserClaims representa os dados que estarão no token JWT
 func GenerateJWT(data UserClaims) (string, error) {
+	exp := time.Now().Add(jwtExpiration).Unix()
 	claims := jwt.MapClaims{
 		"id":       data.Id,
 		"username": data.Username,
-		"exp":      time.Now().Add(24 * time.Hour).Unix(),
+		"provider": data.Provider,
+		"email":    data.Email,
+		"temp":     data.Temp,
+		"exp":      exp,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(jwtSecret))
 }
 
-// ValidateJWT valida o token JWT e retorna o e-mail do usuário
+// ValidateJWT valida o token JWT e retorna o UserClaims
 func ValidateJWT(tokenStr string) (UserClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecret), nil
 	})
-	if err != nil {
-		return UserClaims{}, err
+	if err != nil || !token.Valid {
+		return UserClaims{}, errors.New("token inválido")
 	}
-
-	if claims, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
-		id, _ := (*claims)["id"].(string)
-		username, _ := (*claims)["username"].(string)
-		return UserClaims{Id: id, Username: username}, nil
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return UserClaims{}, errors.New("token inválido")
 	}
-	return UserClaims{}, errors.New("token inválido")
+	return UserClaims{
+		Id:       claims["id"].(string),
+		Username: claims["username"].(string),
+		Provider: claims["provider"].(string),
+		Email:    claims["email"].(string),
+		Temp:     claims["temp"].(bool),
+	}, nil
 }
