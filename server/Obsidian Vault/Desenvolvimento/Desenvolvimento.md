@@ -1,3 +1,5 @@
 [[GORM]]
 [[Services e Handlers]]
 [[Armazenando JWTS]]
+[[Checklist de Segurança Anti-XSS (e boas práticas gerais)]]
+[[🔐 Onde salvar o JWT?]]
