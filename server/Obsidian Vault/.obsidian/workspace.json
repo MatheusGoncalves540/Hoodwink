@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Services e Handlers.md",
+                "file": "Desenvolvimento/Desenvolvimento.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Services e Handlers"
+              "title": "Desenvolvimento"
             }
           }
         ]
@@ -78,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 383.5
   },
   "right": {
     "id": "785b4ff7ebd08074",
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Services e Handlers.md",
+                "file": "Desenvolvimento/Desenvolvimento.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Services e Handlers"
+              "title": "Backlinks for Desenvolvimento"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Services e Handlers.md",
+                "file": "Desenvolvimento/Desenvolvimento.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Services e Handlers"
+              "title": "Outgoing links from Desenvolvimento"
             }
           },
           {
@@ -142,13 +142,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Services e Handlers.md",
+                "file": "Desenvolvimento/Desenvolvimento.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Services e Handlers"
+              "title": "Outline of Desenvolvimento"
             }
           }
         ]
@@ -170,6 +170,10 @@
   },
   "active": "8f04a0438ab097da",
   "lastOpenFiles": [
-    "Hoodwink.md"
+    "Armazenando JWTS.md",
+    "Desenvolvimento/Desenvolvimento.md",
+    "Hoodwink.md",
+    "Services e Handlers.md",
+    "GORM.md"
   ]
 }
