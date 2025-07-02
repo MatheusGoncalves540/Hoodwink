@@ -4,15 +4,6 @@ import "time"
 
 type GameState string
 
-const (
-	WaitingAction           GameState = "waiting_action"
-	WaitingContest          GameState = "waiting_contest"
-	ResolvingContest        GameState = "resolving_contest"
-	WaitingKamikazeResponse GameState = "waiting_kamikaze_response"
-	FinalizingAction        GameState = "finalizing_action"
-	TurnFinished            GameState = "turn_finished"
-)
-
 type Player struct {
 	UUID       string   `json:"uuid"`
 	AliveCards []string `json:"alive_cards"`
@@ -26,6 +17,15 @@ type Move struct {
 	TargetUUID string      `json:"target_uuid,omitempty"`
 	CardUsed   string      `json:"card_used,omitempty"`
 	Payload    interface{} `json:"payload,omitempty"`
+}
+
+type Effect struct {
+	Type       string // "kill", "gain_coin", etc.
+	From       string
+	To         string
+	CardIndex  int
+	Executable bool
+	Reason     string
 }
 
 type Room struct {
@@ -42,4 +42,5 @@ type Room struct {
 	PlayerPending      string    `json:"player_pending,omitempty"`
 	PlayersWhoWantSkip []string  `json:"players_who_want_skip"`
 	GameOver           bool      `json:"game_over"`
+	PendingEffects     []Effect
 }

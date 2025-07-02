@@ -3,15 +3,18 @@ package room
 import (
 	"context"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers.go"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/eventQueue"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/handlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
 	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/redis/go-redis/v9"
 )
 
-func ProcessEvent(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *Event) error {
+func ProcessEvent(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eventQueue.Event) error {
 	switch room.State {
 	case rs.WaitingAction:
 		if evt.Type == "action" {
+			// Processa a ação do jogador
 			payloadMap, ok := evt.Payload.(map[string]interface{})
 			if !ok {
 				return nil
@@ -20,14 +23,19 @@ func ProcessEvent(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *Ev
 			if !ok {
 				return nil
 			}
-			room.CurrentMove = &rs.Move{
-				PlayerUUID: evt.PlayerUUID,
-				Action:     action,
+
+			// Ação de uso de carta
+			switch action {
+			case "use_assassin":
+				return handlers.UseAssassin(ctx, rdb, room, evt)
+			default:
+				// Adicionar mais ações conforme necessário
+				return nil
 			}
-			room.State = rs.WaitingContest
 		}
 	case rs.WaitingContest:
 		if evt.Type == "contest" {
+			// Processa a contestação
 			payloadMap, ok := evt.Payload.(map[string]interface{})
 			if !ok {
 				return nil
@@ -36,22 +44,18 @@ func ProcessEvent(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *Ev
 			if !ok {
 				return nil
 			}
-			if contested {
-				room.State = rs.ResolvingContest
-			} else {
-				room.State = rs.FinalizingAction
-			}
+
+			// Lida com a contestação da jogada
+			return handlers.ProcessContest(ctx, rdb, room, evt, contested)
 		}
-	case rs.ResolvingContest:
-		// lógica de resolução da contestação
-	case rs.WaitingKamikazeResponse:
-		// lógica de kamikaze
 	case rs.FinalizingAction:
+		// Finaliza a ação
 		room.State = rs.TurnFinished
 	case rs.TurnFinished:
+		// Avança para o próximo turno
 		room.Turn++
 		room.State = rs.WaitingAction
-		// lógica para definir próximo jogador
+		// Adiciona lógica para definir o próximo jogador
 	}
 	return redisHandlers.SaveRoom(ctx, rdb, room)
 }
