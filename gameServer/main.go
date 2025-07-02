@@ -9,7 +9,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/handlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/rHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
 	"github.com/joho/godotenv"
 )
@@ -22,7 +22,7 @@ func main() {
 	redisClient := redis.ConnectRedis()
 
 	services := services.SetupServices(redisClient)
-	handler := handlers.NewHandler(services)
+	handler := rHandlers.NewHandler(services)
 
 	config.CheckEnvVars(".env.example")
 	routes := routes.SetupRoutes(handler)

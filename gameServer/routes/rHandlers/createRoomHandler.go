@@ -1,4 +1,4 @@
-package handlers
+package rHandlers
 
 import (
 	"encoding/json"
