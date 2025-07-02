@@ -13,6 +13,7 @@ func CheckEnvVars(exampleFilePath string) {
 	file, err := os.Open(exampleFilePath)
 	if err != nil {
 		log.Fatalf("Erro ao abrir %s: %v", exampleFilePath, err)
+		return
 	}
 	defer file.Close()
 
