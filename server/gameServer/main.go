@@ -27,6 +27,6 @@ func main() {
 	config.CheckEnvVars(".env.example")
 	routes := routes.SetupRoutes(handler)
 
-	log.Printf("Servidor ouvindo em %s", os.Getenv("SERVER_URL"))
+	log.Printf("Servidor ouvindo em %s", os.Getenv("GAME_SERVER_URL"))
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), routes))
 }
