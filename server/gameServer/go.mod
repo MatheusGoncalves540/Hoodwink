@@ -5,7 +5,6 @@ go 1.24.4
 require (
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/joho/godotenv v1.5.1
-	gorm.io/gorm v1.30.0
 )
 
 require (
@@ -22,8 +21,6 @@ require (
 
 require (
 	github.com/go-chi/chi/v5 v5.2.2
-	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/redis/go-redis/v9 v9.11.0
 	golang.org/x/text v0.22.0 // indirect
 )
