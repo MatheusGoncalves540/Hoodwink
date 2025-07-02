@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/handlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
@@ -17,11 +18,10 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatal("Erro ao carregar .env")
 	}
-	database, err := db.ConnectDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-	services := services.SetupServices(database)
+
+	redisClient := redis.ConnectRedis()
+
+	services := services.SetupServices(redisClient)
 	handler := handlers.NewHandler(services)
 
 	config.CheckEnvVars(".env.example")

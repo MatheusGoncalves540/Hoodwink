@@ -2,15 +2,15 @@ package services
 
 import (
 	// "github.com/MatheusGoncalves540/Hoodwink-gameServer/db/models"
-	"gorm.io/gorm"
+	"github.com/redis/go-redis/v9"
 )
 
 type RoomService struct {
-	db *gorm.DB
+	db *redis.Client
 }
 
-func NewRoomService(db *gorm.DB) *RoomService {
-	return &RoomService{db}
+func NewRoomService(redisClient *redis.Client) *RoomService {
+	return &RoomService{redisClient}
 }
 
 // func (s *RoomService) FindOrCreateOAuthUser(email, provider, username string) (*models.Room, error) {
