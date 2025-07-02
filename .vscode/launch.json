@@ -2,12 +2,22 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Iniciar servidor Go",
+      "name": "Iniciar backend",
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/server",
-      "envFile": "${workspaceFolder}/server/.env",
+      "program": "${workspaceFolder}/backend",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "args": [],
+      "showLog": true
+    },
+    {
+      "name": "Iniciar game-server",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/game-server",
+      "envFile": "${workspaceFolder}/game-server/.env",
       "args": [],
       "showLog": true
     }
