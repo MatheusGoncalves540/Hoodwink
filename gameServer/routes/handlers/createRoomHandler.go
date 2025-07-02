@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/MatheusGoncalves540/Hoodwink/utils"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 type CreateRoomRequest struct {
@@ -36,5 +36,4 @@ func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SendJSON(w, http.StatusCreated, map[string]string{"message": msg})
-	w.Header().Set("Content-Type", "application/json")
 }

@@ -25,7 +25,6 @@ func SetupRoutes(handler *handlers.Handler) http.Handler {
 	// Rotas protegidas com JWT
 	routes.Group(func(r chi.Router) {
 		r.Use(jwtoken.JWTMiddleware)
-		r.Post("/create-room", handler.CreateRoom)
 	})
 
 	return routes
