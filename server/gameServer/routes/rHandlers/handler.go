@@ -1,4 +1,4 @@
-package handlers
+package rHandlers
 
 import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
