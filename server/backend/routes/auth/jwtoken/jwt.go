@@ -3,13 +3,23 @@ package jwtoken
 import (
 	"errors"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 var jwtSecret = os.Getenv("JWT_SECRET")
-var jwtExpiration = 24 * time.Hour // pode ser parametrizado via env
+var jwtExpiration time.Duration
+
+func init() {
+	expStr := os.Getenv("JWT_EXPIRATION")
+	expInt, err := strconv.Atoi(expStr)
+	if err != nil {
+		expInt = 24
+	}
+	jwtExpiration = time.Duration(expInt) * time.Hour
+}
 
 // UserClaims representa os dados que estarão no token JWT
 func GenerateJWT(data UserClaims) (string, error) {
