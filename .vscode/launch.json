@@ -12,12 +12,12 @@
       "showLog": true
     },
     {
-      "name": "Iniciar game-server",
+      "name": "Iniciar gameServer",
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/game-server",
-      "envFile": "${workspaceFolder}/game-server/.env",
+      "program": "${workspaceFolder}/gameServer",
+      "envFile": "${workspaceFolder}/gameServer/.env",
       "args": [],
       "showLog": true
     }
