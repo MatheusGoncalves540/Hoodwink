@@ -35,9 +35,9 @@ func UseAssassin(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eve
 
 	// Agenda o próximo evento para o tempo de contestação (ex: 8 segundos)
 	redisHandlers.ScheduleNextStep(ctx, rdb, room.ID, eventQueue.Event{
-		Type:          "no_contest",
-		PlayerId:      "system",
-		TimeoutMillis: 8000,
+		Type:      "no_contest",
+		PlayerId:  "system",
+		TimeoutMs: 8000,
 	})
 
 	// Salva a sala

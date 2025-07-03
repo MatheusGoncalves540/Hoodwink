@@ -41,7 +41,7 @@
 2.  **Cliente envia requisição para o game-server:**
     
     ```php-template
-    POST /getTicket/<roomId>
+    POST /getTicket/<RoomId>
     Header: tokenJwt=<jwtUsuario>
     ```
     
@@ -51,11 +51,11 @@
         
     -   Extrai `uuid` e `nick` do payload
         
-    -   Verifica se a sala `<roomId>` existe no Redis
+    -   Verifica se a sala `<RoomId>` existe no Redis
 	    
     -   Verifica no redis se: presence:`<PlayerId>` existe.
 	    - Se existir: Rejeita conexão (player já está na sala).
-	    - `ideia futura`: Verifica se é igual `<roomId>`:
+	    - `ideia futura`: Verifica se é igual `<RoomId>`:
 		    - Se for igual: 
 			- Se for diferente: 
 		- Se não existir: Procede (o Player não está conectado em nenhuma sala)
@@ -66,7 +66,7 @@
         {
           "uuid": "user-abc-123",
           "nick": "matheus",
-          "roomID": "abc123",
+          "RoomId": "abc123",
           "exp": "30min"
         }
         ```
@@ -84,7 +84,7 @@
 5.  **Cliente conecta no WebSocket:**
     
     ```php-template
-    /enterRoom/<roomId>
+    /enterRoom/<RoomId>
     Header: Authorization: Bearer <jwtDaSala>
     ```
     
@@ -96,7 +96,7 @@
 1.  **Cliente envia diretamente ao game-server:**
     
     ```css
-    POST /getTicket/<roomId>
+    POST /getTicket/<RoomId>
     Body: { "username": "player123" }
     ```
     

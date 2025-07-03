@@ -6,6 +6,6 @@ type CreateRoomRequest struct {
 }
 
 type CreateRoomResponse struct {
-	RoomID string `json:"roomId"`
+	RoomId string `json:"RoomId"`
 	Msg    string `json:"message"`
 }

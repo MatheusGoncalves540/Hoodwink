@@ -13,6 +13,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// Requisições chegando do websocket caem aqui
 func ProcessEvent(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eventQueue.Event) error {
 	instanceID := utils.GetInstanceID()
 	ok, err := redisHandlers.AcquireRoomLock(ctx, rdb, room.ID, instanceID, 5*time.Second)

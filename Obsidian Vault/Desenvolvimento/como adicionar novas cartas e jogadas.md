@@ -99,7 +99,7 @@ func HandleUseMinhoca(ctx context.Context, room *roomStructs.Room, evt *roomStru
 
 	room.PendingEffects = append(room.PendingEffects, roomStructs.Effect{
 		Type:       "minhoca_effect",
-		From:       evt.PlayerUUID,
+		From:       evt.PlayerId,
 		To:         targetUUID,
 		CardIndex:  -1,
 		Executable: false,
@@ -107,7 +107,7 @@ func HandleUseMinhoca(ctx context.Context, room *roomStructs.Room, evt *roomStru
 	})
 
 	room.CurrentMove = &roomStructs.Move{
-		PlayerUUID: evt.PlayerUUID,
+		PlayerId: evt.PlayerId,
 		Action:     "use_minhoca",
 		TargetUUID: targetUUID,
 	}
@@ -136,8 +136,8 @@ case "use_minhoca":
 	}
 	redisHandlers.ScheduleNextStep(ctx, rdb, room.ID, roomStructs.Event{
 		Type:          "no_contest",
-		PlayerUUID:    "system",
-		TimeoutMillis: 8000,
+		PlayerId:    "system",
+		TimeoutMs: 8000,
 	})
 ```
 
@@ -172,7 +172,7 @@ func ApplyPendingEffects(room *roomStructs.Room) {
 ```json
 {
   "type": "use_minhoca",
-  "player_uuid": "1234-uuid",
+  "playerId": "1234-uuid",
   "payload": {
     "target": "uuid-do-inimigo"
   },
@@ -186,7 +186,7 @@ func ApplyPendingEffects(room *roomStructs.Room) {
 
 -   **Contestação** já está sendo tratada automaticamente por `WaitingContest`, `resolve_contest`, etc.
     
--   **Timers**: você só precisa definir `TimeoutMillis` e agendar o `ScheduleNextStep` como já está fazendo.
+-   **Timers**: você só precisa definir `TimeoutMs` e agendar o `ScheduleNextStep` como já está fazendo.
     
 
 ---

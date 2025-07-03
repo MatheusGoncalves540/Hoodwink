@@ -29,7 +29,7 @@ func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SendJSON(w, http.StatusCreated, endpointStructures.CreateRoomResponse{
-		RoomID: newRoomData.ID,
+		RoomId: newRoomData.ID,
 		Msg:    fmt.Sprintf("Sala '%s' criada com sucesso.", reqBody.RoomName),
 	})
 }
