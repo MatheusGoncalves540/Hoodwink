@@ -30,6 +30,9 @@ type Effect struct {
 
 type Room struct {
 	ID                 string    `json:"id"`
+	Name               string    `json:"name"`
+	Password           string    `json:"password" validate:"omitempty,max=24"`
+	Created            time.Time `json:"created"`
 	State              GameState `json:"state"`
 	Turn               int       `json:"turn"`
 	Tax                int       `json:"tax"`
@@ -42,5 +45,5 @@ type Room struct {
 	PlayerPending      string    `json:"player_pending,omitempty"`
 	PlayersWhoWantSkip []string  `json:"players_who_want_skip"`
 	GameOver           bool      `json:"game_over"`
-	PendingEffects     []Effect
+	PendingEffects     []Effect  `json:"pending_effects"`
 }

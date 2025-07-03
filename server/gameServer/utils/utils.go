@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 var validate = validator.New()
@@ -36,4 +37,9 @@ func GenerateNewId() string {
 	randomFactor := rand.Float64() * rand.Float64()
 	id := int64(randomFactor * float64(time.Now().UnixNano()))
 	return strconv.FormatInt(id, 16)
+}
+
+// Gera um UUID para identificar a instância/processo
+func GetInstanceID() string {
+	return uuid.New().String()
 }
