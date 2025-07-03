@@ -5,18 +5,17 @@ import "time"
 type GameState string
 
 type Player struct {
-	UUID       string   `json:"uuid"`
-	AliveCards []string `json:"alive_cards"`
-	Coins      int      `json:"coins"`
-	DeadCards  []string `json:"dead_cards"`
+	Id    string   `json:"id"`
+	Cards []string `json:"cards"`
+	Coins int      `json:"coins"`
 }
 
 type Move struct {
-	PlayerUUID string      `json:"player_uuid"`
-	Action     string      `json:"action"`
-	TargetUUID string      `json:"target_uuid,omitempty"`
-	CardUsed   string      `json:"card_used,omitempty"`
-	Payload    interface{} `json:"payload,omitempty"`
+	PlayerId string      `json:"playerId"`
+	Action   string      `json:"action"`
+	TargetId string      `json:"targetId,omitempty"`
+	CardUsed string      `json:"cardUsed,omitempty"`
+	Payload  interface{} `json:"payload,omitempty"`
 }
 
 type Effect struct {
@@ -37,13 +36,13 @@ type Room struct {
 	Turn               int       `json:"turn"`
 	Tax                int       `json:"tax"`
 	Players            []Player  `json:"players"`
-	AliveDeck          []string  `json:"alive_deck"`
-	DeadDeck           []string  `json:"dead_deck"`
-	CurrentMove        *Move     `json:"current_move,omitempty"`
-	CurrentTurnOwner   string    `json:"current_turn_owner"`
-	StartTime          time.Time `json:"start_time"`
-	PlayerPending      string    `json:"player_pending,omitempty"`
-	PlayersWhoWantSkip []string  `json:"players_who_want_skip"`
-	GameOver           bool      `json:"game_over"`
-	PendingEffects     []Effect  `json:"pending_effects"`
+	AliveDeck          []string  `json:"aliveDeck"`
+	DeadDeck           []string  `json:"deadDeck"`
+	CurrentMove        *Move     `json:"currentMove,omitempty"`
+	CurrentTurnOwner   string    `json:"currentTurnOwner"`
+	StartTime          time.Time `json:"startTime"`
+	PlayerPending      string    `json:"playerPending,omitempty"`
+	PlayersWhoWantSkip []string  `json:"playersWhoWantSkip"`
+	GameOver           bool      `json:"gameOver"`
+	PendingEffects     []Effect  `json:"pendingEffects"`
 }

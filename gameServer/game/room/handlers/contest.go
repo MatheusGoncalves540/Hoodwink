@@ -20,8 +20,8 @@ func ProcessContest(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *
 			// O efeito de matar a carta pode ser executado
 			effect := rs.Effect{
 				Type:       "kill",
-				From:       evt.PlayerUUID,
-				To:         room.CurrentMove.TargetUUID,
+				From:       evt.PlayerId,
+				To:         room.CurrentMove.TargetId,
 				CardIndex:  -1,
 				Executable: true,
 			}

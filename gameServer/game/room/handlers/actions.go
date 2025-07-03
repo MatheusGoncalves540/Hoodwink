@@ -17,7 +17,7 @@ func UseAssassin(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eve
 	// Cria o efeito pendente de matar uma carta
 	effect := rs.Effect{
 		Type:       "kill",
-		From:       evt.PlayerUUID,
+		From:       evt.PlayerId,
 		To:         target,
 		CardIndex:  -1,
 		Executable: false,
@@ -26,9 +26,9 @@ func UseAssassin(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eve
 
 	// Adiciona o efeito pendente
 	room.CurrentMove = &rs.Move{
-		PlayerUUID: evt.PlayerUUID,
-		Action:     "use_assassin",
-		TargetUUID: target,
+		PlayerId: evt.PlayerId,
+		Action:   "use_assassin",
+		TargetId: target,
 	}
 	room.PendingEffects = append(room.PendingEffects, effect)
 	room.State = rs.WaitingContest
@@ -36,7 +36,7 @@ func UseAssassin(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eve
 	// Agenda o próximo evento para o tempo de contestação (ex: 8 segundos)
 	redisHandlers.ScheduleNextStep(ctx, rdb, room.ID, eventQueue.Event{
 		Type:          "no_contest",
-		PlayerUUID:    "system",
+		PlayerId:      "system",
 		TimeoutMillis: 8000,
 	})
 

@@ -17,7 +17,7 @@ import (
 // Handler para autenticação universal via OAuth (Google, Discord, etc.)
 // POST /auth/external/{provider}
 type ExternalAuthPayload struct {
-	IdToken  string `json:"id_token"`
+	IdToken  string `json:"idToken"`
 	Username string `json:"username,omitempty"`
 }
 
