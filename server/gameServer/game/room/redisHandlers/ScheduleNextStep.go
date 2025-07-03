@@ -13,15 +13,15 @@ import (
 //
 //	ctx: contexto para timeout/cancelamento
 //	rdb: cliente Redis
-//	roomID: identificador da sala
+//	RoomId: identificador da sala
 //	evt: evento a ser agendado (struct Event)
 //
 // Não retorna erro, apenas agenda a execução.
-func ScheduleNextStep(ctx context.Context, rdb *redis.Client, roomID string, evt eventQueue.Event) {
+func ScheduleNextStep(ctx context.Context, rdb *redis.Client, RoomId string, evt eventQueue.Event) {
 	// Converte o timeout do evento para duração em milissegundos
-	duration := time.Duration(evt.TimeoutMillis) * time.Millisecond
+	duration := time.Duration(evt.TimeoutMs) * time.Millisecond
 	// Agenda a função para adicionar o evento à fila após o timeout
 	time.AfterFunc(duration, func() {
-		_ = PushEvent(ctx, rdb, roomID, evt)
+		_ = PushEvent(ctx, rdb, RoomId, evt)
 	})
 }

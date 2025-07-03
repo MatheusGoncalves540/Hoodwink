@@ -22,9 +22,9 @@ func NewRoomService(redisClient *redis.Client) *RoomService {
 }
 
 func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest) (*roomStructs.Room, error) {
-	roomID := uuid.New().String()
+	RoomId := uuid.New().String()
 	room := &roomStructs.Room{
-		ID:       roomID,
+		ID:       RoomId,
 		Name:     roomData.RoomName,
 		Password: roomData.Password,
 		Players:  []roomStructs.Player{},

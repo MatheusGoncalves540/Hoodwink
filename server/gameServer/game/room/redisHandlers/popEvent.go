@@ -12,9 +12,9 @@ import (
 // Usa BRPop para esperar até que um evento esteja disponível.
 // Retorna o evento desempilhado ou nil se não houver evento.
 // Em caso de erro de deserialização ou Redis, retorna o erro correspondente.
-func PopEvent(ctx context.Context, rdb *redis.Client, roomID string) (*eventQueue.Event, error) {
+func PopEvent(ctx context.Context, rdb *redis.Client, RoomId string) (*eventQueue.Event, error) {
 	// Busca o próximo evento na fila (bloqueante até existir)
-	res, err := rdb.BRPop(ctx, 0, "room:"+roomID+":eventQueue").Result()
+	res, err := rdb.BRPop(ctx, 0, "room:"+RoomId+":eventQueue").Result()
 	if err != nil {
 		return nil, err // erro ao acessar o Redis
 	}

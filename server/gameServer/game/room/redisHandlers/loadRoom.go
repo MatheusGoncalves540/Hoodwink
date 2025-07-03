@@ -13,15 +13,15 @@ import (
 //
 //	ctx: contexto para controle de timeout/cancelamento
 //	rdb: cliente Redis
-//	roomID: identificador da sala
+//	RoomId: identificador da sala
 //
 // Retorno:
 //
 //	*roomStructs.Room: ponteiro para struct da sala carregada
 //	error: erro caso não encontre ou não consiga desserializar
-func LoadRoom(ctx context.Context, rdb *redis.Client, roomID string) (*roomStructs.Room, error) {
-	// Busca o valor da chave da sala no Redis (formato: room:<roomID>)
-	val, err := rdb.Get(ctx, "room:"+roomID).Result()
+func LoadRoom(ctx context.Context, rdb *redis.Client, RoomId string) (*roomStructs.Room, error) {
+	// Busca o valor da chave da sala no Redis (formato: room:<RoomId>)
+	val, err := rdb.Get(ctx, "room:"+RoomId).Result()
 	if err != nil {
 		// Retorna erro se a chave não existir ou houver falha de conexão
 		return nil, err

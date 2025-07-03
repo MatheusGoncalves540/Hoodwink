@@ -13,13 +13,13 @@ import (
 //
 //	ctx: contexto para timeout/cancelamento
 //	rdb: cliente Redis
-//	roomID: identificador da sala
+//	RoomId: identificador da sala
 //	evt: evento a ser adicionado (struct Event)
 //
 // Retorno:
 //
 //	error: erro de serialização ou comunicação com Redis
-func PushEvent(ctx context.Context, rdb *redis.Client, roomID string, evt eventQueue.Event) error {
+func PushEvent(ctx context.Context, rdb *redis.Client, RoomId string, evt eventQueue.Event) error {
 	// Serializa o evento para JSON
 	data, err := json.Marshal(evt)
 	if err != nil {
@@ -27,5 +27,5 @@ func PushEvent(ctx context.Context, rdb *redis.Client, roomID string, evt eventQ
 		return err
 	}
 	// Adiciona o evento no início da fila de eventos (LPUSH)
-	return rdb.LPush(ctx, "room:"+roomID+":eventQueue", data).Err()
+	return rdb.LPush(ctx, "room:"+RoomId+":eventQueue", data).Err()
 }

@@ -10,7 +10,9 @@ import (
 func SetupRoutes(handler *rHandlers.Handler) http.Handler {
 	routes := chi.NewRouter()
 
-	routes.Post("/getTicket/{roomId}", handler.CreateRoom)
+	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
+
+	routes.Post("/getTicket/{RoomId}", handler.CreateRoom)
 
 	return routes
 }
