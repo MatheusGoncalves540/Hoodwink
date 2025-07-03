@@ -4,3 +4,4 @@
 [[Checklist de Segurança Anti-XSS (e boas práticas gerais)]]
 [[🔐 Onde salvar o JWT?]]
 [[🧠 Visão geral da arquitetura do game-server]]
+[[como adicionar novas cartas e jogadas]]
