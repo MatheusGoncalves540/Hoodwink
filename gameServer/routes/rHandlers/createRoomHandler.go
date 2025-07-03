@@ -1,3 +1,4 @@
+// gameServer/routes/rHandlers/createRoomHandler.go
 package rHandlers
 
 import (
@@ -5,20 +6,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-type CreateRoomRequest struct {
-	RoomName string  `json:"roomName" validate:"required,max=30,min=3"`
-	Password *string `json:"password" validate:"omitempty,max=24"`
-}
-
-// Create a new room with the given data
 func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
-	var reqBody CreateRoomRequest
+	var reqBody endpointStructures.CreateRoomRequest
 
-	err := json.NewDecoder(r.Body).Decode(&reqBody)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 		http.Error(w, "JSON inválido", http.StatusBadRequest)
 		return
 	}
@@ -27,13 +22,14 @@ func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Aqui está tudo validado
-	msg := fmt.Sprintf("Criou uma sala chamada %s", reqBody.RoomName)
-	if reqBody.Password != nil {
-		msg += " com senha definida."
-	} else {
-		msg += " sem senha."
+	newRoomData, err := h.RoomService.CreateNewRoom(r, reqBody)
+	if err != nil {
+		http.Error(w, "Erro ao criar a sala", http.StatusInternalServerError)
+		return
 	}
 
-	utils.SendJSON(w, http.StatusCreated, map[string]string{"message": msg})
+	utils.SendJSON(w, http.StatusCreated, endpointStructures.CreateRoomResponse{
+		RoomID: newRoomData.ID,
+		Msg:    fmt.Sprintf("Sala '%s' criada com sucesso.", reqBody.RoomName),
+	})
 }

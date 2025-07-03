@@ -2,15 +2,28 @@ package room
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/eventQueue"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/handlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
 	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
 func ProcessEvent(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eventQueue.Event) error {
+	instanceID := utils.GetInstanceID()
+	ok, err := redisHandlers.AcquireRoomLock(ctx, rdb, room.ID, instanceID, 5*time.Second)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("não foi possível adquirir o lock da sala")
+	}
+	defer redisHandlers.ReleaseRoomLock(ctx, rdb, room.ID, instanceID)
+
 	switch room.State {
 	case rs.WaitingAction:
 		if evt.Type == "action" {
