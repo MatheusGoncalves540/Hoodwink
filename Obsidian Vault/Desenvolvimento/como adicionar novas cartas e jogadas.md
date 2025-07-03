@@ -1,5 +1,5 @@
  no seu sistema atual do *Hoodwink*, usando a estrutura já modularizada que você criou.
-
+https://chatgpt.com/c/68651119-a1c4-8000-a05c-c5a76fdc821a
 ---
 
 ## 🧠 Conceito Básico
