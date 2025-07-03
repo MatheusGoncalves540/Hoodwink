@@ -2,7 +2,7 @@ package eventQueue
 
 type Event struct {
 	Type          string      `json:"type"`
-	PlayerUUID    string      `json:"player_uuid"`
+	PlayerId      string      `json:"playerId"`
 	Payload       interface{} `json:"payload"`
 	TimeoutMillis int64
 }
