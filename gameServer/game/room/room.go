@@ -20,7 +20,7 @@ func ProcessEvent(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *ev
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("não foi possível adquirir o lock da sala")
+		return fmt.Errorf("a sala %s está sendo modificada por outra instância, tente novamente", room.ID)
 	}
 	defer redisHandlers.ReleaseRoomLock(ctx, rdb, room.ID, instanceID)
 
