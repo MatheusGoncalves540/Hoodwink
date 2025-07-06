@@ -18,11 +18,10 @@ var upgrader = websocket.Upgrader{
 }
 
 type WebSocketPayload struct {
-	Type      string          `json:"type"`
-	PlayerId  string          `json:"playerId"`
-	RoomId    string          `json:"roomId"`
-	Payload   json.RawMessage `json:"payload"`
-	TimeoutMs int             `json:"timeoutMs,omitempty"` // opcional
+	Type     string          `json:"type"`
+	PlayerId string          `json:"playerId"`
+	RoomId   string          `json:"roomId"`
+	Payload  json.RawMessage `json:"payload"`
 }
 
 // WebSocketHandler lida com conexões WS
@@ -60,7 +59,6 @@ func WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 				PlayerId:  evt.PlayerId,
 				RoomId:    evt.RoomId,
 				Payload:   evt.Payload,
-				TimeoutMs: evt.TimeoutMs,
 				CreatedAt: time.Now(),
 			}
 
