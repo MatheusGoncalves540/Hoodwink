@@ -2,6 +2,7 @@ package room
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -13,7 +14,17 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// Requisições chegando do websocket caem aqui
+// Requisições chegando do websocket caem aqui.
+//
+// ProcessEvent gerencia o processamento de eventos em uma sala de jogo, garantindo exclusão mútua via lock no Redis.
+//
+// Dependendo do estado atual da sala (room.State), processa diferentes tipos de eventos:
+// - rs.WaitingAction: processa ações dos jogadores, como uso de cartas.
+// - rs.WaitingContest: processa contestações de jogadas.
+// - rs.FinalizingAction: finaliza a ação atual e prepara para o próximo estado.
+// - rs.TurnFinished: avança para o próximo turno e define o próximo jogador.
+// Ao final, persiste o estado atualizado da sala no Redis.
+// Retorna erro caso ocorra falha ao adquirir o lock, processar o evento ou salvar o estado.
 func ProcessEvent(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eventQueue.Event) error {
 	instanceID := utils.GetInstanceID()
 	ok, err := redisHandlers.AcquireRoomLock(ctx, rdb, room.ID, instanceID, 5*time.Second)
@@ -29,9 +40,13 @@ func ProcessEvent(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *ev
 	case rs.WaitingAction:
 		if evt.Type == "action" {
 			// Processa a ação do jogador
-			payloadMap, ok := evt.Payload.(map[string]interface{})
+			var payloadMap map[string]interface{}
+			payloadBytes, ok := evt.Payload.([]byte)
 			if !ok {
-				return nil
+				return fmt.Errorf("evt.Payload is not of type []byte")
+			}
+			if err := json.Unmarshal(payloadBytes, &payloadMap); err != nil {
+				return err
 			}
 			action, ok := payloadMap["action"].(string)
 			if !ok {

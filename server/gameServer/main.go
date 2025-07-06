@@ -18,14 +18,14 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatal("Erro ao carregar .env")
 	}
+	config.CheckEnvVars(".env.example")
 
 	redisClient := redis.ConnectRedis()
 
 	services := services.SetupServices(redisClient)
 	handler := rHandlers.NewHandler(services)
 
-	config.CheckEnvVars(".env.example")
-	routes := routes.SetupRoutes(handler)
+	routes := routes.SetupRoutes(handler, redisClient)
 
 	log.Printf("Servidor ouvindo em %s", os.Getenv("GAME_SERVER_URL"))
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), routes))

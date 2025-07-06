@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/eventQueue"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
@@ -11,8 +13,18 @@ import (
 
 func UseAssassin(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eventQueue.Event) error {
 	// Processa a ação de usar o Assassino
-	payload := evt.Payload.(map[string]interface{})
-	target := payload["target"].(string)
+	var payload map[string]interface{}
+	if raw, ok := evt.Payload.(json.RawMessage); ok {
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("evt.Payload is not of type json.RawMessage")
+	}
+	target, ok := payload["target"].(string)
+	if !ok {
+		return fmt.Errorf("target não encontrado ou não é string")
+	}
 
 	// Cria o efeito pendente de matar uma carta
 	effect := rs.Effect{
