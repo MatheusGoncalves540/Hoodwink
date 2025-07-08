@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/eventQueue"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
 	"github.com/gorilla/websocket"
@@ -62,11 +61,16 @@ func WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 				CreatedAt: time.Now(),
 			}
 
-			err = room.ProcessEvent(ctx, rdb, roomData, &event)
-			if err != nil {
-				log.Println("Erro no ProcessEvent:", err)
-				continue
-			}
+			// err = room.ProcessEvent(ctx, rdb, roomData, &event)
+			redisHandlers.ScheduleNextStep(ctx, rdb, event.RoomId, eventQueue.Event{
+				Type:      "no_contest",
+				PlayerId:  "system",
+				TimeoutMs: 8000,
+			})
+			// if err != nil {
+			// 	log.Println("Erro no ProcessEvent:", err)
+			// 	continue
+			// }
 
 			// Atualize todos os jogadores (exemplo simplificado)
 			stateBytes, _ := json.Marshal(roomData)
