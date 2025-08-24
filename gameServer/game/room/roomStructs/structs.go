@@ -36,6 +36,7 @@ type Room struct {
 	Turn               int       `json:"turn"`
 	Tax                int       `json:"tax"`
 	Players            []Player  `json:"players"`
+	MaxPlayers         int       `json:"maxPlayers"`
 	AliveDeck          []string  `json:"aliveDeck"`
 	DeadDeck           []string  `json:"deadDeck"`
 	CurrentMove        *Move     `json:"currentMove,omitempty"`
