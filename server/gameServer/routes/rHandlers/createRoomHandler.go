@@ -56,5 +56,8 @@ func (h *Handler) GetTicket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(ticket))
+	utils.SendJSON(w, http.StatusOK, utils.APIResponse{
+		Message: "Ticket gerado com sucesso",
+		Data:    map[string]string{"ticket": ticket},
+	})
 }
