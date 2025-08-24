@@ -8,13 +8,14 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
+	"github.com/go-chi/chi/v5"
 )
 
 func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	var reqBody endpointStructures.CreateRoomRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		http.Error(w, "JSON inválido", http.StatusBadRequest)
+		utils.SendError(w, "JSON inválido", http.StatusBadRequest)
 		return
 	}
 
@@ -24,7 +25,7 @@ func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 
 	newRoomData, err := h.RoomService.CreateNewRoom(r, reqBody)
 	if err != nil {
-		http.Error(w, "Erro ao criar a sala", http.StatusInternalServerError)
+		utils.SendError(w, "Erro ao criar a sala", http.StatusInternalServerError)
 		return
 	}
 
@@ -32,4 +33,28 @@ func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		RoomId: newRoomData.ID,
 		Msg:    fmt.Sprintf("Sala '%s' criada com sucesso.", reqBody.RoomName),
 	})
+}
+
+func (h *Handler) GetTicket(w http.ResponseWriter, r *http.Request) {
+	roomId := chi.URLParam(r, "RoomId")
+
+	var reqBody endpointStructures.GetTicketBody
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		utils.SendError(w, "JSON inválido", http.StatusBadRequest)
+		return
+	}
+	utils.PrintDebug(roomId)
+	utils.PrintDebug(reqBody)
+
+	//TODO: Validar se a sala existe e se o playerId é válido e apto para entrar na sala
+
+	// Geração do ticket JWT
+	ticket, err := h.JWTService.GenerateToken(reqBody.PlayerId, roomId)
+	if err != nil {
+		utils.PrintDebug(err)
+		utils.SendError(w, "Erro ao gerar ticket", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte(ticket))
 }

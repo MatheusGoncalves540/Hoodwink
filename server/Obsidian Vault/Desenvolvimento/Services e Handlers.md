@@ -94,12 +94,12 @@ type CriarSalaPayload struct {
 func (h *Handler) CriarSala(w http.ResponseWriter, r *http.Request) {
 	var payload CriarSalaPayload
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil || payload.Nome == "" {
-		http.Error(w, "Nome inválido", http.StatusBadRequest)
+		utils.SendError(w, "Nome inválido", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.RoomService.CriarSala(payload.Nome); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

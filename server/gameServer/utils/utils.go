@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -52,4 +53,11 @@ func StringContains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+// if DEBUG = true, print on console
+func PrintDebug(msg any) {
+	if os.Getenv("DEBUG") == "true" {
+		fmt.Println(msg)
+	}
 }

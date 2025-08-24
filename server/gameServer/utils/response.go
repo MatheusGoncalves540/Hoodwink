@@ -27,7 +27,7 @@ func SendSuccess(w http.ResponseWriter, data interface{}, message string) {
 }
 
 // SendError envia uma resposta JSON de erro com status HTTP e mensagem
-func SendError(w http.ResponseWriter, status int, errMessage string) {
+func SendError(w http.ResponseWriter, errMessage string, status int) {
 	SendJSON(w, status, APIResponse{
 		Error:   errMessage,
 		Message: "Erro ao processar a requisição",
