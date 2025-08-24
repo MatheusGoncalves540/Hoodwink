@@ -24,13 +24,23 @@ func NewRoomService(redisClient *redis.Client) *RoomService {
 func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest) (*roomStructs.Room, error) {
 	RoomId := uuid.New().String()
 	room := &roomStructs.Room{
-		ID:       RoomId,
-		Name:     roomData.RoomName,
-		Password: roomData.Password,
-		Players:  []roomStructs.Player{},
-		State:    roomStructs.WaitingAction,
-		Turn:     0,
-		Created:  time.Now(),
+		ID:                 RoomId,
+		Name:               roomData.RoomName,
+		Password:           roomData.Password,
+		Created:            time.Now(),
+		State:              roomStructs.WaitingAction,
+		Turn:               0,
+		Players:            []roomStructs.Player{},
+		MaxPlayers:         roomData.MaxPlayers,
+		AliveDeck:          []string{},
+		DeadDeck:           []string{},
+		CurrentMove:        nil,
+		CurrentTurnOwner:   "",
+		StartTime:          time.Time{},
+		PlayerPending:      "",
+		PlayersWhoWantSkip: []string{},
+		GameOver:           false,
+		PendingEffects:     []roomStructs.Effect{},
 	}
 
 	err := redisHandlers.SaveRoom(r.Context(), s.redisClient, room)
