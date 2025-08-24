@@ -2,11 +2,11 @@ package middlewares
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink/utils"
 	"github.com/google/uuid"
 )
 
@@ -37,12 +37,7 @@ func RequestMiddleware(next http.Handler) http.Handler {
 		defer func() {
 			if rec := recover(); rec != nil {
 				log.Printf("[ERRO] [%s] panic: %v", reqID, rec)
-				rw.Header().Set("Content-Type", "application/json")
-				rw.WriteHeader(http.StatusInternalServerError)
-				json.NewEncoder(rw).Encode(APIResponse{
-					Error:   "Erro interno inesperado",
-					Message: "Ocorreu um erro no servidor. Tente novamente mais tarde.",
-				})
+				utils.SendError(rw, "Ocorreu um erro no servidor. Tente novamente mais tarde.", http.StatusInternalServerError)
 			}
 
 			duration := time.Since(start)
