@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/websocket"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/rHandlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/redis/go-redis/v9"
@@ -16,10 +16,10 @@ func SetupRoutes(handler *rHandlers.Handler, rdb *redis.Client) http.Handler {
 
 	routes.Post("/newRoom", handler.CreateRoom)
 
-	// routes.Post("/getTicket/{RoomId}", handler.)
+	routes.Post("/getTicket/{RoomId}", handler.GetTicket)
 
-	routes.Route("/ws", func(r chi.Router) {
-		r.Get("/connect", game.WebSocketHandler(rdb))
+	routes.Route("/game", func(r chi.Router) {
+		r.Get("/", websocket.WebSocketHandler(rdb))
 	})
 
 	return routes

@@ -12,6 +12,7 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink/routes/auth/jwtoken"
 	"github.com/MatheusGoncalves540/Hoodwink/services"
+	"github.com/MatheusGoncalves540/Hoodwink/utils"
 )
 
 // Handler para autenticação universal via OAuth (Google, Discord, etc.)
@@ -24,13 +25,13 @@ type ExternalAuthPayload struct {
 func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 	provider := strings.TrimPrefix(r.URL.Path, "/auth/external/")
 	if provider == "" {
-		http.Error(w, "Provider não especificado", http.StatusBadRequest)
+		utils.SendError(w, "Provider não especificado", http.StatusBadRequest)
 		return
 	}
 
 	var body ExternalAuthPayload
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.IdToken == "" {
-		http.Error(w, "id_token obrigatório", http.StatusBadRequest)
+		utils.SendError(w, "id_token obrigatório", http.StatusBadRequest)
 		return
 	}
 
@@ -42,11 +43,11 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 		email, _, err = ValidateGoogleIDToken(body.IdToken)
 	// Futuro: case "discord": ...
 	default:
-		http.Error(w, "Provedor não suportado", http.StatusBadRequest)
+		utils.SendError(w, "Provedor não suportado", http.StatusBadRequest)
 		return
 	}
 	if err != nil {
-		http.Error(w, "id_token inválido: "+err.Error(), http.StatusUnauthorized)
+		utils.SendError(w, "id_token inválido: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
@@ -64,7 +65,7 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(`{"status":"need_additional_data","token":"` + tempToken + `"}`))
 			return
 		}
-		http.Error(w, "Erro ao salvar usuário", http.StatusInternalServerError)
+		utils.SendError(w, "Erro ao salvar usuário", http.StatusInternalServerError)
 		return
 	}
 
@@ -76,7 +77,7 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 		Email:    user.Email,
 	})
 	if err != nil {
-		http.Error(w, "Erro ao gerar token", http.StatusInternalServerError)
+		utils.SendError(w, "Erro ao gerar token", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

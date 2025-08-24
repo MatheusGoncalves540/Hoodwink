@@ -6,10 +6,12 @@ import (
 
 type Handler struct {
 	RoomService *services.RoomService
+	JWTService  *services.JWTService
 }
 
 func NewHandler(s *services.Services) *Handler {
 	return &Handler{
 		s.RoomService,
+		s.JWTService,
 	}
 }

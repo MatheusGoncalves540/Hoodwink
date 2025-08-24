@@ -2,7 +2,6 @@ package redisHandlers
 
 import (
 	"context"
-	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/eventQueue"
 	"github.com/redis/go-redis/v9"
@@ -18,10 +17,4 @@ import (
 //
 // Não retorna erro, apenas agenda a execução.
 func ScheduleNextStep(ctx context.Context, rdb *redis.Client, RoomId string, evt eventQueue.Event) {
-	// Converte o timeout do evento para duração em milissegundos
-	duration := time.Duration(evt.TimeoutMs) * time.Millisecond
-	// Agenda a função para adicionar o evento à fila após o timeout
-	time.AfterFunc(duration, func() {
-		_ = PushEvent(ctx, rdb, RoomId, evt)
-	})
 }

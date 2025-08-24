@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"strings"
+
+	"github.com/MatheusGoncalves540/Hoodwink/utils"
 )
 
 type contextKey string
@@ -15,13 +17,13 @@ func JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
-			http.Error(w, "Token não fornecido", http.StatusUnauthorized)
+			utils.SendError(w, "Token não fornecido", http.StatusUnauthorized)
 			return
 		}
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 		user, err := ValidateJWT(tokenStr)
 		if err != nil {
-			http.Error(w, "Token inválido", http.StatusUnauthorized)
+			utils.SendError(w, "Token inválido", http.StatusUnauthorized)
 			return
 		}
 		ctx := context.WithValue(r.Context(), UserContextKey, user)
