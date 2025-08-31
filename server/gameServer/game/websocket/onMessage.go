@@ -2,39 +2,82 @@ package websocket
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"log"
+	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/processWsMsg"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
+	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 )
 
 // Função chamada ao receber uma mensagem do cliente
-func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, msg []byte) {
-	var evt WebSocketPayload
-	if err := json.Unmarshal(msg, &evt); err != nil {
-		log.Println("Formato inválido:", err)
+func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, evt *rs.Event) {
+	// Verify if event is valid
+	if evt == nil {
+		utils.LogDebug("Evento inválido")
 		return
 	}
 
-	roomId, err := redisHandlers.LoadRoomField(ctx, rdb, evt.RoomId, "ID")
+	room, err := redisHandlers.LoadRoom(ctx, rdb, evt.RoomId)
 	if err != nil {
-		log.Println("Erro ao buscar sala:", err)
+		utils.LogDebug("Erro ao buscar sala: " + err.Error())
 		return
 	}
 
-	fmt.Print(roomId)
+	instanceID := utils.GetInstanceID()
+	ok, err := redisHandlers.AcquireRoomLock(ctx, rdb, room.ID, instanceID, 5*time.Second)
+	if err != nil {
+		utils.LogDebug("Erro ao adquirir lock da sala: " + err.Error())
+		return
+	}
+	if !ok {
+		utils.LogDebug("a sala " + room.ID + " está sendo modificada por outra instância, tente novamente")
+		return
+	}
+	defer redisHandlers.ReleaseRoomLock(ctx, rdb, room.ID, instanceID)
 
-	// ScheduleNextStep dentro da função de mensagem
-	// redisHandlers.ScheduleNextStep(ctx, rdb, roomId, eventQueue.Event{
-	// 	Type:      "no_contest",
-	// 	PlayerId:  "system",
-	// 	TimeoutMs: 8000,
-	// })
+	// Process WebSocket message
+	switch room.State {
+	case rs.WaitingGameStart:
+		if evt.Type == "start" {
+			err := processWsMsg.OnStartAction(evt, ctx, rdb, room)
+			if err != nil {
+				utils.LogDebug("Error on process start: " + err.Error())
+			}
+		}
+	case rs.WaitingFirstAction:
+		if evt.Type == "action" {
+			err := processWsMsg.OnTypeAction(evt, ctx, rdb, room)
+			if err != nil {
+				utils.LogDebug("Error on process first action: " + err.Error())
+			}
+		}
+		// if evt.Type == "" {
+		//
+		// }
+		// case rs.WaitingContest:
+		// 	if evt.Type == "contest" {
+		// 		payloadMap, ok := evt.Payload.(map[string]interface{})
+		// 		if !ok {
+		// 			utils.PrintDebug("Payload contest inválido")
+		// 			return
+		// 		}
+		// 		contested, ok := payloadMap["contested"].(bool)
+		// 		if !ok {
+		// 			utils.PrintDebug("Campo 'contested' inválido")
+		// 			return
+		// 		}
 
-	// Atualize todos os jogadores (exemplo simplificado)
-	// stateBytes, _ := json.Marshal(roomData)
-	// conn.WriteMessage(websocket.TextMessage, stateBytes)
+		// 		if err := handlers.ProcessContest(ctx, rdb, room, evt, contested); err != nil {
+		// 			utils.PrintDebug("Erro ao processar contestação: " + err.Error())
+		// 		}
+		// 	}
+		// case rs.FinalizingAction:
+		// 	room.State = rs.TurnFinished
+		// case rs.TurnFinished:
+		// 	room.Turn++
+		// 	room.State = rs.WaitingAction
+	}
 }

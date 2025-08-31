@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/eventQueue"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
 	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/redis/go-redis/v9"
 )
 
-func UseAssassin(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eventQueue.Event) error {
+func UseAssassin(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *rs.Event) error {
 	// Processa a ação de usar o Assassino
 	var payload map[string]interface{}
 	if raw, ok := evt.Payload.(json.RawMessage); ok {
@@ -46,7 +45,7 @@ func UseAssassin(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eve
 	room.State = rs.WaitingContest
 
 	// Agenda o próximo evento para o tempo de contestação (ex: 8 segundos)
-	redisHandlers.ScheduleNextStep(ctx, rdb, room.ID, eventQueue.Event{
+	redisHandlers.ScheduleNextStep(ctx, rdb, room.ID, rs.Event{
 		Type:      "no_contest",
 		PlayerId:  "system",
 		TimeoutMs: 8000,

@@ -3,7 +3,7 @@ package redisHandlers
 import (
 	"context"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/eventQueue"
+	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -16,5 +16,5 @@ import (
 //	evt: evento a ser agendado (struct Event)
 //
 // Não retorna erro, apenas agenda a execução.
-func ScheduleNextStep(ctx context.Context, rdb *redis.Client, RoomId string, evt eventQueue.Event) {
+func ScheduleNextStep(ctx context.Context, rdb *redis.Client, RoomId string, evt rs.Event) {
 }

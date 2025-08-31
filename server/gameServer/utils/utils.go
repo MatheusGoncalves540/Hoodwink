@@ -56,7 +56,7 @@ func StringContains(slice []string, item string) bool {
 }
 
 // if DEBUG = true, print on console
-func PrintDebug(msg any) {
+func LogDebug(msg any) {
 	if os.Getenv("DEBUG") == "true" {
 		fmt.Println(msg)
 	}

@@ -119,13 +119,13 @@ func HandleUseMinhoca(ctx context.Context, room *roomStructs.Room, evt *roomStru
 
 ---
 
-### 3\. 🧩 Ligar no `ProcessEvent`
+### 3\. 🧩 Ligar no `ProcessWebsocketMessage`
 
 Abra:
 
 **`gameServer/game/room/eventQueue/eventQueue.go`**
 
-E modifique o `ProcessEvent` para adicionar a nova jogada:
+E modifique o `ProcessWebsocketMessage` para adicionar a nova jogada:
 
 ```go
 switch evt.Type {
@@ -199,6 +199,6 @@ Para adicionar uma nova carta e jogada:
 | --- | --- |
 | Definir a carta | `roomStructs/cards.go` |
 | Criar handler da jogada | `handlers/actions.go` |
-| Ligar no ProcessEvent | `eventQueue/eventQueue.go` |
+| Ligar no ProcessWebsocketMessage | `eventQueue/eventQueue.go` |
 | Definir efeito da carta | `ApplyPendingEffects` em `eventQueue.go` |
 | Criar payload de teste | Cliente/WebSocket |

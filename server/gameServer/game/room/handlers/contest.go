@@ -3,14 +3,13 @@ package handlers
 import (
 	"context"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/eventQueue"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
 	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/redis/go-redis/v9"
 )
 
 // Processa a contestação da jogada
-func ProcessContest(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *eventQueue.Event, contested bool) error {
+func ProcessContest(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *rs.Event, contested bool) error {
 	if contested {
 		// A contestação foi válida. Verifica se o jogador realmente tinha a carta.
 		hasCard := true // Aqui, você deve verificar se o jogador realmente tem a carta. Simplificado aqui.

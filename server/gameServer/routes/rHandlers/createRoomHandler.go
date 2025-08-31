@@ -43,15 +43,15 @@ func (h *Handler) GetTicket(w http.ResponseWriter, r *http.Request) {
 		utils.SendError(w, "JSON inválido", http.StatusBadRequest)
 		return
 	}
-	utils.PrintDebug(roomId)
-	utils.PrintDebug(reqBody)
+	utils.LogDebug(roomId)
+	utils.LogDebug(reqBody)
 
 	//TODO: Validar se a sala existe e se o playerId é válido e apto para entrar na sala
 
 	// Geração do ticket JWT
 	ticket, err := h.JWTService.GenerateToken(reqBody.PlayerId, roomId)
 	if err != nil {
-		utils.PrintDebug(err)
+		utils.LogDebug(err)
 		utils.SendError(w, "Erro ao gerar ticket", http.StatusInternalServerError)
 		return
 	}

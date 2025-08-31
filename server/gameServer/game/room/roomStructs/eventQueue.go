@@ -1,4 +1,4 @@
-package eventQueue
+package roomStructs
 
 import "time"
 

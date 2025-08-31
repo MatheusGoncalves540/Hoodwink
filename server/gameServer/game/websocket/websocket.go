@@ -1,9 +1,11 @@
 package websocket
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
+	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/websocket/auth"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
@@ -55,7 +57,12 @@ func WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 				break
 			}
 
-			OnMessage(ctx, conn, rdb, msg)
+			var event rs.Event
+			if err := json.Unmarshal(msg, &event); err != nil {
+				LogError("Erro ao decodificar mensagem", err)
+				break
+			}
+			OnMessage(ctx, conn, rdb, &event)
 		}
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/eventQueue"
+	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -12,7 +12,7 @@ import (
 // Usa BRPop para esperar até que um evento esteja disponível.
 // Retorna o evento desempilhado ou nil se não houver evento.
 // Em caso de erro de deserialização ou Redis, retorna o erro correspondente.
-func PopEvent(ctx context.Context, rdb *redis.Client, RoomId string) (*eventQueue.Event, error) {
+func PopEvent(ctx context.Context, rdb *redis.Client, RoomId string) (*rs.Event, error) {
 	// Busca o próximo evento na fila (bloqueante até existir)
 	res, err := rdb.BRPop(ctx, 0, "room:"+RoomId+":eventQueue").Result()
 	if err != nil {
@@ -21,7 +21,7 @@ func PopEvent(ctx context.Context, rdb *redis.Client, RoomId string) (*eventQueu
 	if len(res) < 2 {
 		return nil, nil // nenhum evento disponível
 	}
-	var evt eventQueue.Event
+	var evt rs.Event
 	// Converte o JSON armazenado em struct Event
 	err = json.Unmarshal([]byte(res[1]), &evt)
 	if err != nil {
