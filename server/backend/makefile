@@ -14,7 +14,7 @@ REDIS_IMAGE := docker.io/redis/redis-stack-server:latest
 
 .PHONY: all db-up redis-up start stop clean redis-conf install dev
 
-all: db-up redis-up install dev
+all: redis-conf db-up redis-up install dev
 
 ## Cria o diretório e sobe o container do PostgreSQL
 db-up:
