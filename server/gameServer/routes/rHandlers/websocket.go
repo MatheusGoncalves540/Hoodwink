@@ -7,6 +7,7 @@ import (
 	"os"
 
 	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/rHandlers/wsHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
@@ -32,19 +33,28 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
+		// Valida e faz upgrade para WebSocket
 		conn, claims, err := wsHandlers.ValidateConnection(w, r, h.JWTService, upgrader)
 		if err != nil {
 			utils.SendError(w, "WebSocket upgrade failed", http.StatusInternalServerError)
 			return
 		}
 
-		defer func() {
-			wsHandlers.OnDisconnect(conn)
-			conn.Close()
-		}()
+		playerId := claims["playerId"].(string)
+		roomId := claims["roomId"].(string)
 
+		// 1️⃣ Adiciona conexão ao ConnManager
+		wsRoom.ConnManager.Add(roomId, playerId, conn)
+		defer wsRoom.ConnManager.Remove(roomId, playerId)
+
+		// 2️⃣ Assina canal Redis Pub/Sub da sala
+		wsRoom.SubscribeRoomBroadcast(ctx, rdb, roomId)
+
+		// 3️⃣ Chamadas de hook
 		wsHandlers.OnConnect(conn)
+		defer wsHandlers.OnDisconnect(conn)
 
+		// Loop de leitura das mensagens do cliente
 		for {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
@@ -52,12 +62,20 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 				break
 			}
 
+			// Decodifica evento
 			var event rs.Event
 			if err := json.Unmarshal(msg, &event); err != nil {
 				utils.LogDebug(fmt.Sprintf("Erro ao decodificar mensagem: %v", err))
 				break
 			}
+
+			// Processa mensagem normalmente
 			wsHandlers.OnMessage(ctx, conn, rdb, &event, claims)
+
+			// 4️⃣ Publica o evento para outras instâncias
+			if pubMsg, err := json.Marshal(event); err == nil {
+				wsRoom.PublishRoomBroadcast(ctx, rdb, roomId, pubMsg)
+			}
 		}
 	}
 }
