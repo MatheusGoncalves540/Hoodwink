@@ -40,45 +40,5 @@ func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, evt
 	defer redisHandlers.ReleaseRoomLock(ctx, rdb, room.ID, instanceID)
 
 	// Process WebSocket message
-	switch room.State {
-	case rs.WaitingGameStart:
-		if evt.Type == "start" {
-			err := processWsMsg.OnStartAction(evt, ctx, rdb, room)
-			if err != nil {
-				utils.LogDebug("Error on process start: " + err.Error())
-			}
-		}
-	case rs.WaitingFirstAction:
-		if evt.Type == "action" {
-			err := processWsMsg.OnTypeAction(evt, ctx, rdb, room)
-			if err != nil {
-				utils.LogDebug("Error on process first action: " + err.Error())
-			}
-		}
-		// if evt.Type == "" {
-		//
-		// }
-		// case rs.WaitingContest:
-		// 	if evt.Type == "contest" {
-		// 		payloadMap, ok := evt.Payload.(map[string]interface{})
-		// 		if !ok {
-		// 			utils.PrintDebug("Payload contest inválido")
-		// 			return
-		// 		}
-		// 		contested, ok := payloadMap["contested"].(bool)
-		// 		if !ok {
-		// 			utils.PrintDebug("Campo 'contested' inválido")
-		// 			return
-		// 		}
-
-		// 		if err := handlers.ProcessContest(ctx, rdb, room, evt, contested); err != nil {
-		// 			utils.PrintDebug("Erro ao processar contestação: " + err.Error())
-		// 		}
-		// 	}
-		// case rs.FinalizingAction:
-		// 	room.State = rs.TurnFinished
-		// case rs.TurnFinished:
-		// 	room.Turn++
-		// 	room.State = rs.WaitingAction
-	}
+	processWsMsg.ProcessWebSocketMessage(evt, ctx, rdb, room)
 }
