@@ -1,19 +1,23 @@
-package websocket
+package rHandlers
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/websocket/auth"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/rHandlers/wsHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 )
 
 var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true }, // ajuste para produção
+	CheckOrigin: func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		return origin == os.Getenv("FRONTEND_URL") || origin == ""
+	},
 }
 
 type WebSocketPayload struct {
@@ -24,45 +28,36 @@ type WebSocketPayload struct {
 }
 
 // WebSocketHandler lida com conexões WS
-func WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
+func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		claims, err := auth.ParseTokenFromRequest(r)
-		if err != nil {
-			utils.SendError(w, "Unauthorized: "+err.Error(), http.StatusUnauthorized)
-			return
-		}
-
-		playerID, _ := claims["playerId"].(string)
-		roomID, _ := claims["roomId"].(string)
-		fmt.Println("Usuário autenticado via JWT:", playerID, "na sala", roomID)
-
-		conn, err := ValidateConnection(w, r, upgrader)
+		conn, claims, err := wsHandlers.ValidateConnection(w, r, h.JWTService, upgrader)
 		if err != nil {
 			utils.SendError(w, "WebSocket upgrade failed", http.StatusInternalServerError)
 			return
 		}
+
 		defer func() {
-			OnDisconnect(conn)
+			wsHandlers.OnDisconnect(conn)
 			conn.Close()
 		}()
 
-		OnConnect(conn)
+		wsHandlers.OnConnect(conn)
 
 		for {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
-				LogError("Erro ao ler mensagem", err)
+				utils.LogDebug(fmt.Sprintf("Erro ao ler mensagem: %v", err))
 				break
 			}
 
 			var event rs.Event
 			if err := json.Unmarshal(msg, &event); err != nil {
-				LogError("Erro ao decodificar mensagem", err)
+				utils.LogDebug(fmt.Sprintf("Erro ao decodificar mensagem: %v", err))
 				break
 			}
-			OnMessage(ctx, conn, rdb, &event)
+			wsHandlers.OnMessage(ctx, conn, rdb, &event, claims)
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package websocket
+package wsHandlers
 
 import (
 	"log"

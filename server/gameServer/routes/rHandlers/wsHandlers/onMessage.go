@@ -1,4 +1,4 @@
-package websocket
+package wsHandlers
 
 import (
 	"context"
@@ -8,12 +8,13 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
 	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 )
 
 // Função chamada ao receber uma mensagem do cliente
-func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, evt *rs.Event) {
+func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, evt *rs.Event, claims jwt.MapClaims) {
 	// Verify if event is valid
 	if evt == nil {
 		utils.LogDebug("Evento inválido")
