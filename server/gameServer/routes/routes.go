@@ -15,7 +15,7 @@ func SetupRoutes(handler *rHandlers.Handler, rdb *redis.Client) http.Handler {
 
 	routes.Post("/newRoom", handler.CreateRoom)
 
-	routes.Post("/getTicket/{RoomId}", handler.GetTicket)
+	routes.Post("/getTicket/{RoomId}", handler.GetTicket(rdb))
 
 	routes.Route("/game", func(r chi.Router) {
 		r.Get("/", handler.WebSocketHandler(rdb))
