@@ -20,6 +20,7 @@ func SendJSON(w http.ResponseWriter, status int, payload interface{}) {
 
 // SendSuccess envia uma resposta JSON de sucesso com dados opcionais
 func SendSuccess(w http.ResponseWriter, data interface{}, message string) {
+	LogDebug(message)
 	SendJSON(w, http.StatusOK, APIResponse{
 		Data:    data,
 		Message: message,
@@ -28,6 +29,7 @@ func SendSuccess(w http.ResponseWriter, data interface{}, message string) {
 
 // SendError envia uma resposta JSON de erro com status HTTP e mensagem
 func SendError(w http.ResponseWriter, errMessage string, status int) {
+	LogDebug(errMessage)
 	SendJSON(w, status, APIResponse{
 		Error:   errMessage,
 		Message: "Erro ao processar a requisição",
