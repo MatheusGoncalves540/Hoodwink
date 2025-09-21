@@ -5,9 +5,12 @@ import "time"
 type GameState string
 
 type Player struct {
-	Id    string   `json:"id"`
-	Cards []string `json:"cards"`
-	Coins int      `json:"coins"`
+	Id        string   `json:"id"`
+	Name      string   `json:"name"`
+	Cards     []string `json:"cards"`
+	Coins     int      `json:"coins"`
+	Connected bool     `json:"connected"`
+	Alive     bool     `json:"alive"`
 }
 
 type Move struct {
