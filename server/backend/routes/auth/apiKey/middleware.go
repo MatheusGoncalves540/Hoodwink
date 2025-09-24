@@ -21,7 +21,7 @@ func APIKeyMiddleware(next http.Handler, handler handlers.Handler) http.Handler 
 			return
 		}
 
-		systemName, err := handler.NewDBService.VerifyApiKey(authHeader)
+		systemName, err := handler.DBService.VerifyApiKey(authHeader)
 		if err != nil {
 			utils.SendError(w, "API Key inválida", http.StatusUnauthorized)
 			return
