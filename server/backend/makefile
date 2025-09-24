@@ -4,6 +4,18 @@
 POSTGRES_VOLUME := ./postgres
 REDIS_CONF := ./redis.conf
 
+# Arquivo de ambiente (pode sobrescrever via: make ENV_FILE=../.env)
+ENV_FILE ?= .env
+
+# Carrega variáveis do .env se existir (linhas no formato KEY=VAL)
+ifneq (,$(wildcard $(ENV_FILE)))
+include $(ENV_FILE)
+export $(shell sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p' $(ENV_FILE))
+endif
+
+# URL de conexão construída
+DB_URL := postgres://$(PG_USER):$(PG_PASS)@$(PG_HOST):$(PG_PORT)/$(PG_NAME)?sslmode=$(PG_SSLMODE)
+
 # Containers
 POSTGRES_CONTAINER := postgresdb
 REDIS_CONTAINER := redisdb
@@ -12,7 +24,7 @@ REDIS_CONTAINER := redisdb
 POSTGRES_IMAGE := docker.io/library/postgres
 REDIS_IMAGE := docker.io/redis/redis-stack-server:latest
 
-.PHONY: all db-up redis-up start stop clean redis-conf install dev
+.PHONY: all db-up redis-up start stop clean redis-conf install dev migrate migrate-down migrate-redo migrate-status migrate-create help
 
 all: redis-conf db-up redis-up install dev
 
@@ -72,3 +84,41 @@ install:
 ## Inicia o projeto
 dev:
 	-air
+
+# Goose / migrations
+GOOSE ?= goose
+MIGRATIONS_DIR ?= $(CURDIR)/db/migrations
+
+## Sobe (aplica) todas as migrations pendentes
+migrate:
+	$(GOOSE) -dir $(MIGRATIONS_DIR) postgres "$(DB_URL)" up
+
+## Desfaz a última migration (down 1)
+migrate-down:
+	$(GOOSE) -dir $(MIGRATIONS_DIR) postgres "$(DB_URL)" down
+
+## Refaz a última migration
+migrate-redo:
+	$(GOOSE) -dir $(MIGRATIONS_DIR) postgres "$(DB_URL)" redo
+
+## Mostra status das migrations
+migrate-status:
+	$(GOOSE) -dir $(MIGRATIONS_DIR) postgres "$(DB_URL)" status
+
+## Cria nova migration (ex: make migrate-create name=create_users_table)
+migrate-create:
+	@test $(name) || (echo 'Uso: make migrate-create name=nome_da_migration'; exit 1)
+	$(GOOSE) -dir $(MIGRATIONS_DIR) create $(name) sql
+
+## Ajuda (lista alvos principais)
+help:
+	@echo 'Alvos disponíveis:'
+	@echo '  make all                -> Sobe redis+postgres e inicia dev'
+	@echo '  make db-up              -> Sobe apenas Postgres'
+	@echo '  make redis-up           -> Sobe apenas Redis'
+	@echo '  make migrate            -> Aplica migrations pendentes'
+	@echo '  make migrate-down       -> Desfaz última migration'
+	@echo '  make migrate-redo       -> Refaz última migration'
+	@echo '  make migrate-status     -> Mostra status'
+	@echo '  make migrate-create name=descr -> Cria arquivo de migration SQL'
+	@echo 'Variáveis úteis override: DB_HOST DB_PORT DB_USER DB_PASSWORD DB_NAME DB_SSLMODE ENV_FILE'

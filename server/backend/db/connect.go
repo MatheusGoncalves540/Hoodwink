@@ -26,7 +26,12 @@ func ConnectDB() (*gorm.DB, error) {
 		log.Fatal("Erro ao conectar ao banco:", err)
 	}
 
-	database.AutoMigrate(&models.User{})
+	if os.Getenv("DEBUG") == "true" {
+		database.AutoMigrate(
+			&models.User{},
+			&models.ApiKey{},
+		)
+	}
 
 	return database, nil
 }
