@@ -28,9 +28,7 @@ func SetupRoutes(handler *handlers.Handler) http.Handler {
 		r.Use(func(next http.Handler) http.Handler {
 			return apiKey.APIKeyMiddleware(next, *handler)
 		})
-		r.Get("/getUserInfoById", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("OK"))
-		})
+		r.Get("/getUserInfoById/{id}", handler.GetUserInfoByIDHandler)
 	})
 
 	// Rotas protegidas com JWT
