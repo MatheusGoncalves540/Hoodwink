@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/MatheusGoncalves540/Hoodwink/db/models"
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"gorm.io/gorm"
 )
 
@@ -27,8 +27,12 @@ func (s *UserService) FindOrCreateOAuthUser(email, provider, username string) (*
 			if username == "" {
 				return nil, ErrMissingUsername
 			}
+			uuidv7, err := uuid.NewV7()
+			if err != nil {
+				return nil, err
+			}
 			user = models.User{
-				ID:       uuid.New().String(),
+				ID:       uuidv7.String(),
 				Email:    email,
 				Provider: provider,
 				Username: username,
