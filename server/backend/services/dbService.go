@@ -17,7 +17,7 @@ func NewDBService(db *gorm.DB) *DBService {
 
 func (dbS *DBService) VerifyApiKey(apikey string) (*models.ApiKey, error) {
 	var result models.ApiKey
-	err := dbS.db.Where("ApiKey = ?", apikey).First(&result).Error
+	err := dbS.db.Where("apikey = ?", apikey).First(&result).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

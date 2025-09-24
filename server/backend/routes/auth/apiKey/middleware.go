@@ -21,12 +21,12 @@ func APIKeyMiddleware(next http.Handler, handler handlers.Handler) http.Handler 
 			return
 		}
 
-		systemName, err := handler.DBService.VerifyApiKey(authHeader)
+		keyData, err := handler.DBService.VerifyApiKey(authHeader)
 		if err != nil {
 			utils.SendError(w, "API Key inválida", http.StatusUnauthorized)
 			return
 		}
-		ctx := context.WithValue(r.Context(), ApiKeyContextKey, systemName)
+		ctx := context.WithValue(r.Context(), ApiKeyContextKey, keyData.SystemName)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MatheusGoncalves540/Hoodwink/utils"
+	"github.com/go-chi/chi/v5"
 )
 
 // Handler para pegar informações do usuário via ID externamente
@@ -14,7 +15,8 @@ type GetUserInfoByIDPayload struct {
 }
 
 func (h *Handler) GetUserInfoByIDHandler(w http.ResponseWriter, r *http.Request) {
-	userID := r.URL.Query().Get("id")
+	// Pega o parâmetro {id} da rota usando chi
+	userID := chi.URLParam(r, "id")
 	if userID == "" {
 		utils.SendError(w, "ID do usuário não especificado", http.StatusBadRequest)
 		return
