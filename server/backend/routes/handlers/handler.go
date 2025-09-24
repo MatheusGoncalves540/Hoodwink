@@ -5,15 +5,15 @@ import (
 )
 
 type Handler struct {
-	UserService  *services.UserService
-	NewDBService *services.DBService
+	UserService *services.UserService
+	DBService   *services.DBService
 	// RoomService    *services.RoomService
 }
 
 func NewHandler(s *services.Services) *Handler {
 	return &Handler{
 		s.UserService,
-		s.NewDBService,
+		s.DBService,
 		// s.RoomService,
 	}
 }
