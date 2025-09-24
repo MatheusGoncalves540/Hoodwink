@@ -1,8 +1,6 @@
 -- +goose Up
-CREATE TABLE api_keys (
-    apikey UUID PRIMARY KEY,
-    system_name VARCHAR(255) UNIQUE NOT NULL
-);
+INSERT INTO api_keys (apikey, system_name)
+VALUES (gen_random_uuid(), 'gameServer');
 
 -- +goose Down
-DROP TABLE IF EXISTS api_keys;
+DELETE FROM api_keys WHERE system_name = 'gameServer';
