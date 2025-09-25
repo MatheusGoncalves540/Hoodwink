@@ -5,13 +5,15 @@ import (
 )
 
 type Handler struct {
-	RoomService *services.RoomService
-	JWTService  *services.JWTService
+	RoomService    *services.RoomService
+	JWTService     *services.JWTService
+	BackendService *services.BackendService
 }
 
 func NewHandler(s *services.Services) *Handler {
 	return &Handler{
 		s.RoomService,
 		s.JWTService,
+		s.BackendService,
 	}
 }

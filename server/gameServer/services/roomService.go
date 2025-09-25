@@ -51,8 +51,11 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 	return room, nil
 }
 
-func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, roomId string, playerId string) (bool, string) {
-	//TODO fazer post para o backend para verificar se o playerid existe
+func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, backendService *BackendService, roomId string, playerId string) (bool, string) {
+	_, err := backendService.GetToBackend("", "/getUserInfoById/"+playerId)
+	if err != nil {
+		return false, "Erro ao verificar player no backend"
+	}
 
 	room, err := redisHandlers.LoadRoom(r.Context(), rdb, roomId)
 	if err != nil {
