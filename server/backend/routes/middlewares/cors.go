@@ -1,11 +1,21 @@
 // middlewares/cors.go
 package middlewares
 
-import "net/http"
+import (
+	"net/http"
+	"os"
+)
 
 func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		if os.Getenv("CORS") == "false" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Configura cabeçalhos CORS
+		w.Header().Set("Access-Control-Allow-Origin", os.Getenv("FRONTEND_URL"))
+		w.Header().Set("Access-Control-Allow-Origin", os.Getenv("GAME_SERVER_URL"))
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
