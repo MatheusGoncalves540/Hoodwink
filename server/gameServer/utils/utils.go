@@ -34,6 +34,7 @@ func ValidateInfos(w http.ResponseWriter, toValidate interface{}) bool {
 	return true
 }
 
+// GenerateNewId cria um ID de 16 caracteres baseado em timestamp e fator randômico
 func GenerateNewId() string {
 	rand.NewSource(time.Now().UnixNano())
 	randomFactor := rand.Float64() * rand.Float64()
