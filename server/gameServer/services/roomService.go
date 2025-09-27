@@ -9,7 +9,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
-	"github.com/google/uuid"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -22,7 +22,7 @@ func NewRoomService(redisClient *redis.Client) *RoomService {
 }
 
 func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest) (*roomStructs.Room, error) {
-	RoomId := uuid.New().String()
+	RoomId := utils.GenerateNewId()
 	room := &roomStructs.Room{
 		ID:                 RoomId,
 		Name:               roomData.RoomName,
