@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -53,6 +54,16 @@ func StringContains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+// GetPlayerByID retorna o ponteiro para o jogador com o ID fornecido, ou nil se não encontrado.
+func GetPlayerByID(room *roomStructs.Room, playerID string) *roomStructs.Player {
+	for i := range room.Players {
+		if room.Players[i].Id == playerID {
+			return &room.Players[i]
+		}
+	}
+	return nil
 }
 
 // if DEBUG = true, print on console
