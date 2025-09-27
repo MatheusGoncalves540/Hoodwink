@@ -26,10 +26,10 @@ var upgrader = websocket.Upgrader{
 }
 
 type WebSocketPayload struct {
-	Type     string      `json:"type"`
-	PlayerId string      `json:"playerId"`
-	RoomId   string      `json:"roomId"`
-	Payload  interface{} `json:"payload"`
+	Type     string `json:"type"`
+	PlayerId string `json:"playerId"`
+	RoomId   string `json:"roomId"`
+	Payload  any    `json:"payload"`
 }
 
 // WebSocketHandler lida com conexões WS
@@ -65,6 +65,14 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
 				utils.LogDebug(fmt.Sprintf("Erro ao ler mensagem: %v", err))
+				break
+			}
+			utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", playerId, roomId))
+
+			roomId, instanceId, registered, err := redisHandlers.GetPlayerRegistrationInfo(ctx, rdb, playerId)
+			if err != nil || !registered || roomId == "" || instanceId == "" {
+				utils.LogDebug("Conexão perdida ou não registrada")
+				conn.Close()
 				break
 			}
 
