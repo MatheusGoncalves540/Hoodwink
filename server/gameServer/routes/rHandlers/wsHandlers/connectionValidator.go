@@ -57,6 +57,7 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		fmt.Print("Verify FRONTEND_URL, WebSocket upgrade error: ", err)
 		return nil, nil, err
 	}
 
