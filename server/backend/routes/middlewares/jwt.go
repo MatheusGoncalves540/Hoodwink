@@ -1,10 +1,11 @@
-package jwtoken
+package middlewares
 
 import (
 	"context"
 	"net/http"
 	"strings"
 
+	"github.com/MatheusGoncalves540/Hoodwink/routes/auth/jwtoken"
 	"github.com/MatheusGoncalves540/Hoodwink/utils"
 )
 
@@ -21,7 +22,7 @@ func JWTMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		user, err := ValidateJWT(tokenStr)
+		user, err := jwtoken.ValidateJWT(tokenStr)
 		if err != nil {
 			utils.SendError(w, "Token inválido", http.StatusUnauthorized)
 			return

@@ -1,4 +1,4 @@
-package apiKey
+package middlewares
 
 import (
 	"context"
@@ -7,8 +7,6 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink/routes/handlers"
 	"github.com/MatheusGoncalves540/Hoodwink/utils"
 )
-
-type contextKey string
 
 const ApiKeyContextKey contextKey = "apiKey"
 
