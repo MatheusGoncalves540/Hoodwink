@@ -47,9 +47,9 @@ func (s *UserService) FindOrCreateOAuthUser(email, provider, username string) (*
 	return &user, nil
 }
 
-func (s *UserService) GetUserByID(userID string) (*models.User, error) {
+func (s *UserService) GetUserByID(playerID string) (*models.User, error) {
 	var user models.User
-	if err := s.db.First(&user, "id = ?", userID).Error; err != nil {
+	if err := s.db.First(&user, "id = ?", playerID).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

@@ -13,8 +13,8 @@ import (
 )
 
 type ClaimsHoodwink struct {
-	UserId string `json:"userId"`
-	RoomId string `json:"roomId"`
+	PlayerID string `json:"playerId"`
+	RoomId   string `json:"roomId"`
 	jwt.RegisteredClaims
 }
 
@@ -38,7 +38,7 @@ func NewJWTService() *JWTService {
 	return &JWTService{secret: secret}
 }
 
-func (j *JWTService) GenerateToken(userId, roomId string) (string, error) {
+func (j *JWTService) GenerateToken(playerId, roomId string) (string, error) {
 	expStr := os.Getenv("JWT_EXPIRATION")
 	expInt := 2 // default value
 	if expStr != "" {
@@ -47,8 +47,8 @@ func (j *JWTService) GenerateToken(userId, roomId string) (string, error) {
 		}
 	}
 	claims := ClaimsHoodwink{
-		UserId: userId,
-		RoomId: roomId,
+		PlayerID: playerId,
+		RoomId:   roomId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expInt))),
 		},

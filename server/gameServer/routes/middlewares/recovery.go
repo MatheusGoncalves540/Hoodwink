@@ -1,8 +1,11 @@
 package middlewares
 
 import (
+	"bufio"
 	"context"
+	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -56,12 +59,35 @@ func RequestMiddleware(next http.Handler) http.Handler {
 
 // responseWriter captura status code
 type responseWriter struct {
-	http.ResponseWriter
-	statusCode int
+	ResponseWriter http.ResponseWriter
+	statusCode     int
+	wroteHeader    bool
+}
+
+// Implementa Header para compatibilidade com http.ResponseWriter
+func (rw *responseWriter) Header() http.Header {
+	return rw.ResponseWriter.Header()
+}
+
+// Implementa Write para compatibilidade com http.ResponseWriter
+func (rw *responseWriter) Write(b []byte) (int, error) {
+	return rw.ResponseWriter.Write(b)
 }
 
 // Sobrescreve WriteHeader para registrar status
 func (rw *responseWriter) WriteHeader(code int) {
-	rw.statusCode = code
-	rw.ResponseWriter.WriteHeader(code)
+	if !rw.wroteHeader {
+		rw.statusCode = code
+		rw.ResponseWriter.WriteHeader(code)
+		rw.wroteHeader = true
+	}
+}
+
+// Implementa http.Hijacker para suportar WebSocket
+func (rw *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hj, ok := rw.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, fmt.Errorf("ResponseWriter does not implement http.Hijacker")
+	}
+	return hj.Hijack()
 }

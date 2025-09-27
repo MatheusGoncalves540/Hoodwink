@@ -16,13 +16,13 @@ type GetUserInfoByIDPayload struct {
 
 func (h *Handler) GetUserInfoByIDHandler(w http.ResponseWriter, r *http.Request) {
 	// Pega o parâmetro {id} da rota usando chi
-	userID := chi.URLParam(r, "id")
-	if userID == "" {
+	playerID := chi.URLParam(r, "id")
+	if playerID == "" {
 		utils.SendError(w, "ID do usuário não especificado", http.StatusBadRequest)
 		return
 	}
 
-	user, err := h.UserService.GetUserByID(userID)
+	user, err := h.UserService.GetUserByID(playerID)
 	if err != nil {
 		utils.SendError(w, "Erro ao buscar informações do usuário", http.StatusInternalServerError)
 		return
