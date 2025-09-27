@@ -25,8 +25,12 @@ func main() {
 	services := services.SetupServices(redisClient)
 	handler := rHandlers.NewHandler(services)
 
+	// Inicia o serviço de heartbeat
+	services.HeartbeatService.Start()
+	defer services.HeartbeatService.Stop()
+
 	routes := routes.SetupRoutes(handler, redisClient)
 
-	log.Printf("Servidor ouvindo em %s", os.Getenv("GAME_SERVER_URL"))
+	log.Printf("Servidor ouvindo em %s (Instância: %s)", os.Getenv("GAME_SERVER_URL"), config.InstanceID)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), routes))
 }

@@ -20,6 +20,10 @@ func SetupRoutes(handler *rHandlers.Handler, rdb *redis.Client) http.Handler {
 
 	routes.Post("/getTicket/{RoomId}", handler.GetTicket(rdb))
 
+	// Rotas para debug e monitoramento de instâncias
+	routes.Get("/instances/status", handler.GetInstancesStatus(rdb))
+	routes.Post("/instances/cleanup", handler.CleanupOrphanedPlayers(rdb))
+
 	routes.Route("/game", func(r chi.Router) {
 		r.Get("/", handler.WebSocketHandler(rdb))
 	})

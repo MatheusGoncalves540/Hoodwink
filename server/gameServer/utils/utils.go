@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -70,6 +71,15 @@ func GetPlayerByID(room *roomStructs.Room, playerID string) *roomStructs.Player 
 // if DEBUG = true, print on console
 func LogDebug(msg any) {
 	if os.Getenv("DEBUG") == "true" {
-		fmt.Println(msg)
+		log.Println(msg)
 	}
+}
+
+func MustEnvInt(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
+		if i, err := strconv.Atoi(v); err == nil {
+			return i
+		}
+	}
+	return def
 }

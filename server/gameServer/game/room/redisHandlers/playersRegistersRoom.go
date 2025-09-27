@@ -2,6 +2,8 @@ package redisHandlers
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
@@ -9,10 +11,13 @@ import (
 )
 
 // RegisterPlayerInRoom registra no Redis que o player está conectado em uma sala.
-// Não adiciona o player na struct da sala, apenas mantém o vínculo player → room.
-// O TTL pode ser usado para expirar automaticamente caso a conexão seja perdida.
+// O formato agora inclui a instanceID: "roomId:instanceId"
+// Com TTL sincronizado com o heartbeat da instância.
 func RegisterPlayerInRoom(ctx context.Context, rdb *redis.Client, playerId, roomId string) error {
-	return rdb.Set(ctx, "player:"+playerId+":room", roomId, 0).Err()
+	key := fmt.Sprintf("player:%s:room", playerId)
+	value := fmt.Sprintf("%s:%s", roomId, config.InstanceID)
+	// TTL igual ao heartbeat (10s)
+	return rdb.Set(ctx, key, value, 10*time.Second).Err()
 }
 
 // UnregisterPlayerFromRoom remove do Redis o vínculo de um player com uma sala.
@@ -22,16 +27,60 @@ func UnregisterPlayerFromRoom(ctx context.Context, rdb *redis.Client, playerId s
 }
 
 // GetRegisteredRoomForPlayer retorna a sala em que o player está registrado.
-// Retorno: roomId, bool (true se está registrado), erro do Redis.
+// Agora lida com o formato "roomId:instanceId" e verifica se a instância está viva.
+// Retorno: roomId, bool (true se está registrado e instância viva), erro do Redis.
 func GetRegisteredRoomForPlayer(ctx context.Context, rdb *redis.Client, playerId string) (string, bool, error) {
-	roomId, err := rdb.Get(ctx, "player:"+playerId+":room").Result()
+	value, err := rdb.Get(ctx, "player:"+playerId+":room").Result()
 	if err == redis.Nil {
 		return "", false, nil // player não está em nenhuma sala
 	}
 	if err != nil {
 		return "", false, err // erro de comunicação com Redis
 	}
+
+	// Parse do formato "roomId:instanceId"
+	parts := strings.Split(value, ":")
+	if len(parts) != 2 {
+		// Formato antigo ou inválido, remove registro
+		UnregisterPlayerFromRoom(ctx, rdb, playerId)
+		return "", false, nil
+	}
+
+	roomId := parts[0]
+	instanceId := parts[1]
+
+	// Verifica se a instância ainda está viva
+	instanceKey := fmt.Sprintf("instance:%s:alive", instanceId)
+	_, err = rdb.Get(ctx, instanceKey).Result()
+	if err == redis.Nil {
+		// Instância morreu, remove registro do player
+		UnregisterPlayerFromRoom(ctx, rdb, playerId)
+		return "", false, nil
+	}
+	if err != nil {
+		return "", false, err // erro de comunicação com Redis
+	}
+
 	return roomId, true, nil
+}
+
+// GetPlayerRegistrationInfo retorna informações completas do registro do player
+// Retorno: roomId, instanceId, bool (registrado), erro
+func GetPlayerRegistrationInfo(ctx context.Context, rdb *redis.Client, playerId string) (string, string, bool, error) {
+	value, err := rdb.Get(ctx, "player:"+playerId+":room").Result()
+	if err == redis.Nil {
+		return "", "", false, nil
+	}
+	if err != nil {
+		return "", "", false, err
+	}
+
+	parts := strings.Split(value, ":")
+	if len(parts) != 2 {
+		return "", "", false, nil
+	}
+
+	return parts[0], parts[1], true, nil
 }
 
 // AcquirePlayerLock tenta adquirir um lock distribuído para um player.
