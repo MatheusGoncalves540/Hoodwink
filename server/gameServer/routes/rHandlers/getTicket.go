@@ -28,7 +28,7 @@ func (h *Handler) GetTicket(rdb *redis.Client) http.HandlerFunc {
 		}
 
 		// Geração do ticket JWT
-		ticket, err := h.JWTService.GenerateToken(playerClaims.Id, roomId)
+		ticket, err := h.JWTService.GenerateToken(playerClaims, roomId)
 		if err != nil {
 			utils.SendError(w, "Erro ao gerar ticket", http.StatusInternalServerError)
 			return

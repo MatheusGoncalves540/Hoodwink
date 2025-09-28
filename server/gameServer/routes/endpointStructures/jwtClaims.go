@@ -4,6 +4,7 @@ import "github.com/golang-jwt/jwt/v5"
 
 type ClaimsHoodwink struct {
 	PlayerID string `json:"playerId"`
+	Username string `json:"username"`
 	RoomId   string `json:"roomId"`
 	jwt.RegisteredClaims
 }

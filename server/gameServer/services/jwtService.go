@@ -33,7 +33,7 @@ func NewJWTService() *JWTService {
 	return &JWTService{secret: secret}
 }
 
-func (j *JWTService) GenerateToken(playerId, roomId string) (string, error) {
+func (j *JWTService) GenerateToken(player *endpointStructures.ClaimsBackend, roomId string) (string, error) {
 	expStr := os.Getenv("JWT_EXPIRATION")
 	expInt := 2 // valor padrão
 	if expStr != "" {
@@ -42,7 +42,8 @@ func (j *JWTService) GenerateToken(playerId, roomId string) (string, error) {
 		}
 	}
 	claims := endpointStructures.ClaimsHoodwink{
-		PlayerID: playerId,
+		PlayerID: player.Id,
+		Username: player.Username,
 		RoomId:   roomId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expInt))),
