@@ -16,16 +16,29 @@ func SetupRoutes(handler *rHandlers.Handler, rdb *redis.Client) http.Handler {
 
 	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
 
-	routes.Post("/newRoom", handler.CreateRoom)
-
-	routes.Post("/getTicket/{RoomId}", handler.GetTicket(rdb))
-
-	// Rotas para debug e monitoramento de instâncias
-	routes.Get("/instances/status", handler.GetInstancesStatus(rdb))
-	routes.Post("/instances/cleanup", handler.CleanupOrphanedPlayers(rdb))
-
 	routes.Route("/game", func(r chi.Router) {
 		r.Get("/", handler.WebSocketHandler(rdb))
+	})
+
+	// Rotas protegidas com JWT
+	routes.Group(func(r chi.Router) {
+		r.Use(func(next http.Handler) http.Handler {
+			return middlewares.JWTBackendMiddleware(next, handler)
+		})
+
+		r.Post("/newRoom", handler.CreateRoom)
+
+		r.Post("/getTicket/{RoomId}", handler.GetTicket(rdb))
+	})
+	// Rotas protegidas com ApiKey
+	routes.Group(func(r chi.Router) {
+		// r.Use(func(next http.Handler) http.Handler {
+		// 	return apiKey.APIKeyMiddleware(next, *handler)
+		// })
+
+		// Rotas para debug e monitoramento de instâncias
+		r.Get("/instances/status", handler.GetInstancesStatus(rdb))
+		r.Post("/instances/cleanup", handler.CleanupOrphanedPlayers(rdb))
 	})
 
 	return routes

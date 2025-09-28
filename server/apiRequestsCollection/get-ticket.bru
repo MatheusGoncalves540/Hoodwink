@@ -5,17 +5,11 @@ meta {
 }
 
 post {
-  url: {{urlGame}}/getTicket/c6b99e04-0652-4107-bf76-073fe3e6a824
-  body: json
+  url: {{urlGame}}/getTicket/1a9decb1176d480
+  body: none
   auth: none
 }
 
 headers {
   Authorization: Bearer {{authToken}}
-}
-
-body:json {
-  {
-    "playerId": "{{playerId}}"
-  }
 }

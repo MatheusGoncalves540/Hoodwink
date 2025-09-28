@@ -9,14 +9,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/contextKeys"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/google/uuid"
 )
-
-// ContextKey é uma chave customizada para armazenar dados no contexto
-type ContextKey string
-
-const RequestIDKey ContextKey = "requestID"
 
 // APIResponse é uma estrutura de resposta padronizada
 type APIResponse struct {
@@ -31,7 +27,7 @@ func RequestMiddleware(next http.Handler) http.Handler {
 		reqID := uuid.New().String()
 
 		// Anexa request ID ao contexto
-		ctx := context.WithValue(r.Context(), RequestIDKey, reqID)
+		ctx := context.WithValue(r.Context(), contextKeys.RequestIDKey, reqID)
 		r = r.WithContext(ctx)
 
 		// Cria um ResponseWriter customizado para capturar status
