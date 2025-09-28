@@ -75,6 +75,7 @@ func LogDebug(msg any) {
 	}
 }
 
+// MustEnvInt lê uma variável de ambiente e converte para int, ou retorna valor padrão se não definida ou inválida.
 func MustEnvInt(key string, def int) int {
 	if v := os.Getenv(key); v != "" {
 		if i, err := strconv.Atoi(v); err == nil {
