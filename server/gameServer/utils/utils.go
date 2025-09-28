@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -71,7 +70,7 @@ func GetPlayerByID(room *roomStructs.Room, playerID string) *roomStructs.Player 
 // if DEBUG = true, print on console
 func LogDebug(msg any) {
 	if os.Getenv("DEBUG") == "true" {
-		log.Println(msg)
+		fmt.Println(msg)
 	}
 }
 

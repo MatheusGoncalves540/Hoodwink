@@ -22,7 +22,8 @@ import (
 //
 //	error: erro de lock, serialização ou comunicação com Redis
 func SaveRoom(ctx context.Context, rdb *redis.Client, room *roomStructs.Room) error {
-	return SaveRoomWithTTL(ctx, rdb, room, 0)
+	roomAfkTtlLimit := utils.MustEnvInt("ROOM_AFK_TTL_LIMIT", 180) // 3 minutos padrão
+	return SaveRoomWithTTL(ctx, rdb, room, time.Duration(roomAfkTtlLimit)*time.Second)
 }
 
 // SaveRoomWithTTL salva o estado da sala no Redis com TTL específico
