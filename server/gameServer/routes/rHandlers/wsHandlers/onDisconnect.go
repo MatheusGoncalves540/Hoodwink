@@ -29,6 +29,26 @@ func OnDisconnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, 
 	if startTime.IsZero() {
 		redisHandlers.UnregisterPlayerFromRoom(ctx, rdb, playerId)
 	}
+
+	// Marca o jogador como desconectado na estrutura da sala
+	err = redisHandlers.SetPlayerConnectionStatus(ctx, rdb, roomId, playerId, false)
+	if err != nil {
+		utils.LogDebug("Erro ao marcar jogador como desconectado: " + err.Error())
+	}
+
+	// Verifica se a sala está vazia após a desconexão
+	isEmpty, err := redisHandlers.CheckIfRoomIsEmpty(ctx, rdb, roomId)
+	if err != nil {
+		utils.LogDebug("Erro ao verificar se sala está vazia: " + err.Error())
+	} else if isEmpty {
+		// Se a sala está vazia, define TTL de 20 segundos
+		err = redisHandlers.SetRoomTTL(ctx, rdb, roomId, 20*time.Second)
+		if err != nil {
+			utils.LogDebug("Erro ao definir TTL da sala vazia: " + err.Error())
+		} else {
+			utils.LogDebug("TTL de 20 segundos definido para sala vazia " + roomId)
+		}
+	}
+
 	utils.LogDebug("Cliente desconectado do WebSocket")
-	// Aqui você pode adicionar lógica extra, como limpar recursos
 }

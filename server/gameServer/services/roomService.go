@@ -1,8 +1,6 @@
 package services
 
 import (
-	// "github.com/MatheusGoncalves540/Hoodwink-gameServer/db/models"
-
 	"net/http"
 	"time"
 
@@ -43,7 +41,9 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		PendingEffects:     []roomStructs.Effect{},
 	}
 
-	err := redisHandlers.SaveRoom(r.Context(), s.redisClient, room)
+	roomTTL := utils.MustEnvInt("ROOM_TTL", 5)
+	// Salva a sala com TTL inicial de 5 segundos
+	err := redisHandlers.SaveRoomWithTTL(r.Context(), s.redisClient, room, time.Duration(roomTTL)*time.Second)
 	if err != nil {
 		return nil, err
 	}

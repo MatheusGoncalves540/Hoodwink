@@ -21,3 +21,13 @@ body:json {
     "MaxPlayers": 4
   }
 }
+
+script:post-response {
+  const resp = res.body;
+    if (resp.RoomId) {
+      bru.setVar('roomId', resp.RoomId);
+      console.log('✅ RoomId salvo:', resp.RoomId);
+    } else {
+      console.log('❌ RoomId não encontrado na resposta');
+  }
+}

@@ -57,7 +57,7 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 		redisHandlers.RegisterPlayerInRoom(ctx, rdb, playerId, roomId)
 
 		// Chamadas de hook
-		wsHandlers.OnConnect(conn)
+		wsHandlers.OnConnect(conn, ctx, rdb, roomId, playerId)
 		defer wsHandlers.OnDisconnect(conn, ctx, rdb, playerId, roomId)
 
 		// Loop de leitura das mensagens do cliente

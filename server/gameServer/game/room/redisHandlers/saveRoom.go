@@ -22,6 +22,11 @@ import (
 //
 //	error: erro de lock, serialização ou comunicação com Redis
 func SaveRoom(ctx context.Context, rdb *redis.Client, room *roomStructs.Room) error {
+	return SaveRoomWithTTL(ctx, rdb, room, 0)
+}
+
+// SaveRoomWithTTL salva o estado da sala no Redis com TTL específico
+func SaveRoomWithTTL(ctx context.Context, rdb *redis.Client, room *roomStructs.Room, ttl time.Duration) error {
 	// Gera um ID único para a instância atual
 	instanceID := utils.GetInstanceID()
 	// Tenta adquirir o lock da sala
@@ -43,6 +48,11 @@ func SaveRoom(ctx context.Context, rdb *redis.Client, room *roomStructs.Room) er
 		// Retorna erro se não conseguir serializar
 		return err
 	}
-	// Salva o JSON no Redis (sem expiração)
-	return rdb.Set(ctx, "room:"+room.ID, data, 0).Err()
+	// Salva o JSON no Redis com TTL específico
+	err = rdb.Set(ctx, "room:"+room.ID, data, ttl).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
