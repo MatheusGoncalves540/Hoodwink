@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"

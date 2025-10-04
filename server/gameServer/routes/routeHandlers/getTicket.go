@@ -1,4 +1,4 @@
-package rHandlers
+package routeHandlers
 
 import (
 	"fmt"

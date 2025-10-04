@@ -1,5 +1,5 @@
 // gameServer/routes/rHandlers/createRoomHandler.go
-package rHandlers
+package routeHandlers
 
 import (
 	"encoding/json"

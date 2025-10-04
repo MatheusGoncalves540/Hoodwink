@@ -1,15 +1,15 @@
-package handlers
+package cardHandlers
 
 import (
 	"context"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
-	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
 	"github.com/redis/go-redis/v9"
 )
 
 // Processa a contestação da jogada
-func ProcessContest(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *rs.Event, contested bool) error {
+func ProcessContest(ctx context.Context, rdb *redis.Client, room *roomStructs.Room, evt *roomStructs.Event, contested bool) error {
 	if contested {
 		// A contestação foi válida. Verifica se o jogador realmente tinha a carta.
 		hasCard := true // Aqui, você deve verificar se o jogador realmente tem a carta. Simplificado aqui.
@@ -17,7 +17,7 @@ func ProcessContest(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *
 		if hasCard {
 			// Jogador tinha a carta
 			// O efeito de matar a carta pode ser executado
-			effect := rs.Effect{
+			effect := roomStructs.Effect{
 				Type:       "kill",
 				From:       evt.PlayerId,
 				To:         room.CurrentMove.TargetId,
@@ -33,6 +33,6 @@ func ProcessContest(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *
 	}
 
 	// Finaliza a ação e avança para o próximo turno
-	room.State = rs.FinalizingAction
+	room.State = roomStructs.FinalizingAction
 	return redisHandlers.SaveRoom(ctx, rdb, room)
 }

@@ -1,4 +1,4 @@
-package rHandlers
+package routeHandlers
 
 import (
 	"encoding/json"
@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
-	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/rHandlers/wsHandlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/routeHandlers/wsHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
@@ -77,7 +77,7 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 			}
 
 			// Decodifica evento
-			var event rs.Event
+			var event roomStructs.Event
 			if err := json.Unmarshal(msg, &event); err != nil {
 				utils.LogDebug(fmt.Sprintf("Erro ao decodificar mensagem: %v", err))
 				break

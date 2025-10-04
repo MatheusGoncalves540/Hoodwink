@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/middlewares"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/rHandlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/routeHandlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/redis/go-redis/v9"
 )
 
-func SetupRoutes(handler *rHandlers.Handler, rdb *redis.Client) http.Handler {
+func SetupRoutes(handler *routeHandlers.Handler, rdb *redis.Client) http.Handler {
 	routes := chi.NewRouter()
 	routes.Use(middlewares.RequestMiddleware)
 	routes.Use(middlewares.CORSMiddleware)

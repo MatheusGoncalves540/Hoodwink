@@ -1,4 +1,4 @@
-package rHandlers
+package routeHandlers
 
 import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"

@@ -1,23 +1,23 @@
-package processWsMsg
+package wsMsgHandler
 
 import (
 	"context"
 
-	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
-func ProcessWebSocketMessage(evt *rs.Event, ctx context.Context, rdb *redis.Client, room *rs.Room) {
+func ProcessWebSocketMessage(evt *roomStructs.Event, ctx context.Context, rdb *redis.Client, room *roomStructs.Room) {
 	switch room.State {
-	case rs.WaitingGameStart:
+	case roomStructs.WaitingGameStart:
 		if evt.Type == "start" {
 			err := OnStartAction(evt, ctx, rdb, room)
 			if err != nil {
 				utils.LogDebug("Error on process start: " + err.Error())
 			}
 		}
-	case rs.WaitingFirstAction:
+	case roomStructs.WaitingFirstAction:
 		if evt.Type == "action" {
 			err := OnTypeAction(evt, ctx, rdb, room)
 			if err != nil {

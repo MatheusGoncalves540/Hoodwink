@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -19,7 +19,7 @@ import (
 // Retorno:
 //
 //	error: erro de serialização ou comunicação com Redis
-func PushEvent(ctx context.Context, rdb *redis.Client, RoomId string, evt rs.Event) error {
+func PushEvent(ctx context.Context, rdb *redis.Client, RoomId string, evt roomStructs.Event) error {
 	// Serializa o evento para JSON
 	data, err := json.Marshal(evt)
 	if err != nil {

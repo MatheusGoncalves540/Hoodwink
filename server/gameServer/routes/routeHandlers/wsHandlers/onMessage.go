@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/processWsMsg"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/redisHandlers"
-	rs "github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/wsMsgHandler"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
@@ -14,7 +14,7 @@ import (
 )
 
 // Função chamada ao receber uma mensagem do cliente
-func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, evt *rs.Event, claims jwt.MapClaims) {
+func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, evt *roomStructs.Event, claims jwt.MapClaims) {
 	// Verify if event is valid
 	if evt == nil {
 		utils.LogDebug("Evento inválido")
@@ -40,5 +40,5 @@ func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, evt
 	defer redisHandlers.ReleaseRoomLock(ctx, rdb, room.ID, instanceID)
 
 	// Process WebSocket message
-	processWsMsg.ProcessWebSocketMessage(evt, ctx, rdb, room)
+	wsMsgHandler.ProcessWebSocketMessage(evt, ctx, rdb, room)
 }
