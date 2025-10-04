@@ -11,7 +11,7 @@ import (
 )
 
 func OnTypeAction(evt *rs.Event, ctx context.Context, rdb *redis.Client, room *rs.Room) error {
-	payload, ok := evt.Payload.(map[string]interface{})
+	payload, ok := evt.Payload.(map[string]any)
 	if !ok {
 		return fmt.Errorf("payload type assertion failed: %v", evt.Payload)
 	}

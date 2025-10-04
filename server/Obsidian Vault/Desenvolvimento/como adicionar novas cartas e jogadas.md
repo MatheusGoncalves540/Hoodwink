@@ -94,7 +94,7 @@ import (
 )
 
 func HandleUseMinhoca(ctx context.Context, room *roomStructs.Room, evt *roomStructs.Event) error {
-	payload := evt.Payload.(map[string]interface{})
+	payload := evt.Payload.(map[string]any)
 	targetUUID := payload["target"].(string)
 
 	room.PendingEffects = append(room.PendingEffects, roomStructs.Effect{

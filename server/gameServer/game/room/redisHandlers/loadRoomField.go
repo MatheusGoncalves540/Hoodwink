@@ -16,7 +16,7 @@ import (
 // RoomId: identificador da sala
 // field: nome do campo desejado
 // Retorno:
-// interface{}: valor do campo
+// any: valor do campo
 // error: erro caso não encontre ou não consiga desserializar
 func LoadRoomField(ctx context.Context, rdb *redis.Client, RoomId string, field string) (any, error) {
 	val, err := rdb.Get(ctx, "room:"+RoomId).Result()

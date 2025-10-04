@@ -31,7 +31,9 @@ func SetupRoutes(handler *handlers.Handler) http.Handler {
 
 	// Rotas protegidas com JWT
 	routes.Group(func(r chi.Router) {
-		r.Use(middlewares.JWTMiddleware)
+		r.Use(func(next http.Handler) http.Handler {
+			return middlewares.JWTMiddleware(next, handler)
+		})
 	})
 
 	return routes

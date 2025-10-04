@@ -71,7 +71,7 @@ func (j *JWTService) ParseToken(tokenStr string, useBackendSecret bool) (jwt.Map
 		}
 	}
 
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			utils.LogDebug("método de assinatura inválido")
 			return nil, errors.New("método de assinatura inválido")

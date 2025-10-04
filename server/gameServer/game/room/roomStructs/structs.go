@@ -14,11 +14,11 @@ type Player struct {
 }
 
 type Move struct {
-	PlayerId string      `json:"playerId"`
-	Action   string      `json:"action"`
-	TargetId string      `json:"targetId,omitempty"`
-	CardUsed string      `json:"cardUsed,omitempty"`
-	Payload  interface{} `json:"payload,omitempty"`
+	PlayerId string `json:"playerId"`
+	Action   string `json:"action"`
+	TargetId string `json:"targetId,omitempty"`
+	CardUsed string `json:"cardUsed,omitempty"`
+	Payload  any    `json:"payload,omitempty"`
 }
 
 type Effect struct {

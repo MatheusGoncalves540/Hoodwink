@@ -17,8 +17,8 @@ const RequestIDKey ContextKey = "requestID"
 
 // APIResponse é uma estrutura de resposta padronizada
 type APIResponse struct {
-	Error   interface{} `json:"error,omitempty"`
-	Message string      `json:"message,omitempty"`
+	Error   any    `json:"error,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // Middleware para log, recovery e trace ID

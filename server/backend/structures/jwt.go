@@ -1,4 +1,4 @@
-package jwtoken
+package structures
 
 // UserClaims representa os dados que estarão no token JWT
 type UserClaims struct {

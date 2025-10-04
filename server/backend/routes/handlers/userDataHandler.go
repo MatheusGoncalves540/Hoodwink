@@ -8,11 +8,10 @@ import (
 	"os"
 	"strings"
 
-	"google.golang.org/api/idtoken"
-
-	"github.com/MatheusGoncalves540/Hoodwink/routes/auth/jwtoken"
 	"github.com/MatheusGoncalves540/Hoodwink/services"
+	"github.com/MatheusGoncalves540/Hoodwink/structures"
 	"github.com/MatheusGoncalves540/Hoodwink/utils"
+	"google.golang.org/api/idtoken"
 )
 
 // Handler para autenticação universal via OAuth (Google, Discord, etc.)
@@ -56,7 +55,7 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, services.ErrMissingUsername) {
 			// Precisa de dados adicionais
-			tempToken, _ := jwtoken.GenerateJWT(jwtoken.UserClaims{
+			tempToken, _ := h.JWTService.GenerateJWT(structures.UserClaims{
 				Email:    email,
 				Provider: provider,
 				Temp:     true,
@@ -72,7 +71,7 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Usuário existente ou criado com sucesso
-	finalToken, err := jwtoken.GenerateJWT(jwtoken.UserClaims{
+	finalToken, err := h.JWTService.GenerateJWT(structures.UserClaims{
 		Id:       user.ID,
 		Username: user.Username,
 		Provider: provider,

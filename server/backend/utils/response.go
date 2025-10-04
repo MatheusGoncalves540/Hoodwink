@@ -6,20 +6,20 @@ import (
 )
 
 type APIResponse struct {
-	Data    interface{} `json:"data,omitempty"`
-	Error   interface{} `json:"error,omitempty"`
-	Message string      `json:"message,omitempty"`
+	Data    any    `json:"data,omitempty"`
+	Error   any    `json:"error,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // SendJSON envia um JSON com o status HTTP e payload genérico
-func SendJSON(w http.ResponseWriter, status int, payload interface{}) {
+func SendJSON(w http.ResponseWriter, status int, payload any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(payload)
 }
 
 // SendSuccess envia uma resposta JSON de sucesso com dados opcionais
-func SendSuccess(w http.ResponseWriter, data interface{}, message string) {
+func SendSuccess(w http.ResponseWriter, data any, message string) {
 	SendJSON(w, http.StatusOK, APIResponse{
 		Data:    data,
 		Message: message,

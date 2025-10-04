@@ -29,7 +29,7 @@ func ProcessWebSocketMessage(evt *rs.Event, ctx context.Context, rdb *redis.Clie
 		// }
 		// case rs.WaitingContest:
 		// 	if evt.Type == "contest" {
-		// 		payloadMap, ok := evt.Payload.(map[string]interface{})
+		// 		payloadMap, ok := evt.Payload.(map[string]any)
 		// 		if !ok {
 		// 			utils.PrintDebug("Payload contest inválido")
 		// 			return

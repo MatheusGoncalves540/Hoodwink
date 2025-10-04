@@ -12,7 +12,7 @@ import (
 
 func UseAssassin(ctx context.Context, rdb *redis.Client, room *rs.Room, evt *rs.Event) error {
 	// Processa a ação de usar o Assassino
-	var payload map[string]interface{}
+	var payload map[string]any
 	if raw, ok := evt.Payload.(json.RawMessage); ok {
 		if err := json.Unmarshal(raw, &payload); err != nil {
 			return err

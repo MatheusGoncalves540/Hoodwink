@@ -16,7 +16,7 @@ import (
 var validate = validator.New()
 
 // ValidateInfos valida a struct e retorna false se houver erros (já escreve resposta JSON)
-func ValidateInfos(w http.ResponseWriter, toValidate interface{}) bool {
+func ValidateInfos(w http.ResponseWriter, toValidate any) bool {
 	if err := validate.Struct(toValidate); err != nil {
 		var errorMessages []string
 		for _, err := range err.(validator.ValidationErrors) {
