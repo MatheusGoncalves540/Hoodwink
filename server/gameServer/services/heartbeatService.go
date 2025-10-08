@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
@@ -81,14 +82,41 @@ func (h *HeartbeatService) sendHeartbeat() {
 	// Busca todos os players gerenciados por esta instância
 	players := h.getManagedPlayers()
 
-	// Renova TTL de cada player
+	playersRenewed := 0
 	for _, playerId := range players {
+		// Monta a chave do player
 		playerKey := fmt.Sprintf("player:%s:room", playerId)
+
+		// Busca o valor da chave (formato: roomId:instanceId)
+		value, err := h.rdb.Get(h.ctx, playerKey).Result()
+		if err != nil || value == "" {
+			continue // Não encontrado
+		}
+
+		// Separa roomId e instanceId
+		parts := strings.SplitN(value, ":", 2)
+		if len(parts) < 2 {
+			continue // Formato inesperado
+		}
+		roomId := parts[0]
+
+		// Verifica se a sala existe
+		roomKey := fmt.Sprintf("room:%s", roomId)
+		exists, err := h.rdb.Exists(h.ctx, roomKey).Result()
+		if err != nil || exists == 0 {
+			continue // Sala não existe
+		}
+
+		// Renova TTL do player
 		h.rdb.Expire(h.ctx, playerKey, HeartbeatTTL)
+		playersRenewed++
 	}
 
-	if len(players) > 0 {
-		utils.LogDebug(fmt.Sprintf("Heartbeat enviado - Instância: %s, Players: %d", h.instanceID, len(players)))
+	if playersRenewed > 0 {
+		utils.LogDebug(fmt.Sprintf(
+			"Heartbeat enviado - Instância: %s, Players renovados: %d",
+			h.instanceID, playersRenewed,
+		))
 	}
 }
 
