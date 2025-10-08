@@ -9,7 +9,7 @@ import (
 )
 
 // AddOrUpdatePlayerInRoom adiciona um jogador à sala ou atualiza seu status de conexão
-func AddOrUpdatePlayerInRoom(ctx context.Context, rdb *redis.Client, roomId string, playerId string) error {
+func AddOrUpdatePlayerInRoom(ctx context.Context, rdb *redis.Client, roomId string, playerId string, username string) error {
 	// Carrega a sala
 	room, err := LoadRoom(ctx, rdb, roomId)
 	if err != nil {
@@ -29,11 +29,9 @@ func AddOrUpdatePlayerInRoom(ctx context.Context, rdb *redis.Client, roomId stri
 
 	// Se o jogador não existe, adiciona à sala
 	if !playerExists {
-		// Nome temporário baseado no playerId (pode ser melhorado futuramente)
-		playerName := "Player" + playerId[:8] // Usa os primeiros 8 caracteres do ID
 		newPlayer := roomStructs.Player{
 			Id:        playerId,
-			Name:      playerName,
+			Name:      username,
 			Cards:     []string{},
 			Coins:     2, // Valor inicial padrão do jogo
 			Connected: true,
@@ -41,6 +39,35 @@ func AddOrUpdatePlayerInRoom(ctx context.Context, rdb *redis.Client, roomId stri
 		}
 		room.Players = append(room.Players, newPlayer)
 	}
+
+	// Salva a sala atualizada
+	return SaveRoom(ctx, rdb, room)
+}
+
+// RemovePlayerFromRoom remove um jogador da sala pelo seu playerId
+func RemovePlayerFromRoom(ctx context.Context, rdb *redis.Client, roomId string, playerId string) error {
+	// Carrega a sala
+	room, err := LoadRoom(ctx, rdb, roomId)
+	if err != nil {
+		return fmt.Errorf("erro ao carregar sala: %w", err)
+	}
+
+	// Procura e remove o jogador
+	playerFound := false
+	newPlayers := make([]roomStructs.Player, 0, len(room.Players))
+	for _, player := range room.Players {
+		if player.Id == playerId {
+			playerFound = true
+			continue // Não adiciona o jogador removido
+		}
+		newPlayers = append(newPlayers, player)
+	}
+
+	if !playerFound {
+		return fmt.Errorf("jogador %s não encontrado na sala %s", playerId, roomId)
+	}
+
+	room.Players = newPlayers
 
 	// Salva a sala atualizada
 	return SaveRoom(ctx, rdb, room)

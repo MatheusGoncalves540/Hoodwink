@@ -44,6 +44,7 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 		}
 
 		playerId := claims["playerId"].(string)
+		username := claims["username"].(string)
 		roomId := claims["roomId"].(string)
 
 		// Adiciona conexão ao ConnManager
@@ -57,7 +58,7 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 		redisHandlers.RegisterPlayerInRoom(ctx, rdb, playerId, roomId)
 
 		// Chamadas de hook
-		wsHandlers.OnConnect(conn, ctx, rdb, roomId, playerId)
+		wsHandlers.OnConnect(conn, ctx, rdb, roomId, playerId, username)
 		defer wsHandlers.OnDisconnect(conn, ctx, rdb, playerId, roomId)
 
 		// Loop de leitura das mensagens do cliente

@@ -19,7 +19,7 @@ func NewBackendService() *BackendService {
 	return &BackendService{secret: secret}
 }
 
-// GetToBackend realiza um POST para a URL do backend definida nas envs, concatenando o path recebido.
+// GetToBackend realiza um GET para a URL do backend definida nas envs, concatenando o path recebido.
 // Headers fixos (ex: x-api-key) são definidos na requisição.
 // Retorna a mensagem da resposta e um erro, se houver.
 func (bs *BackendService) GetToBackend(payload any, path string) (string, error) {

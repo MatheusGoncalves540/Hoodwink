@@ -27,13 +27,21 @@ func OnDisconnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, 
 		return
 	}
 	if startTime.IsZero() {
-		redisHandlers.UnregisterPlayerFromRoom(ctx, rdb, playerId)
-	}
-
-	// Marca o jogador como desconectado na estrutura da sala
-	err = redisHandlers.SetPlayerConnectionStatus(ctx, rdb, roomId, playerId, false)
-	if err != nil {
-		utils.LogDebug("Erro ao marcar jogador como desconectado: " + err.Error())
+		// Jogo não iniciado, remove o registro do player na sala
+		err := redisHandlers.UnregisterPlayerFromRoom(ctx, rdb, playerId)
+		if err != nil {
+			utils.LogDebug("Erro ao remover jogador da sala: " + err.Error())
+		}
+		err = redisHandlers.RemovePlayerFromRoom(ctx, rdb, roomId, playerId)
+		if err != nil {
+			utils.LogDebug("Erro ao remover jogador da estrutura da sala: " + err.Error())
+		}
+	} else {
+		// Marca o jogador como desconectado na estrutura da sala
+		err = redisHandlers.SetPlayerConnectionStatus(ctx, rdb, roomId, playerId, false)
+		if err != nil {
+			utils.LogDebug("Erro ao marcar jogador como desconectado: " + err.Error())
+		}
 	}
 
 	// Verifica se a sala está vazia após a desconexão
