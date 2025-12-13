@@ -1,0 +1,16 @@
+meta {
+  name: instacesStatus
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{urlGame}}/instances/status
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

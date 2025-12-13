@@ -18,7 +18,6 @@ type InstanceStatus struct {
 }
 
 type StatusResponse struct {
-	CurrentInstance string           `json:"currentInstance"`
 	TotalInstances  int              `json:"totalInstances"`
 	Instances       []InstanceStatus `json:"instances"`
 	OrphanedPlayers []string         `json:"orphanedPlayers"`
@@ -30,7 +29,6 @@ func (h *Handler) GetInstancesStatus(rdb *redis.Client) http.HandlerFunc {
 		ctx := r.Context()
 
 		status := StatusResponse{
-			CurrentInstance: utils.GetInstanceID(),
 			Instances:       []InstanceStatus{},
 			OrphanedPlayers: []string{},
 		}

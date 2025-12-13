@@ -1,0 +1,15 @@
+meta {
+  name: CleanupPlayerRegistrations
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{urlGame}}/instances/cleanup
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

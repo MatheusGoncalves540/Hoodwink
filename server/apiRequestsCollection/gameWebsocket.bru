@@ -1,0 +1,19 @@
+meta {
+  name: gameWebsocket
+  type: ws
+  seq: 8
+}
+
+ws {
+  url: {{urlGame}}/game
+  body: ws
+  auth: inherit
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {}
+  '''
+}
