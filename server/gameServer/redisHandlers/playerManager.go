@@ -17,18 +17,13 @@ func AddOrUpdatePlayerInRoom(ctx context.Context, rdb *redis.Client, roomId stri
 	}
 
 	// Procura se o jogador já existe na sala
-	playerExists := false
-	for i, player := range room.Players {
-		if player.Id == playerId {
-			// Jogador já existe, apenas atualiza status de conexão
-			room.Players[i].Connected = true
-			playerExists = true
-			break
-		}
-	}
-
-	// Se o jogador não existe, adiciona à sala
-	if !playerExists {
+	if _, exists := room.Players[playerId]; exists {
+		// Jogador já existe, apenas atualiza status de conexão
+		player := room.Players[playerId]
+		player.Connected = true
+		room.Players[playerId] = player
+	} else {
+		// Se o jogador não existe, adiciona à sala
 		newPlayer := roomStructs.Player{
 			Id:        playerId,
 			Name:      username,
@@ -37,7 +32,7 @@ func AddOrUpdatePlayerInRoom(ctx context.Context, rdb *redis.Client, roomId stri
 			Connected: true,
 			Alive:     true,
 		}
-		room.Players = append(room.Players, newPlayer)
+		room.Players[playerId] = newPlayer
 	}
 
 	// Salva a sala atualizada
@@ -52,22 +47,12 @@ func RemovePlayerFromRoom(ctx context.Context, rdb *redis.Client, roomId string,
 		return fmt.Errorf("erro ao carregar sala: %w", err)
 	}
 
-	// Procura e remove o jogador
-	playerFound := false
-	newPlayers := make([]roomStructs.Player, 0, len(room.Players))
-	for _, player := range room.Players {
-		if player.Id == playerId {
-			playerFound = true
-			continue // Não adiciona o jogador removido
-		}
-		newPlayers = append(newPlayers, player)
-	}
-
-	if !playerFound {
+	// Verifica se o jogador existe
+	if _, exists := room.Players[playerId]; !exists {
 		return fmt.Errorf("jogador %s não encontrado na sala %s", playerId, roomId)
 	}
 
-	room.Players = newPlayers
+	delete(room.Players, playerId)
 
 	// Salva a sala atualizada
 	return SaveRoom(ctx, rdb, room)
@@ -81,19 +66,14 @@ func SetPlayerConnectionStatus(ctx context.Context, rdb *redis.Client, roomId st
 		return fmt.Errorf("erro ao carregar sala: %w", err)
 	}
 
-	// Procura e atualiza o jogador
-	playerFound := false
-	for i, player := range room.Players {
-		if player.Id == playerId {
-			room.Players[i].Connected = connected
-			playerFound = true
-			break
-		}
-	}
-
-	if !playerFound {
+	// Verifica se o jogador existe
+	if _, exists := room.Players[playerId]; !exists {
 		return fmt.Errorf("jogador %s não encontrado na sala %s", playerId, roomId)
 	}
+
+	player := room.Players[playerId]
+	player.Connected = connected
+	room.Players[playerId] = player
 
 	// Salva a sala atualizada
 	return SaveRoom(ctx, rdb, room)

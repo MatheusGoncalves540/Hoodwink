@@ -31,22 +31,22 @@ type Effect struct {
 }
 
 type Room struct {
-	ID                 string    `json:"id"`
-	Name               string    `json:"name"`
-	Password           string    `json:"password" validate:"omitempty,max=24"`
-	Created            time.Time `json:"created"`
-	State              GameState `json:"state"`
-	Turn               int       `json:"turn"`
-	Tax                int       `json:"tax"`
-	Players            []Player  `json:"players"`
-	MaxPlayers         int       `json:"maxPlayers"`
-	AliveDeck          []string  `json:"aliveDeck"`
-	DeadDeck           []string  `json:"deadDeck"`
-	CurrentMove        *Move     `json:"currentMove,omitempty"`
-	CurrentTurnOwner   string    `json:"currentTurnOwner"`
-	StartTime          time.Time `json:"startTime"`
-	PlayerPending      string    `json:"playerPending,omitempty"`
-	PlayersWhoWantSkip []string  `json:"playersWhoWantSkip"`
-	GameOver           bool      `json:"gameOver"`
-	PendingEffects     []Effect  `json:"pendingEffects"`
+	ID                 string            `json:"id"`
+	Name               string            `json:"name"`
+	Password           string            `json:"password" validate:"omitempty,max=24"`
+	Created            time.Time         `json:"created"`
+	State              GameState         `json:"state"`
+	Turn               int               `json:"turn"`
+	Tax                int               `json:"tax"`
+	Players            map[string]Player `json:"players"`
+	MaxPlayers         int               `json:"maxPlayers"`
+	AliveDeck          []string          `json:"aliveDeck"`
+	DeadDeck           []string          `json:"deadDeck"`
+	CurrentMove        *Move             `json:"currentMove,omitempty"`
+	CurrentTurnOwner   string            `json:"currentTurnOwner"`
+	StartTime          time.Time         `json:"startTime"`
+	PlayerPending      string            `json:"playerPending,omitempty"`
+	PlayersWhoWantSkip []string          `json:"playersWhoWantSkip"`
+	GameOver           bool              `json:"gameOver"`
+	PendingEffects     []Effect          `json:"pendingEffects"`
 }

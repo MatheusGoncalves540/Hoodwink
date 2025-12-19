@@ -59,10 +59,8 @@ func StringContains(slice []string, item string) bool {
 
 // GetPlayerByID retorna o ponteiro para o jogador com o ID fornecido, ou nil se não encontrado.
 func GetPlayerByID(room *roomStructs.Room, playerID string) *roomStructs.Player {
-	for i := range room.Players {
-		if room.Players[i].Id == playerID {
-			return &room.Players[i]
-		}
+	if player, exists := room.Players[playerID]; exists {
+		return &player
 	}
 	return nil
 }

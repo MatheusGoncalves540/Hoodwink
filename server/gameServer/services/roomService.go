@@ -28,7 +28,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		Created:            time.Now(),
 		State:              roomStructs.WaitingAction,
 		Turn:               0,
-		Players:            []roomStructs.Player{},
+		Players:            make(map[string]roomStructs.Player),
 		MaxPlayers:         roomData.MaxPlayers,
 		AliveDeck:          []string{},
 		DeadDeck:           []string{},
@@ -67,15 +67,13 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 	}
 
 	playerInRoom := false
-	for _, p := range room.Players {
-		if p.Id == playerId {
-			playerInRoom = true
-			if p.Connected {
-				return false, "Player já está na sala"
-			}
-			// está na sala mas desconectado → pode reconectar
-			return true, ""
+	if p, exists := room.Players[playerId]; exists {
+		playerInRoom = true
+		if p.Connected {
+			return false, "Player já está na sala"
 		}
+		// está na sala mas desconectado → pode reconectar
+		return true, ""
 	}
 
 	if !room.StartTime.IsZero() && !playerInRoom {
