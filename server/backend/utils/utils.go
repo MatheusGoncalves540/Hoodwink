@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -36,4 +37,11 @@ func GenerateNewId() string {
 	randomFactor := rand.Float64() * rand.Float64()
 	id := int64(randomFactor * float64(time.Now().UnixNano()))
 	return strconv.FormatInt(id, 16)
+}
+
+// if DEBUG = true, print on console
+func LogDebug(msg any) {
+	if os.Getenv("DEBUG") == "true" {
+		fmt.Println(msg)
+	}
 }
