@@ -9,10 +9,10 @@ import (
 
 // CheckEnvVars verifica se todas as variáveis de .env.example estão definidas no ambiente.
 // Caso alguma esteja faltando, encerra o programa.
-func CheckEnvVars(exampleFilePath string) {
-	file, err := os.Open(exampleFilePath)
+func CheckEnvVars(filePath string) {
+	file, err := os.Open(filePath)
 	if err != nil {
-		log.Fatalf("Erro ao abrir %s: %v", exampleFilePath, err)
+		log.Fatalf("Erro ao abrir %s: %v", filePath, err)
 	}
 	defer file.Close()
 
@@ -35,7 +35,7 @@ func CheckEnvVars(exampleFilePath string) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatalf("Erro ao ler %s: %v", exampleFilePath, err)
+		log.Fatalf("Erro ao ler %s: %v", filePath, err)
 	}
 
 	if len(missingVars) > 0 {
