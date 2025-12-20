@@ -63,18 +63,10 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 		return false, "Sala não encontrada"
 	}
 
-	if len(room.Players) >= room.MaxPlayers {
-		return false, "Sala está cheia"
-	}
+	_, playerInRoom := room.Players[playerId]
 
-	playerInRoom := false
-	if p, exists := room.Players[playerId]; exists {
-		playerInRoom = true
-		if p.Connected {
-			return false, "Player já está na sala"
-		}
-		// está na sala mas desconectado → pode reconectar
-		return true, ""
+	if !playerInRoom && len(room.Players) >= room.MaxPlayers {
+		return false, "Sala está cheia"
 	}
 
 	if !room.StartTime.IsZero() && !playerInRoom {

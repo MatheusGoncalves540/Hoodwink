@@ -22,7 +22,7 @@ func OnConnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, roo
 	// }
 
 	// Adiciona ou atualiza o jogador na estrutura da sala
-	err := redisHandlers.AddOrUpdatePlayerInRoom(ctx, rdb, roomId, playerId, username)
+	err := redisHandlers.AddPlayerInRoom(ctx, rdb, roomId, playerId, username)
 	if err != nil {
 		utils.LogDebug("Erro ao adicionar/atualizar jogador na sala: " + err.Error())
 	} else {

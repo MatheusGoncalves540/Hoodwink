@@ -24,9 +24,13 @@ func CheckIfRoomIsEmpty(ctx context.Context, rdb *redis.Client, roomId string) (
 		return false, err
 	}
 
-	// Verifica se há jogadores conectados
-	for _, player := range room.Players {
-		if player.Connected {
+	// Verifica se há jogadores conectados (registrados nesta sala)
+	for playerId := range room.Players {
+		registeredRoom, registered, err := GetRegisteredRoomForPlayer(ctx, rdb, playerId)
+		if err != nil {
+			return false, err
+		}
+		if registered && registeredRoom == roomId {
 			return false, nil
 		}
 	}

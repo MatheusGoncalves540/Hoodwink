@@ -24,13 +24,16 @@ func (cm *ConnectionManager) Add(roomId, playerId string, conn *websocket.Conn) 
 	cm.connections[roomId][playerId] = conn
 }
 
-func (cm *ConnectionManager) Remove(roomId, playerId string) {
+func (cm *ConnectionManager) Disconnect(roomId, playerId string) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	if cm.connections[roomId] != nil {
-		delete(cm.connections[roomId], playerId)
-		if len(cm.connections[roomId]) == 0 {
-			delete(cm.connections, roomId)
+		if conn, exists := cm.connections[roomId][playerId]; exists {
+			conn.Close()
+			delete(cm.connections[roomId], playerId)
+			if len(cm.connections[roomId]) == 0 {
+				delete(cm.connections, roomId)
+			}
 		}
 	}
 }

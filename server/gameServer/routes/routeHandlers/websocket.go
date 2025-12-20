@@ -50,13 +50,14 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 
 		// Adiciona conexão ao ConnManager
 		wsRoom.ConnManager.Add(roomId, playerId, conn)
-		defer wsRoom.ConnManager.Remove(roomId, playerId)
+		defer wsRoom.ConnManager.Disconnect(roomId, playerId)
 
 		// Assina canal Redis Pub/Sub da sala
 		wsRoom.SubscribeRoomBroadcast(ctx, rdb, roomId)
 
 		// Registra que player está em uma sala no Redis
 		redisHandlers.RegisterPlayerInRoom(ctx, rdb, playerId, roomId)
+		defer redisHandlers.UnregisterPlayerFromRoom(ctx, rdb, playerId)
 
 		// Chamadas de hook
 		wsHandlers.OnConnect(conn, ctx, rdb, roomId, playerId, username)

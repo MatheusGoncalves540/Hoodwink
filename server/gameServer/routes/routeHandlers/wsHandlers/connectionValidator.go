@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
@@ -33,26 +34,11 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 
 	if registered && connectedToRoomID != roomID {
 		//Se já está registrado em outra sala que não é essa que está tentando entrar
-		utils.SendError(w, "Player já está conectado em uma sala: "+connectedToRoomID, http.StatusConflict)
+		utils.SendError(w, "Player já está conectado em outra sala: "+connectedToRoomID, http.StatusConflict)
 		return nil, nil
 	} else if registered && connectedToRoomID != "" {
-		//Verifica se o player está na sala e se está marcado como conectado
-		room, err := redisHandlers.LoadRoom(ctx, rdb, connectedToRoomID)
-		if err != nil {
-			utils.SendError(w, "Erro ao verificar sala na entrada", http.StatusInternalServerError)
-			utils.LogDebug("Erro ao verificar sala na entrada: " + err.Error())
-			return nil, nil
-		}
-
-		player := utils.GetPlayerByID(room, playerID)
-		if player == nil {
-			utils.SendError(w, "Player não encontrado na sala que deveria estar conectado", http.StatusNotFound)
-			return nil, nil
-		}
-		if player.Connected {
-			utils.SendError(w, "Player já está conectado na sala", http.StatusForbidden)
-			return nil, nil
-		}
+		// Se já está registrado na mesma sala, força reconexão: desconecta a anterior
+		wsRoom.ConnManager.Disconnect(roomID, playerID)
 	}
 
 	_, err = redisHandlers.LoadRoom(r.Context(), rdb, roomID)
@@ -64,7 +50,7 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		utils.SendError(w, "Erro ao verificar sala na entrada", http.StatusInternalServerError)
-		fmt.Print("Verify FRONTEND_URL, WebSocket upgrade error: ", err)
+		utils.LogDebug(fmt.Sprintf("Verify FRONTEND_URL, WebSocket upgrade error: %v", err))
 		return nil, nil
 	}
 
