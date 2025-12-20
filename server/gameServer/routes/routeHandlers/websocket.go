@@ -39,7 +39,7 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 		ctx := r.Context()
 
 		// Valida e faz upgrade para WebSocket
-		conn, claims := wsHandlers.ValidateConnection(w, r, h.JWTService, upgrader, rdb, ctx)
+		conn, claims := wsHandlers.ValidateConnection(w, r, h.JWTService, h.RoomService, upgrader, rdb, ctx)
 		if conn == nil || claims == nil {
 			return
 		}

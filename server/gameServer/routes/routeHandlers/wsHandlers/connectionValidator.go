@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
@@ -15,7 +16,7 @@ import (
 )
 
 // Valida a conexão WebSocket e retorna o objeto de conexão ou um erro
-func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *services.JWTService, upgrader websocket.Upgrader, rdb *redis.Client, ctx context.Context) (*websocket.Conn, jwt.MapClaims) {
+func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *services.JWTService, roomService *services.RoomService, upgrader websocket.Upgrader, rdb *redis.Client, ctx context.Context) (*websocket.Conn, jwt.MapClaims) {
 	claims, err := jwtService.ParseTokenFromRequest(r)
 	if err != nil {
 		utils.SendError(w, "Ticket invalido: "+err.Error(), http.StatusUnauthorized)
@@ -24,6 +25,20 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 
 	playerID, _ := claims["playerId"].(string)
 	roomID, _ := claims["roomId"].(string)
+
+	// Sincroniza jogadores ativos na sala antes de permitir a conexão se o jogo não tiver iniciado
+	if startTimeAny, err := redisHandlers.LoadRoomField(ctx, rdb, roomID, "StartTime"); err != nil {
+		utils.LogDebug("Erro ao verificar horário de início da sala:" + err.Error())
+		return nil, nil
+	} else if startTime, ok := startTimeAny.(time.Time); !ok {
+		utils.LogDebug("Erro: StartTime não é do tipo time.Time")
+		return nil, nil
+	} else if startTime.IsZero() {
+		// Jogo não iniciado, sincroniza a estrutura dos players na sala
+		if err := roomService.SyncActivePlayers(r, rdb, roomID); err != nil {
+			utils.LogDebug("Erro ao sincronizar jogadores da estrutura da sala: " + err.Error())
+		}
+	}
 
 	connectedToRoomID, registered, err := redisHandlers.GetRegisteredRoomForPlayer(ctx, rdb, playerID)
 	if err != nil {

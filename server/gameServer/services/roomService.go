@@ -83,3 +83,24 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 
 	return true, ""
 }
+
+func (s *RoomService) SyncActivePlayers(r *http.Request, rdb *redis.Client, roomId string) error {
+	room, err := redisHandlers.LoadRoom(r.Context(), rdb, roomId)
+	if err != nil {
+		return err
+	}
+
+	// Itera sobre os players e remove aqueles sem registro ativo
+	for playerId := range room.Players {
+		registeredRoom, registered, err := redisHandlers.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
+		if err != nil {
+			return err
+		}
+		if !registered || registeredRoom != roomId {
+			delete(room.Players, playerId)
+		}
+	}
+
+	// Salva a sala atualizada
+	return redisHandlers.SaveRoom(r.Context(), rdb, room)
+}
