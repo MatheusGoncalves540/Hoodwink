@@ -35,6 +35,7 @@ type WebSocketPayload struct {
 // WebSocketHandler lida com conexões WS
 func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Enviar Token JWT na url: /game?ticket=SEU_TOKEN_JWT
 		ctx := r.Context()
 
 		// Valida e faz upgrade para WebSocket
