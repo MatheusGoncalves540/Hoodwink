@@ -86,9 +86,21 @@
               "icon": "lucide-book-up",
               "title": "Release Notes 1.9.12"
             }
+          },
+          {
+            "id": "7afa8e2429ebf97d",
+            "type": "leaf",
+            "state": {
+              "type": "release-notes",
+              "state": {
+                "currentVersion": "1.10.6"
+              },
+              "icon": "lucide-book-up",
+              "title": "Release Notes 1.10.6"
+            }
           }
         ],
-        "currentTab": 5
+        "currentTab": 6
       }
     ],
     "direction": "vertical"
@@ -248,7 +260,7 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "1fdd44d37e9fd553",
+  "active": "7afa8e2429ebf97d",
   "lastOpenFiles": [
     "Untitled.md",
     "Desenvolvimento/como adicionar novas cartas e jogadas.md",
