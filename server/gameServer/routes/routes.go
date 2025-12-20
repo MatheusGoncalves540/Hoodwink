@@ -26,7 +26,7 @@ func SetupRoutes(handler *routeHandlers.Handler, rdb *redis.Client) http.Handler
 			return middlewares.JWTBackendMiddleware(next, handler)
 		})
 
-		r.Post("/newRoom", handler.CreateRoom)
+		r.Post("/newRoom", handler.CreateCustomRoom)
 
 		r.Post("/getTicket/{RoomId}", handler.GetTicket(rdb))
 	})

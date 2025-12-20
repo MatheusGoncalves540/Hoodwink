@@ -33,7 +33,8 @@ type Effect struct {
 type Room struct {
 	ID                 string            `json:"id"`
 	Name               string            `json:"name"`
-	Password           string            `json:"password" validate:"omitempty,max=24"`
+	Password           string            `json:"password" validate:"max=24"`
+	CustomMatch        bool              `json:"customMatch"`
 	Created            time.Time         `json:"created"`
 	State              GameState         `json:"state"`
 	Turn               int               `json:"turn"`
@@ -42,10 +43,10 @@ type Room struct {
 	MaxPlayers         int               `json:"maxPlayers"`
 	AliveDeck          []string          `json:"aliveDeck"`
 	DeadDeck           []string          `json:"deadDeck"`
-	CurrentMove        *Move             `json:"currentMove,omitempty"`
+	CurrentMove        *Move             `json:"currentMove"`
 	CurrentTurnOwner   string            `json:"currentTurnOwner"`
 	StartTime          time.Time         `json:"startTime"`
-	PlayerPending      string            `json:"playerPending,omitempty"`
+	PlayerPending      string            `json:"playerPending"`
 	PlayersWhoWantSkip []string          `json:"playersWhoWantSkip"`
 	GameOver           bool              `json:"gameOver"`
 	PendingEffects     []Effect          `json:"pendingEffects"`

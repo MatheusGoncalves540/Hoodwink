@@ -10,7 +10,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateCustomRoom(w http.ResponseWriter, r *http.Request) {
 	var reqBody endpointStructures.CreateRoomRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
@@ -22,7 +22,7 @@ func (h *Handler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newRoomData, err := h.RoomService.CreateNewRoom(r, reqBody)
+	newRoomData, err := h.RoomService.CreateNewRoom(r, reqBody, true)
 	if err != nil {
 		utils.SendError(w, "Erro ao criar a sala", http.StatusInternalServerError)
 		return

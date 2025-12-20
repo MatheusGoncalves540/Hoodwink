@@ -19,12 +19,13 @@ func NewRoomService(redisClient *redis.Client) *RoomService {
 	return &RoomService{redisClient}
 }
 
-func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest) (*roomStructs.Room, error) {
+func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest, customMatch bool) (*roomStructs.Room, error) {
 	RoomId := utils.GenerateNewId()
 	room := &roomStructs.Room{
 		ID:                 RoomId,
 		Name:               roomData.RoomName,
 		Password:           roomData.Password,
+		CustomMatch:        customMatch,
 		Created:            time.Now(),
 		State:              roomStructs.WaitingAction,
 		Turn:               0,
