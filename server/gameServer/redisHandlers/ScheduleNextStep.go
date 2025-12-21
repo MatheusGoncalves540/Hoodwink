@@ -13,8 +13,8 @@ import (
 //	ctx: contexto para timeout/cancelamento
 //	rdb: cliente Redis
 //	RoomId: identificador da sala
-//	evt: evento a ser agendado (struct Event)
+//	playerPlay: evento a ser agendado (struct Event)
 //
 // Não retorna erro, apenas agenda a execução.
-func ScheduleNextStep(ctx context.Context, rdb *redis.Client, RoomId string, evt roomStructs.Event) {
+func ScheduleNextStep(ctx context.Context, rdb *redis.Client, RoomId string, playerPlay roomStructs.PlayerPlay) {
 }

@@ -93,13 +93,13 @@ import (
 	"gameServer/game/room/roomStructs"
 )
 
-func HandleUseMinhoca(ctx context.Context, room *roomStructs.Room, evt *roomStructs.Event) error {
-	payload := evt.Payload.(map[string]any)
+func HandleUseMinhoca(ctx context.Context, room *roomStructs.Room, playerPlay *roomStructs.Event) error {
+	payload := playerPlay.Payload.(map[string]any)
 	targetUUID := payload["target"].(string)
 
 	room.PendingEffects = append(room.PendingEffects, roomStructs.Effect{
 		Type:       "minhoca_effect",
-		From:       evt.PlayerId,
+		From:       playerPlay.PlayerId,
 		To:         targetUUID,
 		CardIndex:  -1,
 		Executable: false,
@@ -107,7 +107,7 @@ func HandleUseMinhoca(ctx context.Context, room *roomStructs.Room, evt *roomStru
 	})
 
 	room.CurrentMove = &roomStructs.Move{
-		PlayerId: evt.PlayerId,
+		PlayerId: playerPlay.PlayerId,
 		Action:     "use_minhoca",
 		TargetUUID: targetUUID,
 	}
@@ -128,9 +128,9 @@ Abra:
 E modifique o `ProcessWebsocketMessage` para adicionar a nova jogada:
 
 ```go
-switch evt.Type {
+switch playerPlay.Type {
 case "use_minhoca":
-	err := handlers.HandleUseMinhoca(ctx, room, evt)
+	err := handlers.HandleUseMinhoca(ctx, room, playerPlay)
 	if err != nil {
 		return err
 	}

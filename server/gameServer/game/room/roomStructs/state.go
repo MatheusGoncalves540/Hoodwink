@@ -1,13 +1,11 @@
 package roomStructs
 
-// Definindo os estados possíveis da sala
+type RoomState string
+
+// estados possíveis da sala
 const (
-	WaitingGameStart        = "waitingGameStart"
-	WaitingFirstAction      = "waitingFirstAction"
-	WaitingAction           = "waitingAction"
-	WaitingContest          = "waitingContest"
-	ResolvingContest        = "resolvingContest"
-	WaitingKamikazeResponse = "waitingKamikazeResponse"
-	FinalizingAction        = "finalizingAction"
-	TurnFinished            = "turnFinished"
+	StateWaitAction           RoomState = "WAIT_ACTION"
+	StateWaitContest          RoomState = "WAIT_CONTEST"
+	StateWaitPunishment       RoomState = "WAIT_PUNISHMENT"
+	StateWaitKamikazeDecision RoomState = "WAIT_KAMIKAZE"
 )

@@ -8,24 +8,24 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// PushEvent adiciona um novo evento à fila de eventos da sala no Redis.
+// PushPlayerPlay adiciona um novo evento à fila de eventos da sala no Redis.
 // Parâmetros:
 //
 //	ctx: contexto para timeout/cancelamento
 //	rdb: cliente Redis
 //	RoomId: identificador da sala
-//	evt: evento a ser adicionado (struct Event)
+//	playerPlay: evento a ser adicionado (struct Event)
 //
 // Retorno:
 //
 //	error: erro de serialização ou comunicação com Redis
-func PushEvent(ctx context.Context, rdb *redis.Client, RoomId string, evt roomStructs.Event) error {
+func PushPlayerPlay(ctx context.Context, rdb *redis.Client, RoomId string, playerPlay roomStructs.PlayerPlay) error {
 	// Serializa o evento para JSON
-	data, err := json.Marshal(evt)
+	data, err := json.Marshal(playerPlay)
 	if err != nil {
 		// Retorna erro se não conseguir serializar
 		return err
 	}
 	// Adiciona o evento no início da fila de eventos (LPUSH)
-	return rdb.LPush(ctx, "room:"+RoomId+":eventQueue", data).Err()
+	return rdb.LPush(ctx, "room:"+RoomId+":playQueue", data).Err()
 }

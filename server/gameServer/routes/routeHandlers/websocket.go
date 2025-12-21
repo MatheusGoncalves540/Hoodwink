@@ -80,17 +80,17 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 			}
 
 			// Decodifica evento
-			var event roomStructs.Event
-			if err := json.Unmarshal(msg, &event); err != nil {
+			var playerPlay roomStructs.PlayerPlay
+			if err := json.Unmarshal(msg, &playerPlay); err != nil {
 				utils.LogDebug(fmt.Sprintf("Erro ao decodificar mensagem: %v", err))
 				break
 			}
 
 			// Processa mensagem normalmente
-			wsHandlers.OnMessage(ctx, conn, rdb, &event, claims)
+			wsHandlers.OnMessage(ctx, conn, rdb, &playerPlay, claims)
 
 			// 4️⃣ Publica o evento para outras instâncias
-			if pubMsg, err := json.Marshal(event); err == nil {
+			if pubMsg, err := json.Marshal(playerPlay); err == nil {
 				wsRoom.PublishRoomBroadcast(ctx, rdb, roomId, pubMsg)
 			}
 		}

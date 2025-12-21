@@ -36,7 +36,7 @@ func RequestMiddleware(next http.Handler) http.Handler {
 		defer func() {
 			if rec := recover(); rec != nil {
 				log.Printf("[ERRO] [%s] panic: %v", reqID, rec)
-				utils.SendError(rw, "Ocorreu um erro no servidor. Tente novamente mais tarde.", http.StatusInternalServerError)
+				utils.SendError(rw, "Ocorreu um erro em nossos servidores :c. Tente novamente mais tarde.", http.StatusInternalServerError)
 			}
 
 			duration := time.Since(start)

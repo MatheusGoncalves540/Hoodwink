@@ -6,7 +6,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// Publica mensagem para todas as instâncias
+// Publica mensagem para todos os players de uma sala
 func PublishRoomBroadcast(ctx context.Context, rdb *redis.Client, roomId string, message []byte) error {
 	return rdb.Publish(ctx, "room:"+roomId+":broadcast", message).Err()
 }
