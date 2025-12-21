@@ -14,6 +14,11 @@ body:ws {
   name: message 1
   type: json
   content: '''
-    {}
+    {
+      "type": "COMMAND_SEND_BROADCAST",
+      "payload": {
+        "msg": "teste"
+      }
+    }
   '''
 }
