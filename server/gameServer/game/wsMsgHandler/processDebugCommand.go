@@ -8,9 +8,9 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func ProcessDebugCommand(playerPlay *roomStructs.PlayerPlay, ctx context.Context, rdb *redis.Client) {
+func ProcessDebugCommand(playerPlay *roomStructs.PlayerPlay, ctx context.Context, rdb *redis.Client, roomId string) {
 	switch playerPlay.Type {
 	case "COMMAND_SEND_BROADCAST":
-		wsRoom.PublishRoomBroadcast(ctx, rdb, playerPlay.RoomId, playerPlay.Data)
+		wsRoom.PublishRoomBroadcast(ctx, rdb, roomId, playerPlay.Payload)
 	}
 }
