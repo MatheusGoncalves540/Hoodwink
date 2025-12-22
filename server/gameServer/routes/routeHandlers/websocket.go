@@ -48,15 +48,12 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 		username := claims["username"].(string)
 		roomId := claims["roomId"].(string)
 
+		// Assina canal Redis Pub/Sub da sala
+		wsRoom.SubscribeRoomBroadcast(ctx, rdb, roomId)
+
 		// Adiciona conexão ao ConnManager
 		wsRoom.ConnManager.Add(roomId, playerId, conn)
 		defer wsRoom.ConnManager.Disconnect(roomId, playerId)
-
-		// Se esta instância ainda não está inscrita no broadcast da sala, assina agora
-		if !wsRoom.ConnManager.IsSubscribed(roomId) {
-			wsRoom.SubscribeRoomBroadcast(ctx, rdb, roomId)
-			wsRoom.ConnManager.MarkSubscribed(roomId)
-		}
 
 		// Registra que player está em uma sala no Redis
 		redisHandlers.RegisterPlayerInRoom(ctx, rdb, playerId, roomId)
