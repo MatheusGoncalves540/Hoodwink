@@ -17,24 +17,38 @@ func PublishRoomBroadcast(ctx context.Context, rdb *redis.Client, roomId string,
 }
 
 // Assina o canal de broadcast de uma sala
-func SubscribeRoomBroadcast(ctx context.Context, rdb *redis.Client, roomId string) {
-	if ConnManager.RoomExists(roomId) == true {
+func SubscribeRoomBroadcast(parentCtx context.Context, rdb *redis.Client, roomId string) {
+	if ConnManager.RoomExists(roomId) {
 		utils.LogDebug("Sala " + roomId + " já está assinada no Pub/Sub")
 		return
 	}
+
+	ctx, cancel := context.WithCancel(parentCtx)
+	ConnManager.SetRoomCancel(roomId, cancel)
+
 	pubsub := rdb.Subscribe(ctx, "room:"+roomId+":broadcast")
+
 	go func() {
-		for msg := range pubsub.Channel() {
-			// Quando receber mensagem do Redis, envia para os sockets locais
-			ConnManager.Broadcast(roomId, []byte(msg.Payload))
+		defer func() {
+			_ = pubsub.Close()
+			utils.LogDebug("Pub/Sub encerrado da sala " + roomId)
+		}()
+
+		ch := pubsub.Channel()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+
+			case msg, ok := <-ch:
+				if !ok {
+					return
+				}
+				ConnManager.Broadcast(roomId, []byte(msg.Payload))
+			}
 		}
 	}()
-	utils.LogDebug("Assinada sala " + roomId + " no Pub/Sub")
-}
 
-// Cancela a assinatura do canal de broadcast de uma sala
-func UnsubscribeRoomBroadcast(ctx context.Context, rdb *redis.Client, roomId string) {
-	pubsub := rdb.Subscribe(ctx, "room:"+roomId+":broadcast")
-	pubsub.Close()
-	utils.LogDebug("Cancelada assinatura da sala " + roomId + " no Pub/Sub")
+	utils.LogDebug("Assinada sala " + roomId + " no Pub/Sub")
 }
