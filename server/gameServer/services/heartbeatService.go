@@ -11,31 +11,35 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var HeartbeatInterval = time.Duration(utils.MustEnvInt("HEARTBEAT_INTERVAL", 10)) * time.Second
-var HeartbeatTTL = time.Duration(utils.MustEnvInt("HEARTBEAT_TTL", 30)) * time.Second
-
 type HeartbeatService struct {
-	rdb        *redis.Client
-	instanceID string
-	ctx        context.Context
-	cancel     context.CancelFunc
-	ticker     *time.Ticker
+	rdb               *redis.Client
+	instanceID        string
+	ctx               context.Context
+	cancel            context.CancelFunc
+	ticker            *time.Ticker
+	HeartbeatInterval time.Duration
+	HeartbeatTTL      time.Duration
 }
 
 // NewHeartbeatService cria uma nova instância do serviço de heartbeat
 func NewHeartbeatService(rdb *redis.Client) *HeartbeatService {
 	ctx, cancel := context.WithCancel(context.Background())
+	HeartbeatInterval := time.Duration(utils.MustEnvInt("HEARTBEAT_INTERVAL", 10)) * time.Second
+	HeartbeatTTL := time.Duration(utils.MustEnvInt("HEARTBEAT_TTL", 30)) * time.Second
+
 	return &HeartbeatService{
-		rdb:        rdb,
-		instanceID: config.InstanceID,
-		ctx:        ctx,
-		cancel:     cancel,
+		rdb:               rdb,
+		instanceID:        config.InstanceID,
+		ctx:               ctx,
+		cancel:            cancel,
+		HeartbeatInterval: HeartbeatInterval,
+		HeartbeatTTL:      HeartbeatTTL,
 	}
 }
 
 // Start inicia o heartbeat da instância
 func (h *HeartbeatService) Start() {
-	h.ticker = time.NewTicker(HeartbeatInterval)
+	h.ticker = time.NewTicker(h.HeartbeatInterval)
 
 	// Primeira execução imediata
 	h.sendHeartbeat()
@@ -73,7 +77,7 @@ func (h *HeartbeatService) Stop() {
 func (h *HeartbeatService) sendHeartbeat() {
 	// Renova heartbeat da instância
 	heartbeatKey := fmt.Sprintf("instance:%s:alive", h.instanceID)
-	err := h.rdb.Set(h.ctx, heartbeatKey, "1", HeartbeatTTL).Err()
+	err := h.rdb.Set(h.ctx, heartbeatKey, "1", h.HeartbeatTTL).Err()
 	if err != nil {
 		utils.LogDebug(fmt.Sprintf("Erro ao enviar heartbeat: %v", err))
 		return
@@ -108,7 +112,7 @@ func (h *HeartbeatService) sendHeartbeat() {
 		}
 
 		// Renova TTL do player
-		h.rdb.Expire(h.ctx, playerKey, HeartbeatTTL)
+		h.rdb.Expire(h.ctx, playerKey, h.HeartbeatTTL)
 		playersRenewed++
 	}
 

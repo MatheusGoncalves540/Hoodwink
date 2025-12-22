@@ -13,10 +13,16 @@ import (
 
 type RoomService struct {
 	redisClient *redis.Client
+	roomTTL     int
 }
 
 func NewRoomService(redisClient *redis.Client) *RoomService {
-	return &RoomService{redisClient}
+	roomTTL := utils.MustEnvInt("ROOM_TTL", 5)
+
+	return &RoomService{
+		redisClient,
+		roomTTL,
+	}
 }
 
 func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest, customMatch bool) (*roomStructs.Room, error) {
@@ -40,9 +46,8 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		Created:       time.Now(),
 	}
 
-	roomTTL := utils.MustEnvInt("ROOM_TTL", 5)
 	// Salva a sala com TTL inicial de 5 segundos
-	err := redisHandlers.SaveRoomWithTTL(r.Context(), s.redisClient, room, time.Duration(roomTTL)*time.Second)
+	err := redisHandlers.SaveRoomWithTTL(r.Context(), s.redisClient, room, time.Duration(s.roomTTL)*time.Second)
 	if err != nil {
 		return nil, err
 	}
