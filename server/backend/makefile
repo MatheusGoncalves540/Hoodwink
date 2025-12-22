@@ -21,12 +21,12 @@ POSTGRES_CONTAINER := postgresdb
 REDIS_CONTAINER := redisdb
 
 # Imagens
-POSTGRES_IMAGE := docker.io/library/postgres
-REDIS_IMAGE := docker.io/redis/redis-stack-server:latest
+POSTGRES_IMAGE := docker.io/library/postgres:18.1-bookworm
+REDIS_IMAGE := docker.io/library/redis:8.0
 
 .PHONY: all db-up redis-up start stop clean redis-conf install dev migrate migrate-down migrate-redo migrate-status migrate-create help
 
-all: redis-conf db-up redis-up install dev
+all: redis-conf db-up migrate redis-up install dev
 
 ## Cria o diretório e sobe o container do PostgreSQL
 db-up:
@@ -36,7 +36,7 @@ db-up:
 	  -e POSTGRES_PASSWORD=postgres \
 	  -e POSTGRES_DB=hoodwink \
 	  -p 5432:5432 \
-	  -v $(POSTGRES_VOLUME):/data/db \
+	  -v $(POSTGRES_VOLUME):/var/lib/postgresql:Z \
 	  $(POSTGRES_IMAGE)
 	podman start $(POSTGRES_CONTAINER)
 
@@ -45,21 +45,15 @@ redis-conf:
 	@test -f $(REDIS_CONF) || printf '%s\n' \
 'requirepass redis' \
 'appendonly yes' \
-'appendfsync everysec' \
-'loadmodule /opt/redis-stack/lib/redisearch.so MAXSEARCHRESULTS 10000 MAXAGGREGATERESULTS 10000' \
-'loadmodule /opt/redis-stack/lib/rediscompat.so' \
-'loadmodule /opt/redis-stack/lib/redisbloom.so' \
-'loadmodule /opt/redis-stack/lib/redistimeseries.so' \
-'loadmodule /opt/redis-stack/lib/redisgears.so v8-plugin-path /opt/redis-stack/lib/libredisgears_v8_plugin.so' \
-'loadmodule /opt/redis-stack/lib/rejson.so' > $(REDIS_CONF)
+'appendfsync everysec' > $(REDIS_CONF)
 
 ## Sobe o container do Redis Stack
 redis-up: redis-conf
 	podman create --name $(REDIS_CONTAINER) \
 	  -p 6379:6379 \
-	  -v $(CURDIR)/$(REDIS_CONF):/etc/redis.conf:ro \
+	  -v $(CURDIR)/$(REDIS_CONF):/usr/local/etc/redis/redis.conf:ro \
 	  $(REDIS_IMAGE) \
-	  redis-server /etc/redis.conf
+	  redis-server /usr/local/etc/redis/redis.conf
 	podman start $(REDIS_CONTAINER)
 
 ## Inicia os containers caso já existam
