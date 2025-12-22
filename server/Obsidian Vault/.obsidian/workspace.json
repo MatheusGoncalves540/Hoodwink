@@ -221,27 +221,16 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Desenvolvimento/🔐 Onde salvar o JWT?.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of 🔐 Onde salvar o JWT?"
-            }
-          },
-          {
-            "id": "ae5e7d79479c7de4",
-            "type": "leaf",
-            "state": {
-              "type": "git-view",
-              "state": {},
-              "icon": "git-pull-request",
-              "title": "Source Control"
+              "title": "Outline"
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "horizontal",
