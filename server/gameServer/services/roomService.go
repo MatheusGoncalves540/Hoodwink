@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
@@ -33,13 +34,13 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		Password:      roomData.Password,
 		MaxPlayers:    roomData.MaxPlayers,
 		CustomMatch:   customMatch,
-		Turn:          0,
+		Turn:          1,
 		Tax:           0,
 		Players:       make(map[string]roomStructs.Player),
 		DeadDeck:      []string{},
 		CurrentPlayer: "",
-		State:         "",
-		PendingAction: &roomStructs.PlayerPlay{},
+		State:         roomStructs.StateWaitTurn,
+		PendingEvent:  &roomStructs.PendingEvent{},
 		PendingPlayer: "",
 		GameOver:      false,
 		StartTime:     time.Time{},
@@ -51,6 +52,9 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 	if err != nil {
 		return nil, err
 	}
+
+	// TODO REMOVER ISSO DEPOIS
+	game.StartTurn(r.Context(), s.redisClient, room)
 
 	return room, nil
 }

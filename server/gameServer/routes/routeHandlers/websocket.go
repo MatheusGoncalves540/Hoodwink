@@ -80,7 +80,7 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 			}
 
 			// Decodifica evento
-			var playerPlay roomStructs.PlayerPlay
+			var playerPlay roomStructs.PendingEvent
 			if err := json.Unmarshal(msg, &playerPlay); err != nil {
 				utils.LogDebug(fmt.Sprintf("Erro ao decodificar mensagem: %v", err))
 				break

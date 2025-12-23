@@ -7,6 +7,6 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func ProcessPlay(playerPlay *roomStructs.PlayerPlay, ctx context.Context, rdb *redis.Client) {
+func ProcessPlay(playerPlay *roomStructs.PendingEvent, ctx context.Context, rdb *redis.Client) {
 
 }

@@ -19,7 +19,7 @@ import (
 // Retorno:
 //
 //	error: erro de serialização ou comunicação com Redis
-func PushPlayerPlay(ctx context.Context, rdb *redis.Client, RoomId string, playerPlay roomStructs.PlayerPlay) error {
+func PushPlayerPlay(ctx context.Context, rdb *redis.Client, RoomId string, playerPlay roomStructs.PendingEvent) error {
 	// Serializa o evento para JSON
 	data, err := json.Marshal(playerPlay)
 	if err != nil {

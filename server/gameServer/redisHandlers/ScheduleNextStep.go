@@ -16,5 +16,5 @@ import (
 //	playerPlay: evento a ser agendado (struct Event)
 //
 // Não retorna erro, apenas agenda a execução.
-func ScheduleNextStep(ctx context.Context, rdb *redis.Client, RoomId string, playerPlay roomStructs.PlayerPlay) {
+func ScheduleNextStep(ctx context.Context, rdb *redis.Client, RoomId string, playerPlay roomStructs.PendingEvent) {
 }

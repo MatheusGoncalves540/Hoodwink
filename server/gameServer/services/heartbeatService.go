@@ -117,10 +117,10 @@ func (h *HeartbeatService) sendHeartbeat() {
 	}
 
 	if playersRenewed > 0 {
-		utils.LogDebug(fmt.Sprintf(
-			"Heartbeat enviado - Instância: %s, Players renovados: %d",
-			h.instanceID, playersRenewed,
-		))
+		// utils.LogDebug(fmt.Sprintf(
+		// 	"Heartbeat enviado - Instância: %s, Players renovados: %d",
+		// 	h.instanceID, playersRenewed,
+		// ))
 	}
 }
 

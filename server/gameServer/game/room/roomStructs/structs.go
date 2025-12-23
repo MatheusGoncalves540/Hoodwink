@@ -22,7 +22,7 @@ type Room struct {
 	DeadDeck      []string          `json:"deadDeck"`
 	CurrentPlayer string            `json:"currentPlayer"`
 	State         RoomState         `json:"state"`
-	PendingAction *PlayerPlay       `json:"pendingAction"`
+	PendingEvent  *PendingEvent     `json:"pendingEvent"`
 	PendingPlayer string            `json:"pendingPlayer"`
 	GameOver      bool              `json:"gameOver"`
 	StartTime     time.Time         `json:"startTime"`

@@ -12,7 +12,7 @@ import (
 // Usa BRPop para esperar até que um evento esteja disponível.
 // Retorna o evento desempilhado ou nil se não houver evento.
 // Em caso de erro de deserialização ou Redis, retorna o erro correspondente.
-func PopEvent(ctx context.Context, rdb *redis.Client, RoomId string) (*roomStructs.PlayerPlay, error) {
+func PopEvent(ctx context.Context, rdb *redis.Client, RoomId string) (*roomStructs.PendingEvent, error) {
 	// Busca o próximo evento na fila (bloqueante até existir)
 	res, err := rdb.BRPop(ctx, 0, "room:"+RoomId+":playQueue").Result()
 	if err != nil {
@@ -21,7 +21,7 @@ func PopEvent(ctx context.Context, rdb *redis.Client, RoomId string) (*roomStruc
 	if len(res) < 2 {
 		return nil, nil // nenhum evento disponível
 	}
-	var playerPlay roomStructs.PlayerPlay
+	var playerPlay roomStructs.PendingEvent
 	// Converte o JSON armazenado em struct Event
 	err = json.Unmarshal([]byte(res[1]), &playerPlay)
 	if err != nil {

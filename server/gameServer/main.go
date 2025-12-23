@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/routeHandlers"
@@ -32,6 +33,8 @@ func main() {
 	defer services.HeartbeatService.Stop()
 
 	routes := routes.SetupRoutes(handler, redisClient)
+
+	game.StartGameProcessor(redisClient)
 
 	log.Printf("Servidor ouvindo em %s (Instância: %s)", os.Getenv("GAME_SERVER_URL"), config.InstanceID)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), routes))

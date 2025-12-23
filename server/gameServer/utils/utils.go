@@ -72,6 +72,11 @@ func LogDebug(msg any) {
 	}
 }
 
+// LogError sempre usado para printar mensagem de erro no console
+func LogError(msg any) {
+	fmt.Println(msg)
+}
+
 // IsDebugMode retorna true se o modo debug estiver ativado via variável de ambiente.
 func IsDebugMode() bool {
 	return os.Getenv("DEBUG") == "true"
