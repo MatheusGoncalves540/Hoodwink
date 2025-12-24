@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 )
 
 var validate = validator.New()
@@ -42,11 +40,6 @@ func GenerateNewId() string {
 	return strconv.FormatInt(id, 16)
 }
 
-// Gera um UUID para identificar a instância/processo
-func GetInstanceID() string {
-	return uuid.New().String()
-}
-
 // StringContains verifica se uma string está presente em um slice de strings.
 func StringContains(slice []string, item string) bool {
 	for _, a := range slice {
@@ -63,31 +56,4 @@ func GetPlayerByID(room *roomStructs.Room, playerID string) *roomStructs.Player 
 		return &player
 	}
 	return nil
-}
-
-// if DEBUG = true, print on console
-func LogDebug(msg any) {
-	if os.Getenv("DEBUG") == "true" {
-		fmt.Println(msg)
-	}
-}
-
-// LogError sempre usado para printar mensagem de erro no console
-func LogError(msg any) {
-	fmt.Println(msg)
-}
-
-// IsDebugMode retorna true se o modo debug estiver ativado via variável de ambiente.
-func IsDebugMode() bool {
-	return os.Getenv("DEBUG") == "true"
-}
-
-// MustEnvInt lê uma variável de ambiente e converte para int, ou retorna valor padrão se não definida ou inválida.
-func MustEnvInt(key string, def int) int {
-	if v := os.Getenv(key); v != "" {
-		if i, err := strconv.Atoi(v); err == nil {
-			return i
-		}
-	}
-	return def
 }
