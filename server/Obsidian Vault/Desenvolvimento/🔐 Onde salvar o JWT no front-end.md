@@ -1,11 +1,11 @@
 Você pode salvar o JWT de 3 formas:
 
-| Método | Persistência | Segurança | Ideal para |
-| --- | --- | --- | --- |
-| `localStorage` | Alta | Média (acessível via JS) | SPAs simples / controle manual |
-| `sessionStorage` | Até fechar aba | Média | Sessões curtas |
-| **Memória (em React state)** | Volátil | Alta (mais segura) | Apps sensíveis + token curto |
-| **Cookies (HTTP-only)** | Alta | Alta (backend envia) | Só se backend configurar |
+| Método                       | Persistência   | Segurança                | Ideal para                     |
+| ---------------------------- | -------------- | ------------------------ | ------------------------------ |
+| `localStorage`               | Alta           | Média (acessível via JS) | SPAs simples / controle manual |
+| `sessionStorage`             | Até fechar aba | Média                    | Sessões curtas                 |
+| **Memória (em React state)** | Volátil        | Alta (mais segura)       | Apps sensíveis + token curto   |
+| **Cookies (HTTP-only)**      | Alta           | Alta (backend envia)     | Só se backend configurar       |
 
 > 🔐 **Recomendado**: use `localStorage` para facilidade e `Authorization` para envio seguro no header.
 

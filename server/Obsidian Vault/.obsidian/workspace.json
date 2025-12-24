@@ -91,12 +91,14 @@
             "id": "7afa8e2429ebf97d",
             "type": "leaf",
             "state": {
-              "type": "release-notes",
+              "type": "markdown",
               "state": {
-                "currentVersion": "1.10.6"
+                "file": "Desenvolvimento/🧠 Visão geral da arquitetura do game-server.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-book-up",
-              "title": "Release Notes 1.10.6"
+              "icon": "lucide-file",
+              "title": "🧠 Visão geral da arquitetura do game-server"
             }
           }
         ],
@@ -221,12 +223,13 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "Desenvolvimento/🧠 Visão geral da arquitetura do game-server.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline"
+              "title": "Outline of 🧠 Visão geral da arquitetura do game-server"
             }
           }
         ],
@@ -245,12 +248,13 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "audio-recorder:Start/stop recording": false,
-      "obsidian-git:Open Git source control": false
+      "audio-recorder:Start/stop recording": false
     }
   },
   "active": "7afa8e2429ebf97d",
   "lastOpenFiles": [
+    "Desenvolvimento/🔐 Onde salvar o JWT no front-end.md",
+    "Desenvolvimento/⚙️ Motor de Processamento de Jogadas e Timeouts.md",
     "Untitled.md",
     "Desenvolvimento/como adicionar novas cartas e jogadas.md",
     "Desenvolvimento/Desenvolvimento.md",
