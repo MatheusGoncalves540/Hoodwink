@@ -1,9 +1,8 @@
-package game
+package engine
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -15,29 +14,30 @@ import (
 
 // StartGameProcessor inicia o processador de eventos do jogo.
 func StartGameProcessor(rdb *redis.Client) {
-	utils.LogDebug("✅ Processador iniciado")
+	log.Println("🔄 Inicializando gameProcessorEngine...")
 	ctx := context.Background()
 	go func() {
 		ticker := time.NewTicker(300 * time.Millisecond)
 		defer ticker.Stop()
 
 		for range ticker.C {
-			processExpiredRooms(ctx, rdb)
+			processExpiredRoomsEvents(ctx, rdb)
 		}
 	}()
 }
 
-// processExpiredRooms verifica eventos em salas com timeout expirado e avança o estado do jogo.
-func processExpiredRooms(ctx context.Context, rdb *redis.Client) error {
+// processExpiredRoomsEvents verifica eventos em salas com timeout expirado e avança o estado do jogo.
+func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client) error {
 	now := time.Now().UnixNano()
 
 	roomIDs, err := rdb.ZRangeByScore(ctx, "rooms:timeouts", &redis.ZRangeBy{
 		Min:    "0",
 		Max:    strconv.FormatInt(now, 10),
 		Offset: 0,
-		Count:  5,
+		Count:  int64(utils.MustEnvInt("PROCESSOR_BATCH_SIZE", 5)),
 	}).Result()
 	if err != nil {
+		utils.LogError(err)
 		return err
 	}
 
@@ -60,62 +60,16 @@ func processExpiredRooms(ctx context.Context, rdb *redis.Client) error {
 		}
 
 		AdvanceByTimeout(ctx, rdb, room)
-
-		redisHandlers.SaveRoom(ctx, rdb, room)
 	}
 	return nil
 }
 
-// AdvanceByTimeout avança o estado do jogo baseado no estado atual da sala.
-func AdvanceByTimeout(ctx context.Context, rdb *redis.Client, room *roomStructs.Room) {
-	switch room.State {
-
-	case roomStructs.StateWaitTurn:
-		NextTurn(room, rdb, ctx)
-		data, _ := json.MarshalIndent(room, "", "  ")
-		fmt.Println(string(data))
-
-	case roomStructs.StateWaitAction:
-		// AdvanceTurn(room)
-
-	case roomStructs.StateWaitContest:
-		// ApplyAction(room)
-		// StartKamikaze(room)
-	}
-}
-
-// OnPlayerEvent processa quando uma ação é enviada por um jogador.
-func OnPlayerEvent(ctx context.Context, rdb *redis.Client, roomID string, event roomStructs.PendingEvent) error {
-	if !redisHandlers.TryLockRoom(ctx, rdb, roomID) {
-		return nil
-	}
-
-	room, err := redisHandlers.LoadRoom(ctx, rdb, roomID)
-	if err != nil {
-		return err
-	}
-
-	switch room.State {
-	case roomStructs.StateWaitAction:
-		// handleUseCard(room, event)
-
-	case roomStructs.StateWaitContest:
-		// handleContest(room, event)
-	}
-
-	err = redisHandlers.SaveRoom(ctx, rdb, room)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func StartTurn(ctx context.Context, rdb *redis.Client, room *roomStructs.Room) {
-	room.State = roomStructs.StateWaitTurn
+func WaitingFirstAction(ctx context.Context, rdb *redis.Client, room *roomStructs.Room) {
+	room.State = roomStructs.StateWaitingFirstAction
 
 	expiresAt := time.Now().Add(5 * time.Second)
 	room.PendingEvent = &roomStructs.PendingEvent{
-		Type:      roomStructs.TypeTimeout,
+		Type:      roomStructs.TypeDisplayingMessage,
 		ExpiresAt: expiresAt,
 	}
 
@@ -132,5 +86,5 @@ func NextTurn(room *roomStructs.Room, rdb *redis.Client, ctx context.Context) {
 	room.PendingEvent = nil
 
 	// inicia novo turno
-	StartTurn(ctx, rdb, room)
+	WaitingFirstAction(ctx, rdb, room)
 }

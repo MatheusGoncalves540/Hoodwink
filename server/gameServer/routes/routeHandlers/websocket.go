@@ -33,9 +33,9 @@ type WebSocketPayload struct {
 }
 
 // WebSocketHandler lida com conexões WS
+// Enviar Token JWT na url: /game?ticket=SEU_TOKEN_JWT
 func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Enviar Token JWT na url: /game?ticket=SEU_TOKEN_JWT
 		ctx := r.Context()
 
 		// Valida e faz upgrade para WebSocket
@@ -89,11 +89,6 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 
 			// Processa mensagem normalmente
 			wsHandlers.OnMessage(ctx, conn, rdb, &playerPlay, roomId)
-
-			// 4️⃣ Publica o evento para outras instâncias
-			// if pubMsg, err := json.Marshal(playerPlay); err == nil {
-			// 	wsRoom.PublishRoomBroadcast(ctx, rdb, roomId, pubMsg)
-			// }
 		}
 	}
 }
