@@ -17,7 +17,8 @@ func StartGameProcessor(rdb *redis.Client) {
 	log.Println("🔄 Inicializando gameProcessorEngine...")
 	ctx := context.Background()
 	go func() {
-		ticker := time.NewTicker(300 * time.Millisecond)
+		intervalMs := utils.MustEnvInt("PROCESSOR_INTERVAL_MS", 300)
+		ticker := time.NewTicker(time.Duration(intervalMs) * time.Millisecond)
 		defer ticker.Stop()
 
 		for range ticker.C {
