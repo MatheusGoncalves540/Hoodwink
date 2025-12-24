@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
-	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -67,5 +66,5 @@ func CleanupPlayerRegistrations(ctx context.Context, rdb *redis.Client) error {
 
 // Gera um UUID para identificar a instância/processo
 func GetInstanceID() string {
-	return uuid.New().String()
+	return config.InstanceID
 }

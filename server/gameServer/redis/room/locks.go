@@ -46,13 +46,3 @@ func ReleaseRoomLock(ctx context.Context, rdb *redis.Client, RoomId, instanceID 
 	// Não remove se não for o dono ou se não existir
 	return nil
 }
-
-// TryLockRoom tenta adquirir um lock para a sala especificada.
-func TryLockRoom(ctx context.Context, rdb *redis.Client, roomID string) bool {
-	return rdb.SetNX(
-		ctx,
-		"lock:room:"+roomID,
-		"1",
-		2*time.Second,
-	).Val()
-}

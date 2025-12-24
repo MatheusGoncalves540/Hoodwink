@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
@@ -45,24 +46,31 @@ func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client) error {
 	utils.LogDebug("Salas com timeout expirado: " + strconv.Itoa(len(roomIDs)))
 
 	for _, roomID := range roomIDs {
-		if !room.TryLockRoom(ctx, rdb, roomID) {
-			continue
-		}
-
-		roomData, err := room.LoadRoom(ctx, rdb, roomID)
-		if err != nil {
-			utils.LogError(err)
-			rdb.ZRem(ctx, "rooms:timeouts", roomID)
-			continue
-		}
-		if roomData.PendingEvent == nil {
-			rdb.ZRem(ctx, "rooms:timeouts", roomID)
-			continue
-		}
-
-		AdvanceByTimeout(ctx, rdb, roomData)
+		processRoomWithLock(ctx, rdb, roomID)
 	}
 	return nil
+}
+
+func processRoomWithLock(ctx context.Context, rdb *redis.Client, roomID string) {
+	ok, err := room.AcquireRoomLock(ctx, rdb, roomID, config.InstanceID, 2*time.Second)
+	if err != nil || !ok {
+		return
+	}
+	defer room.ReleaseRoomLock(ctx, rdb, roomID, config.InstanceID)
+
+	roomData, err := room.LoadRoom(ctx, rdb, roomID)
+	if err != nil {
+		utils.LogError(err)
+		rdb.ZRem(ctx, "rooms:timeouts", roomID)
+		return
+	}
+
+	if roomData.PendingEvent == nil {
+		rdb.ZRem(ctx, "rooms:timeouts", roomID)
+		return
+	}
+
+	AdvanceByTimeout(ctx, rdb, roomData)
 }
 
 func WaitingFirstAction(ctx context.Context, rdb *redis.Client, room *roomStructs.Room) {

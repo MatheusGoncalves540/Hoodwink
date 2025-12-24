@@ -58,7 +58,7 @@ func SaveRoom(ctx context.Context, rdb *redis.Client, room *roomStructs.Room) er
 
 // SaveRoomWithTTL salva o estado da sala no Redis com TTL específico
 func SaveRoomWithTTL(ctx context.Context, rdb *redis.Client, room *roomStructs.Room, ttl time.Duration) error {
-	// Gera um ID único para a instância atual
+	// Pega o ID da instância atual
 	instanceID := utils.GetInstanceID()
 	// Tenta adquirir o lock da sala
 	ok, err := AcquireRoomLock(ctx, rdb, room.ID, instanceID, 5*time.Second)
