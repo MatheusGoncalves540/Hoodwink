@@ -13,7 +13,9 @@ import (
 func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, playerPlay *roomStructs.PendingEvent, roomId string) {
 
 	// Process WebSocket debug command - adm command
-	messages.ProcessDebugCommand(playerPlay, ctx, rdb, roomId)
+	messages.ProcessDebugCommand(ctx, rdb, roomId, playerPlay)
 	// Process WebSocket message - player play
-	messages.ProcessPlay(playerPlay, ctx, rdb)
+	messages.ProcessPlay(ctx, rdb, roomId, playerPlay)
+	// TODO Process WebSocket chat message
+	// messages.ProcessChatMessage(playerPlay, ctx, rdb, roomId)
 }
