@@ -8,9 +8,9 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine"
+	httpHandlers "github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/http"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/routeHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/joho/godotenv"
@@ -26,7 +26,7 @@ func main() {
 	redisClient := redis.ConnectRedis()
 
 	services := services.SetupServices(redisClient)
-	handler := routeHandlers.NewHandler(services)
+	handler := httpHandlers.NewHandler(services)
 
 	// Inicia o serviço de heartbeat
 	services.HeartbeatService.Start()

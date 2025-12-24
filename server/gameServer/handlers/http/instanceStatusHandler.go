@@ -1,4 +1,4 @@
-package routeHandlers
+package http
 
 import (
 	"context"
@@ -24,7 +24,7 @@ type StatusResponse struct {
 }
 
 // GetInstancesStatus retorna o status de todas as instâncias
-func (h *Handler) GetInstancesStatus(rdb *redis.Client) http.HandlerFunc {
+func (h *HTTPHandler) GetInstancesStatus(rdb *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -127,7 +127,7 @@ func getOrphanedPlayers(ctx context.Context, rdb *redis.Client, aliveInstances [
 }
 
 // CleanupOrphanedPlayers remove registros de players órfãos
-func (h *Handler) CleanupOrphanedPlayers(rdb *redis.Client) http.HandlerFunc {
+func (h *HTTPHandler) CleanupOrphanedPlayers(rdb *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

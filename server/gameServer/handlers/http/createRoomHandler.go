@@ -1,5 +1,4 @@
-// gameServer/routes/rHandlers/createRoomHandler.go
-package routeHandlers
+package http
 
 import (
 	"encoding/json"
@@ -10,7 +9,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-func (h *Handler) CreateCustomRoom(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) CreateCustomRoom(w http.ResponseWriter, r *http.Request) {
 	var reqBody endpointStructures.CreateRoomRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {

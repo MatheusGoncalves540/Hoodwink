@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"strings"
 
+	httpHandlers "github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/http"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/contextKeys"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/routeHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 // JWTBackendMiddleware verifica o header Authorization, valida, e injeta o struct UserClaims no contexto
-func JWTBackendMiddleware(next http.Handler, h *routeHandlers.Handler) http.Handler {
+func JWTBackendMiddleware(next http.Handler, h *httpHandlers.HTTPHandler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {

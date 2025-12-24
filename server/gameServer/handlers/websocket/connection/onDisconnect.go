@@ -1,4 +1,4 @@
-package wsHandlers
+package connection
 
 import (
 	"context"

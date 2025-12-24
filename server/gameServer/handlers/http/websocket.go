@@ -1,4 +1,4 @@
-package routeHandlers
+package http
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/routeHandlers/wsHandlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/connection"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
@@ -34,12 +34,12 @@ type WebSocketPayload struct {
 
 // WebSocketHandler lida com conexões WS
 // Enviar Token JWT na url: /game?ticket=SEU_TOKEN_JWT
-func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
+func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
 		// Valida e faz upgrade para WebSocket
-		conn, claims := wsHandlers.ValidateConnection(w, r, h.JWTService, h.RoomService, upgrader, rdb, ctx)
+		conn, claims := connection.ValidateConnection(w, r, h.JWTService, h.RoomService, upgrader, rdb, ctx)
 		if conn == nil || claims == nil {
 			return
 		}
@@ -60,8 +60,8 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 		defer redisHandlers.UnregisterPlayerFromRoom(ctx, rdb, playerId)
 
 		// Chamadas de hook
-		wsHandlers.OnConnect(conn, ctx, rdb, roomId, playerId, username)
-		defer wsHandlers.OnDisconnect(conn, ctx, rdb, playerId, roomId)
+		connection.OnConnect(conn, ctx, rdb, roomId, playerId, username)
+		defer connection.OnDisconnect(conn, ctx, rdb, playerId, roomId)
 
 		// Loop de leitura das mensagens do cliente
 		for {
@@ -88,7 +88,7 @@ func (h *Handler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 			playerPlay.PlayerID = playerId
 
 			// Processa mensagem normalmente
-			wsHandlers.OnMessage(ctx, conn, rdb, &playerPlay, roomId)
+			connection.OnMessage(ctx, conn, rdb, &playerPlay, roomId)
 		}
 	}
 }

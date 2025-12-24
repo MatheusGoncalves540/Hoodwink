@@ -1,4 +1,4 @@
-package wsMsgHandler
+package messages
 
 import (
 	"context"

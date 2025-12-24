@@ -1,4 +1,4 @@
-package routeHandlers
+package http
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func (h *Handler) GetTicket(rdb *redis.Client) http.HandlerFunc {
+func (h *HTTPHandler) GetTicket(rdb *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		roomId := chi.URLParam(r, "RoomId")
 		playerCtx := r.Context().Value(contextKeys.PlayerContextKey)

@@ -1,10 +1,10 @@
-package wsHandlers
+package connection
 
 import (
 	"context"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/wsMsgHandler"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/messages"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 )
@@ -13,7 +13,7 @@ import (
 func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, playerPlay *roomStructs.PendingEvent, roomId string) {
 
 	// Process WebSocket debug command - adm command
-	wsMsgHandler.ProcessDebugCommand(playerPlay, ctx, rdb, roomId)
+	messages.ProcessDebugCommand(playerPlay, ctx, rdb, roomId)
 	// Process WebSocket message - player play
-	wsMsgHandler.ProcessPlay(playerPlay, ctx, rdb)
+	messages.ProcessPlay(playerPlay, ctx, rdb)
 }
