@@ -27,12 +27,11 @@ func main() {
 
 	services := services.SetupServices(redisClient)
 	handler := httpHandlers.NewHandler(services)
+	routes := routes.SetupRoutes(handler, redisClient)
 
 	// Inicia o serviço de heartbeat
 	services.HeartbeatService.Start()
 	defer services.HeartbeatService.Stop()
-
-	routes := routes.SetupRoutes(handler, redisClient)
 
 	engine.StartGameProcessor(redisClient)
 

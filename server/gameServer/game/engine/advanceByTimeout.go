@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -14,7 +15,9 @@ func AdvanceByTimeout(ctx context.Context, rdb *redis.Client, room *roomStructs.
 	switch room.State {
 
 	case roomStructs.StateWaitingFirstAction:
-		NextTurn(room, rdb, ctx)
+		if err := NextTurn(room, rdb, ctx); err != nil {
+			utils.LogError(err)
+		}
 		// TODO: Remover depois de testar
 		data, _ := json.MarshalIndent(room, "", "  ")
 		fmt.Println(string(data))
