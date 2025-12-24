@@ -8,8 +8,8 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/connection"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/player"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
@@ -56,8 +56,8 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 		defer wsRoom.ConnManager.Disconnect(roomId, playerId)
 
 		// Registra que player está em uma sala no Redis
-		redisHandlers.RegisterPlayerInRoom(ctx, rdb, playerId, roomId)
-		defer redisHandlers.UnregisterPlayerFromRoom(ctx, rdb, playerId)
+		player.RegisterPlayerInRoom(ctx, rdb, playerId, roomId)
+		defer player.UnregisterPlayerFromRoom(ctx, rdb, playerId)
 
 		// Chamadas de hook
 		connection.OnConnect(conn, ctx, rdb, roomId, playerId, username)
@@ -72,7 +72,7 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 			}
 			utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", playerId, roomId))
 
-			roomId, instanceId, registered, err := redisHandlers.GetPlayerRegistrationInfo(ctx, rdb, playerId)
+			roomId, instanceId, registered, err := player.GetPlayerRegistrationInfo(ctx, rdb, playerId)
 			if err != nil || !registered || roomId == "" || instanceId == "" {
 				utils.LogDebug("Conexão perdida ou não registrada")
 				conn.Close()

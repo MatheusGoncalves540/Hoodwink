@@ -1,9 +1,10 @@
-package redisHandlers
+package room
 
 import (
 	"context"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/player"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -26,7 +27,7 @@ func CheckIfRoomIsEmpty(ctx context.Context, rdb *redis.Client, roomId string) (
 
 	// Verifica se há jogadores conectados (registrados nesta sala)
 	for playerId := range room.Players {
-		registeredRoom, registered, err := GetRegisteredRoomForPlayer(ctx, rdb, playerId)
+		registeredRoom, registered, err := player.GetRegisteredRoomForPlayer(ctx, rdb, playerId)
 		if err != nil {
 			return false, err
 		}

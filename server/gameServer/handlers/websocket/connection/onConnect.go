@@ -3,7 +3,7 @@ package connection
 import (
 	"context"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
@@ -14,7 +14,7 @@ func OnConnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, roo
 	utils.LogDebug("Cliente conectado ao WebSocket")
 
 	// Remove o TTL da sala quando um jogador se conecta
-	// err := redisHandlers.RemoveRoomTTL(ctx, rdb, roomId)
+	// err := room.RemoveRoomTTL(ctx, rdb, roomId)
 	// if err != nil {
 	// 	utils.LogDebug("Erro ao remover TTL da sala: " + err.Error())
 	// } else {
@@ -22,7 +22,7 @@ func OnConnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, roo
 	// }
 
 	// Adiciona ou atualiza o jogador na estrutura da sala
-	err := redisHandlers.AddPlayerInRoom(ctx, rdb, roomId, playerId, username)
+	err := room.AddPlayerInRoom(ctx, rdb, roomId, playerId, username)
 	if err != nil {
 		utils.LogDebug("Erro ao adicionar/atualizar jogador na sala: " + err.Error())
 	} else {

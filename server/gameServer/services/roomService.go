@@ -6,7 +6,8 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/player"
+	redisRoom "github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
@@ -48,7 +49,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 	}
 
 	// Salva a sala com TTL inicial de 5 segundos
-	err := redisHandlers.SaveRoomWithTTL(r.Context(), s.redisClient, room, time.Duration(s.roomTTL)*time.Second)
+	err := redisRoom.SaveRoomWithTTL(r.Context(), s.redisClient, room, time.Duration(s.roomTTL)*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +66,7 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 		return false, "Erro ao verificar player no backend"
 	}
 
-	room, err := redisHandlers.LoadRoom(r.Context(), rdb, roomId)
+	room, err := redisRoom.LoadRoom(r.Context(), rdb, roomId)
 	if err != nil {
 		return false, "Sala não encontrada"
 	}
@@ -80,7 +81,7 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 		return false, "Jogo já começou"
 	}
 
-	roomId, isPlaying, err := redisHandlers.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
+	roomId, isPlaying, err := player.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
 	if err != nil {
 		return false, "Erro ao verificar status do player"
 	}
@@ -92,14 +93,14 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 }
 
 func (s *RoomService) SyncActivePlayers(r *http.Request, rdb *redis.Client, roomId string) error {
-	room, err := redisHandlers.LoadRoom(r.Context(), rdb, roomId)
+	room, err := redisRoom.LoadRoom(r.Context(), rdb, roomId)
 	if err != nil {
 		return err
 	}
 
 	// Itera sobre os players e remove aqueles sem registro ativo
 	for playerId := range room.Players {
-		registeredRoom, registered, err := redisHandlers.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
+		registeredRoom, registered, err := player.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
 		if err != nil {
 			return err
 		}
@@ -109,5 +110,5 @@ func (s *RoomService) SyncActivePlayers(r *http.Request, rdb *redis.Client, room
 	}
 
 	// Salva a sala atualizada
-	return redisHandlers.SaveRoom(r.Context(), rdb, room)
+	return redisRoom.SaveRoom(r.Context(), rdb, room)
 }

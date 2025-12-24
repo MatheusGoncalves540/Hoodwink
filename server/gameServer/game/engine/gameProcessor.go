@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
@@ -45,22 +45,22 @@ func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client) error {
 	utils.LogDebug("Salas com timeout expirado: " + strconv.Itoa(len(roomIDs)))
 
 	for _, roomID := range roomIDs {
-		if !redisHandlers.TryLockRoom(ctx, rdb, roomID) {
+		if !room.TryLockRoom(ctx, rdb, roomID) {
 			continue
 		}
 
-		room, err := redisHandlers.LoadRoom(ctx, rdb, roomID)
+		roomData, err := room.LoadRoom(ctx, rdb, roomID)
 		if err != nil {
 			utils.LogError(err)
 			rdb.ZRem(ctx, "rooms:timeouts", roomID)
 			continue
 		}
-		if room.PendingEvent == nil {
+		if roomData.PendingEvent == nil {
 			rdb.ZRem(ctx, "rooms:timeouts", roomID)
 			continue
 		}
 
-		AdvanceByTimeout(ctx, rdb, room)
+		AdvanceByTimeout(ctx, rdb, roomData)
 	}
 	return nil
 }

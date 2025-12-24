@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisHandlers"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/player"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -27,7 +28,7 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 	roomID, _ := claims["roomId"].(string)
 
 	// Sincroniza jogadores ativos na sala antes de permitir a conexão se o jogo não tiver iniciado
-	if startTimeAny, err := redisHandlers.LoadRoomField(ctx, rdb, roomID, "StartTime"); err != nil {
+	if startTimeAny, err := room.LoadRoomField(ctx, rdb, roomID, "StartTime"); err != nil {
 		utils.LogDebug("Erro ao verificar horário de início da sala:" + err.Error())
 		return nil, nil
 	} else if startTime, ok := startTimeAny.(time.Time); !ok {
@@ -40,7 +41,7 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 		}
 	}
 
-	connectedToRoomID, registered, err := redisHandlers.GetRegisteredRoomForPlayer(ctx, rdb, playerID)
+	connectedToRoomID, registered, err := player.GetRegisteredRoomForPlayer(ctx, rdb, playerID)
 	if err != nil {
 		utils.SendError(w, "Falha ao obter sala registrada", http.StatusInternalServerError)
 		utils.LogDebug("Falha ao obter sala registrada: " + err.Error())
@@ -56,7 +57,7 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 		wsRoom.ConnManager.Disconnect(roomID, playerID)
 	}
 
-	_, err = redisHandlers.LoadRoom(r.Context(), rdb, roomID)
+	_, err = room.LoadRoom(r.Context(), rdb, roomID)
 	if err != nil {
 		utils.SendError(w, "Sala não encontrada", http.StatusNotFound)
 		return nil, nil
