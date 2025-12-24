@@ -64,11 +64,12 @@ func SaveRoomWithTTL(ctx context.Context, rdb *redis.Client, room *roomStructs.R
 	ok, err := AcquireRoomLock(ctx, rdb, room.ID, instanceID, 5*time.Second)
 	if err != nil {
 		// Retorna erro se falhar ao tentar lock
+		utils.LogError(err)
 		return err
 	}
 	if !ok {
 		// Retorna erro se outra instância já está modificando
-		return fmt.Errorf("a sala %s está sendo modificada por outra instância, tente novamente", room.ID)
+		return fmt.Errorf("não foi possível adquirir lock para a sala %s", room.ID)
 	}
 	// Libera o lock ao final da função
 	defer ReleaseRoomLock(ctx, rdb, room.ID, instanceID)

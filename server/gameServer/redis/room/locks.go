@@ -7,22 +7,69 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// AcquireRoomLock tenta adquirir um lock distribuído para uma sala usando SetNX.
+// AcquireRoomLock tenta adquirir ou renovar um lock distribuído para uma sala.
+//
+// A função possui comportamento reentrante por instância:
+//   - Se o lock não existir, ele é criado com o TTL informado.
+//   - Se o lock já existir e pertencer à mesma instância, o TTL é renovado e
+//     a função retorna sucesso.
+//   - Se o lock existir e pertencer a outra instância, o lock não é adquirido.
+//
 // Parâmetros:
 //
-//	ctx: contexto para timeout/cancelamento
+//	ctx: contexto para controle de timeout e cancelamento
 //	rdb: cliente Redis
-//	RoomId: identificador da sala
+//	roomID: identificador da sala
 //	instanceID: identificador único da instância/processo
 //	ttl: tempo de expiração do lock
 //
 // Retorno:
 //
-//	bool: true se lock foi adquirido, false se já existe
-//	error: erro de comunicação com Redis
-func AcquireRoomLock(ctx context.Context, rdb *redis.Client, RoomId, instanceID string, ttl time.Duration) (bool, error) {
-	// Tenta criar a chave de lock com TTL
-	return rdb.SetNX(ctx, "lock:room:"+RoomId, instanceID, ttl).Result()
+//	bool: true se o lock foi adquirido ou renovado pela instância atual;
+//	      false se o lock pertence a outra instância
+//	error: erro de comunicação com o Redis
+func AcquireRoomLock(
+	ctx context.Context,
+	rdb *redis.Client,
+	roomID string,
+	instanceID string,
+	ttl time.Duration,
+) (bool, error) {
+	key := "lock:room:" + roomID
+
+	// 1. Tenta adquirir o lock normalmente
+	ok, err := rdb.SetNX(ctx, key, instanceID, ttl).Result()
+	if err != nil {
+		return false, err
+	}
+
+	if ok {
+		// Lock adquirido com sucesso
+		return true, nil
+	}
+
+	// 2. Lock já existe — verificar se é da mesma instância
+	val, err := rdb.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			// A chave sumiu entre o SetNX e o Get (condição rara)
+			return false, nil
+		}
+		return false, err
+	}
+
+	if val != instanceID {
+		// Lock pertence a outra instância
+		return false, nil
+	}
+
+	// 3. Lock é da mesma instância → renovar TTL
+	_, err = rdb.Expire(ctx, key, ttl).Result()
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // ReleaseRoomLock remove o lock da sala se ainda pertencer à instância atual.
