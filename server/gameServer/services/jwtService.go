@@ -10,27 +10,23 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
 )
-
-var jwtSecret string
-
-func init() {
-	godotenv.Load(".env")
-	jwtSecret = os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		utils.LogDebug("⚠️ JWT_SECRET não definido no ambiente")
-	}
-}
 
 // JWTService para geração de tokens
 type JWTService struct {
-	secret string
+	jwtSecret        string
+	backendJWTSecret string
 }
 
 func NewJWTService() *JWTService {
-	secret := os.Getenv("JWT_SECRET")
-	return &JWTService{secret: secret}
+	jwtSecret := os.Getenv("JWT_SECRET")
+	backendJWTSecret := os.Getenv("BACKEND_JWT_SECRET")
+	if jwtSecret == "" || backendJWTSecret == "" {
+		utils.LogDebug("⚠️ JWT secrets não definidos no ambiente")
+		return nil
+	}
+
+	return &JWTService{jwtSecret, backendJWTSecret}
 }
 
 func (j *JWTService) GenerateToken(player *endpointStructures.ClaimsBackend, roomId string) (string, error) {
@@ -50,7 +46,7 @@ func (j *JWTService) GenerateToken(player *endpointStructures.ClaimsBackend, roo
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(j.secret))
+	return token.SignedString([]byte(j.jwtSecret))
 }
 
 // ParseToken verifica e retorna claims válidas de um token JWT
@@ -62,13 +58,9 @@ func (j *JWTService) ParseToken(tokenStr string, useBackendSecret bool) (jwt.Map
 	}
 
 	// Decide qual secret usar
-	secret := jwtSecret
+	secret := j.jwtSecret
 	if useBackendSecret {
-		secret = os.Getenv("BACKEND_JWT_SECRET")
-		if secret == "" {
-			utils.LogDebug("⚠️ BACKEND_JWT_SECRET não definido no ambiente")
-			return nil, errors.New("backend secret não definido")
-		}
+		secret = j.backendJWTSecret
 	}
 
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
