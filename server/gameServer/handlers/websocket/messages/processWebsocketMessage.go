@@ -40,7 +40,7 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomID string, playerPl
 			return fmt.Errorf("payload does not match AssassinPayload structure: %w", err)
 		}
 
-		expiresAt := time.Now().Add(7 * time.Second)
+		expiresAt := time.Now().Add(7 * time.Second).UTC()
 		roomData.PendingEvent = &roomStructs.PendingEvent{
 			PlayerID:  playerPlay.PlayerId,
 			Type:      roomStructs.EventCardPlayedAssassin,

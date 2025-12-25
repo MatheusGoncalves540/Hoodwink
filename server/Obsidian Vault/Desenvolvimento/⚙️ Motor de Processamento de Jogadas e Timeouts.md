@@ -100,7 +100,7 @@ Arquivo central:
     -   ou seja, é processada automaticamente pelo motor, sem ação de playe
     -   exemplo:
         ```go
-        expiresAt := time.Now().Add(7 * time.Second)
+        expiresAt := time.Now().Add(7 * time.Second).UTC()
         rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
             Score:  float64(expiresAt.UnixNano()),
             Member: roomId,
@@ -113,7 +113,7 @@ Arquivo central:
     -   O pendingEvent é removido assim que ele é processado
     -   exemplo:
         ```go
-        expiresAt := time.Now().Add(7 * time.Second)
+        expiresAt := time.Now().Add(7 * time.Second).UTC()
         roomData.PendingEvent = &roomStructs.PendingEvent{
             PlayerID:  "ID DO PLAYER QUE FEZ AÇÃO",
             Type:      roomStructs."QUAL AÇÃO FEITA",

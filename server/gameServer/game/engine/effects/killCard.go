@@ -40,7 +40,7 @@ func KillCard(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room
 	// marca a targetCard do targetPlayer como morta (-1)
 	roomData.Players[payload.TargetPlayer].Cards[payload.TargetCard] = -1
 
-	expiresAt := time.Now().Add(7 * time.Second)
+	expiresAt := time.Now().Add(7 * time.Second).UTC()
 	roomData.PendingEvent = &roomStructs.PendingEvent{
 		PlayerID:  effect.SourcePlayer,
 		Type:      roomStructs.EventCardKilled,

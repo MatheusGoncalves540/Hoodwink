@@ -86,7 +86,7 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, roomID string) 
 }
 
 func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room) error {
-	expiresAt := time.Now().Add(15 * time.Second)
+	expiresAt := time.Now().Add(15 * time.Second).UTC()
 	roomData.PendingEvent = &roomStructs.PendingEvent{
 		Type:      roomStructs.EventWaitingFirstAction,
 		ExpiresAt: expiresAt,
@@ -95,6 +95,8 @@ func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *roomSt
 	if err := room.SaveRoom(ctx, rdb, roomData); err != nil {
 		return err
 	}
+
+	wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
 
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixNano()),
@@ -112,9 +114,6 @@ func NextTurn(roomData *roomStructs.Room, rdb *redis.Client, ctx context.Context
 	if err := room.SaveRoom(ctx, rdb, roomData); err != nil {
 		return err
 	}
-
-	//
-	wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
 
 	// inicia novo turno
 	if err := WaitingFirstAction(ctx, rdb, roomData); err != nil {
