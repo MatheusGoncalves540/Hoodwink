@@ -59,14 +59,14 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 		for {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
-				utils.LogDebug(fmt.Sprintf("Erro ao ler mensagem: %v", err))
+				utils.LogError(fmt.Sprintf("Erro ao ler mensagem: %v", err))
 				break
 			}
 			utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", playerId, roomId))
 
 			roomId, instanceId, registered, err := player.GetPlayerRegistrationInfo(ctx, rdb, playerId)
 			if err != nil || !registered || roomId == "" || instanceId == "" {
-				utils.LogDebug("Conexão perdida ou não registrada")
+				utils.LogError("Conexão perdida ou não registrada")
 				conn.Close()
 				break
 			}
@@ -74,7 +74,7 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 			// Valida e decodifica a jogada do player
 			play, err := roomStructs.ParsePlayerPlay(msg, playerId)
 			if err != nil {
-				utils.LogDebug(fmt.Sprintf("Evento inválido: %v", err))
+				utils.LogError(fmt.Sprintf("Evento inválido: %v", err))
 				conn.Close()
 				break
 			}

@@ -79,7 +79,7 @@ func (h *HeartbeatService) sendHeartbeat() {
 	heartbeatKey := fmt.Sprintf("instance:%s:alive", h.instanceID)
 	err := h.rdb.Set(h.ctx, heartbeatKey, "1", h.HeartbeatTTL).Err()
 	if err != nil {
-		utils.LogDebug(fmt.Sprintf("Erro ao enviar heartbeat: %v", err))
+		utils.LogError(fmt.Sprintf("Erro ao enviar heartbeat: %v", err))
 		return
 	}
 

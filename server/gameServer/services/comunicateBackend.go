@@ -22,7 +22,7 @@ func NewBackendService() *BackendService {
 	backendURL := os.Getenv("BACKEND_URL")
 
 	if apiKey == "" || backendURL == "" {
-		utils.LogDebug("⚠️ Variáveis do backend não definidas corretamente")
+		utils.LogError("⚠️ Variáveis do backend não definidas corretamente")
 	}
 
 	return &BackendService{

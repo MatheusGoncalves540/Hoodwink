@@ -20,7 +20,7 @@ func KillCard(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room
 		return
 	}
 	if err := json.Unmarshal(payloadBytes, &payload); err != nil {
-		utils.LogDebug(err)
+		utils.LogError(err)
 		return
 	}
 

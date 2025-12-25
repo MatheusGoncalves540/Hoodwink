@@ -22,7 +22,7 @@ func NewJWTService() *JWTService {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	backendJWTSecret := os.Getenv("BACKEND_JWT_SECRET")
 	if jwtSecret == "" || backendJWTSecret == "" {
-		utils.LogDebug("⚠️ JWT secrets não definidos no ambiente")
+		utils.LogError("⚠️ JWT secrets não definidos no ambiente")
 		return nil
 	}
 
@@ -53,7 +53,7 @@ func (j *JWTService) GenerateToken(player *endpointStructures.ClaimsBackend, roo
 // useBackendSecret: true → usa BACKEND_JWT_SECRET, false → usa JWT_SECRET
 func (j *JWTService) ParseToken(tokenStr string, useBackendSecret bool) (jwt.MapClaims, error) {
 	if tokenStr == "" {
-		utils.LogDebug("token vazio")
+		utils.LogError("token vazio")
 		return nil, errors.New("token vazio")
 	}
 
@@ -65,20 +65,20 @@ func (j *JWTService) ParseToken(tokenStr string, useBackendSecret bool) (jwt.Map
 
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			utils.LogDebug("método de assinatura inválido")
+			utils.LogError("método de assinatura inválido")
 			return nil, errors.New("método de assinatura inválido")
 		}
 		return []byte(secret), nil
 	})
 
 	if err != nil || !token.Valid {
-		utils.LogDebug("token inválido")
+		utils.LogError("token inválido")
 		return nil, errors.New("token inválido")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		utils.LogDebug("claims inválidas")
+		utils.LogError("claims inválidas")
 		return nil, errors.New("claims inválidas")
 	}
 
@@ -95,6 +95,6 @@ func (j *JWTService) ParseTokenFromRequest(r *http.Request) (jwt.MapClaims, erro
 		return j.ParseToken(queryToken, false) // sempre JWT_SECRET
 	}
 
-	utils.LogDebug("nenhum token encontrado no header ou query")
+	utils.LogError("nenhum token encontrado no header ou query")
 	return nil, errors.New("nenhum token encontrado no header ou query")
 }

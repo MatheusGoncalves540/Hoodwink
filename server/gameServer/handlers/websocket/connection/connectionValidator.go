@@ -29,22 +29,22 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 
 	// Sincroniza jogadores ativos na sala antes de permitir a conexão se o jogo não tiver iniciado
 	if startTimeAny, err := room.LoadRoomField(ctx, rdb, roomID, "StartTime"); err != nil {
-		utils.LogDebug("Erro ao verificar horário de início da sala:" + err.Error())
+		utils.LogError("Erro ao verificar horário de início da sala:" + err.Error())
 		return nil, nil
 	} else if startTime, ok := startTimeAny.(time.Time); !ok {
-		utils.LogDebug("Erro: StartTime não é do tipo time.Time")
+		utils.LogError("Erro: StartTime não é do tipo time.Time")
 		return nil, nil
 	} else if startTime.IsZero() {
 		// Jogo não iniciado, sincroniza a estrutura dos players na sala
 		if err := roomService.SyncActivePlayers(r, rdb, roomID); err != nil {
-			utils.LogDebug("Erro ao sincronizar jogadores da estrutura da sala: " + err.Error())
+			utils.LogError("Erro ao sincronizar jogadores da estrutura da sala: " + err.Error())
 		}
 	}
 
 	connectedToRoomID, registered, err := player.GetRegisteredRoomForPlayer(ctx, rdb, playerID)
 	if err != nil {
 		utils.SendError(w, "Falha ao obter sala registrada", http.StatusInternalServerError)
-		utils.LogDebug("Falha ao obter sala registrada: " + err.Error())
+		utils.LogError("Falha ao obter sala registrada: " + err.Error())
 		return nil, nil
 	}
 
@@ -66,7 +66,7 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		utils.SendError(w, "Erro ao verificar sala na entrada", http.StatusInternalServerError)
-		utils.LogDebug(fmt.Sprintf("Verify FRONTEND_URL, WebSocket upgrade error: %v", err))
+		utils.LogError(fmt.Sprintf("Verify FRONTEND_URL, WebSocket upgrade error: %v", err))
 		return nil, nil
 	}
 
