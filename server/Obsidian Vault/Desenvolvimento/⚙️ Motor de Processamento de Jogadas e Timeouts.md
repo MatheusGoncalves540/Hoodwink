@@ -53,12 +53,7 @@ Um timeout é apenas:
 
 > “um instante no tempo em que algo deve acontecer”
 
-Esse instante é salvo no Redis como um **timestamp absoluto**.
-
-Arquivo relacionado:
-
--   `ScheduleNextStep.go`
-    
+Esse instante é salvo no Redis como um **timestamp absoluto**.    
 
 ---
 
@@ -73,9 +68,8 @@ Se falhar, outro pod está processando.
 Arquivo relacionado:
 
 -   `tryLockRoom.go`
-    
+
 -   `lock.go`
-    
 
 ---
 
@@ -96,8 +90,60 @@ O motor apenas consulta:
 
 Arquivo central:
 
--   `gameProcessorEngine.go`
-    
+-   `gameProcessor.go`
+
+---
+
+## 📝 Definições necessárias para criar uma jogada
+
+1.  timeout - é o registro no redis com um timestamp (UTC) de quando aquela ação "vence".
+    -   ou seja, é processada automaticamente pelo motor, sem ação de playe
+    -   exemplo:
+        ```go
+        expiresAt := time.Now().Add(7 * time.Second)
+        rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
+            Score:  float64(expiresAt.UnixNano()),
+            Member: roomId,
+        })
+        ```
+
+2.  pendingEvent - é o que está sendo mostrado na tela agora para os players.
+    -   Não é responsavel por executar nada
+    -   Não tem uma lista de pendingEvent, é unico
+    -   O pendingEvent é removido assim que ele é processado
+    -   exemplo:
+        ```go
+        expiresAt := time.Now().Add(7 * time.Second)
+        roomData.PendingEvent = &roomStructs.PendingEvent{
+            PlayerID:  "ID DO PLAYER QUE FEZ AÇÃO",
+            Type:      roomStructs."QUAL AÇÃO FEITA",
+            ExpiresAt: expiresAt, // -> Tempo de Timeout
+            Payload: map[string]interface{}{
+                "TargetPlayer": payload.TargetPlayer,
+                "TargetCard":   payload.TargetCard,
+                "Cause":        effect.Cause,
+            },
+        }
+        ```
+
+3.  pendingEffect - é uma fila de efeitos que realmente vão ser executados na sala.
+    -   Segundo o motor, só é executado quando não tem um pendingEvent pois significa que chegou a hora de executar o efeito (ou lista de efeitos), que estava na tela.
+        -   A mesma coisa vale para quando ocorre ação de player (pendingEvent é marcado como nil)
+    -   Exemplo:
+    ```go
+    roomData.PendingEffects = append(roomData.PendingEffects,
+        roomStructs.Effect{
+            Cause:        roomStructs.EffectAssassin,
+            SourcePlayer: playerPlay.PlayerId,
+            Payload: roomStructs.AssassinPayload{
+                TargetPlayer: assassinPayload.TargetPlayer,
+                TargetCard:   assassinPayload.TargetCard,
+            },
+        },
+    )
+    ```
+    -   Na maioria das vezes, os effects adicionam PendingEvents e outros Effects quando são executados
+        -   Exemplo: Assassino quando mata alguem -> PendingEvent mostrando para todos que ele matou a carta, e se possivel, abre janela para o atacado usar Kamikaze.
 
 ---
 
@@ -108,62 +154,33 @@ Arquivo central:
 1.  A sala entra em um estado que exige espera  
     Exemplo: “aguardando fim do turno”
     
-2.  Um timeout é agendado  
+2.  Um timeout, um pendingEvent e um gameEffect é agendado  
     Exemplo: “daqui a 5 segundos”
     
 3.  O motor detecta que o tempo venceu
     
 4.  O estado da sala avança  
     Exemplo: incrementa o turno
+
+5.  O estado da sala é salvo e enviado via broadcast  
     
-5.  Um novo timeout é agendado  
+6.  Um novo timeout é agendado  
     Exemplo: próximo turno
     
-6.  O ciclo se repete indefinidamente
+7.  O ciclo se repete indefinidamente
     
 
 Arquivos envolvidos:
 
--   `gameProcessorEngine.go`
+-   `gameProcessor.go`
     
--   `ScheduleNextStep.go`
-    
--   `state.go`
-    
--   `gameEvents.go`
-    
-
----
-
-## ▶️ Inicialização do jogo (ponto crítico)
-
-O motor **não inicia o jogo sozinho**.
-
-É obrigatório que, em algum ponto do fluxo (ex: criação da sala ou primeiro jogador), o jogo seja explicitamente iniciado.
-
-Isso significa:
-
--   Definir o estado inicial
-    
--   Definir o primeiro evento pendente
-    
--   Agendar o primeiro timeout
-    
-
-Se isso não acontecer, o motor roda corretamente, mas **não há nada para processar**.
-
-Arquivos relacionados:
-
--   `createRoomHandler.go`
-    
--   `roomService.go`
-    
+-   `resolveEffects.go`
 
 ---
 
 ## 🎮 Interação com WebSocket
 
-O WebSocket **não avança o jogo** diretamente.
+O WebSocket **pode avançar o jogo** diretamente.
 
 Ele apenas:
 
@@ -171,8 +188,8 @@ Ele apenas:
     
 -   Valida essas ações
     
--   Atualiza o estado da sala
-    
+-   Atualiza o estado da sala (adicionando pendingEvents ou effects)
+
 -   Cancela ou substitui timeouts existentes
     
 
@@ -206,7 +223,7 @@ Cada estado:
 
 -   Representa uma fase do jogo
     
--   Possui exatamente um evento pendente
+-   Possui exatamente um evento e efeitos pendentes
     
 -   Possui exatamente um timeout ativo
     
@@ -223,10 +240,10 @@ Exemplos conceituais:
     
 
 Arquivo de referência:
-
--   `state.go`
     
--   `gameEvents.go`
+-   `gameProcessor.go`
+
+-   `resolveEvents.go`
     
 
 ---
@@ -247,76 +264,3 @@ Arquivo de referência:
     
 
 Se qualquer uma dessas regras for quebrada, o jogo pode “travar silenciosamente”.
-
----
-
-## 🧪 Debug e observabilidade
-
-Quando algo não funciona, verificar nesta ordem:
-
-1.  O jogo foi iniciado?
-    
-2.  A sala aparece no ZSET de timeouts?
-    
-3.  O timeout está no futuro?
-    
-4.  O timeout antigo é removido?
-    
-5.  Um novo timeout está sendo criado?
-    
-6.  O estado da sala muda?
-    
-
-Arquivos úteis para debug:
-
--   `processDebugCommand.go`
-    
--   `instanceStatusHandler.go`
-    
--   `instanceUtils.go`
-    
-
----
-
-## 🟢 Benefícios da arquitetura
-
--   Escala horizontal sem coordenação
-    
--   Tolerante a falhas de instância
-    
--   Fácil de estender com novas cartas e regras
-    
--   Funciona bem com Redis Pub/Sub
-    
--   Base sólida para jogo competitivo multiplayer
-    
-
----
-
-## 🏁 Conclusão
-
-O motor de jogadas do projeto é baseado em:
-
--   Máquina de estados explícita
-    
--   Timeouts absolutos
-    
--   Processamento distribuído
-    
--   Redis como coordenador central
-    
-
-Essa base permite implementar:
-
--   Turnos
-    
--   Cartas com efeitos completos
-    
--   Contestação
-    
--   Efeitos encadeados
-    
--   Expansões futuras
-    
-
-Sem alterar o motor central, apenas adicionando novos estados e regras.
