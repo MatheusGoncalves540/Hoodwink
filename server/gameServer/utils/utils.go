@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -38,22 +37,4 @@ func GenerateNewId() string {
 	randomFactor := rand.Float64() * rand.Float64()
 	id := int64(randomFactor * float64(time.Now().UnixNano()))
 	return strconv.FormatInt(id, 16)
-}
-
-// StringContains verifica se uma string está presente em um slice de strings.
-func StringContains(slice []string, item string) bool {
-	for _, a := range slice {
-		if a == item {
-			return true
-		}
-	}
-	return false
-}
-
-// GetPlayerByID retorna o ponteiro para o jogador com o ID fornecido, ou nil se não encontrado.
-func GetPlayerByID(room *roomStructs.Room, playerID string) *roomStructs.Player {
-	if player, exists := room.Players[playerID]; exists {
-		return &player
-	}
-	return nil
 }

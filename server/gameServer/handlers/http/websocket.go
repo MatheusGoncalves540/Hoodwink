@@ -1,7 +1,6 @@
 package http
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -23,13 +22,6 @@ var upgrader = websocket.Upgrader{
 		origin := r.Header.Get("Origin")
 		return origin == os.Getenv("FRONTEND_URL") || origin == ""
 	},
-}
-
-type WebSocketPayload struct {
-	Type     string `json:"type"`
-	PlayerId string `json:"playerId"`
-	RoomId   string `json:"roomId"`
-	Payload  any    `json:"payload"`
 }
 
 // WebSocketHandler lida com conexões WS
@@ -79,16 +71,15 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 				break
 			}
 
-			// Decodifica evento
-			var playerPlay roomStructs.PendingEvent
-			if err := json.Unmarshal(msg, &playerPlay); err != nil {
-				utils.LogDebug(fmt.Sprintf("Erro ao decodificar mensagem: %v", err))
+			// Valida e decodifica a jogada do player
+			play, err := roomStructs.ParsePlayerPlay(msg, playerId)
+			if err != nil {
+				utils.LogDebug(fmt.Sprintf("Evento inválido: %v", err))
+				conn.Close()
 				break
 			}
-			playerPlay.PlayerID = playerId
 
-			// Processa mensagem normalmente
-			connection.OnMessage(ctx, conn, rdb, &playerPlay, roomId)
+			connection.OnMessage(ctx, conn, rdb, play, roomId)
 		}
 	}
 }

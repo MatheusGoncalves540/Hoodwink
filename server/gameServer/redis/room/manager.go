@@ -21,8 +21,8 @@ func AddPlayerInRoom(ctx context.Context, rdb *redis.Client, roomId string, play
 		roomData.Players[playerId] = roomStructs.Player{
 			Id:    playerId,
 			Name:  username,
-			Cards: []string{},
-			Coins: 2, // Valor inicial padrão do jogo
+			Cards: []int{1, 2}, // TODO remover valor fixo de teste
+			Coins: 2,           // Valor inicial padrão do jogo
 			Alive: true,
 		}
 	}

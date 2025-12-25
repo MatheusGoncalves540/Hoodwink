@@ -2,21 +2,36 @@ package roomStructs
 
 import "time"
 
-type TypeGameEvents string
+type GameEventType string
+type EffectCause string
 
-// Estrutura Dos eventos do jogo
+// ===== EVENTO (janela de decisão / input) =====
 type PendingEvent struct {
 	PlayerID  string
-	Type      TypeGameEvents
+	Type      GameEventType
 	ExpiresAt time.Time
 	Payload   any
 }
 
-// Tipos possiveis de Eventos
+// Eventos = INPUT / JANELAS
 const (
-	TypeDisplayingMessage TypeGameEvents = "DISPLAYING_MESSAGE"
-	TypeUseCard           TypeGameEvents = "USE_CARD"
-	TypePickupCoin        TypeGameEvents = "PICKUP_COIN"
-	TypePass              TypeGameEvents = "PASS"
-	TypeContest           TypeGameEvents = "CONTEST"
+	EventWaitingFirstAction GameEventType = "WAITING_FIRST_ACTION"
+	EventCardPlayedAssassin GameEventType = "CARD_PLAYED_ASSASSIN"
+	EventCardKilled         GameEventType = "CARD_KILLED"
+	EventShowingMessage     GameEventType = "SHOWING_MESSAGE"
+)
+
+// ===== EFEITO (precisa ser resolvido) =====
+type Effect struct {
+	Cause        EffectCause
+	SourcePlayer string
+	Payload      any
+}
+
+// Tipos de efeitos reais do jogo
+const (
+	EffectAssassin       EffectCause = "ASSASSIN"
+	EffectContestPenalty EffectCause = "CONTEST_PENALTY"
+	EffectKamikaze       EffectCause = "KAMIKAZE"
+	EffectGainCoins      EffectCause = "GAIN_COINS"
 )

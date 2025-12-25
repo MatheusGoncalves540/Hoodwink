@@ -3,6 +3,7 @@ package connection
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
@@ -28,4 +29,12 @@ func OnConnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, roo
 	} else {
 		utils.LogDebug("Jogador " + playerId + " adicionado/atualizado na sala " + roomId)
 	}
+
+	roomData, err := room.LoadRoom(ctx, rdb, roomId)
+	if err != nil {
+		utils.LogDebug("Erro ao carregar dados da sala: " + err.Error())
+		return
+	}
+
+	wsRoom.PublishRoomBroadcast(ctx, rdb, roomId, roomData)
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
@@ -60,25 +61,34 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, roomID string) 
 
 	roomData, err := room.LoadRoom(ctx, rdb, roomID)
 	if err != nil {
-		utils.LogError(err)
 		rdb.ZRem(ctx, "rooms:timeouts", roomID)
 		return
 	}
 
-	if roomData.PendingEvent == nil {
-		rdb.ZRem(ctx, "rooms:timeouts", roomID)
+	// Fecha janela atual (se existir)
+	if roomData.PendingEvent != nil {
+		roomData.PendingEvent = nil
+	}
+
+	// Resolve próximo efeito, se existir
+	if len(roomData.PendingEffects) > 0 {
+		resolveNextEffect(ctx, rdb, roomData)
+		room.SaveRoom(ctx, rdb, roomData)
+		wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
+		log.Print("DKIASDKSADKASMDKM")
 		return
 	}
 
-	AdvanceByTimeout(ctx, rdb, roomData)
+	// Nada pendente → próximo turno
+	if roomData.PendingEvent == nil && len(roomData.PendingEffects) == 0 {
+		NextTurn(roomData, rdb, ctx)
+	}
 }
 
 func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room) error {
-	roomData.State = roomStructs.StateWaitingFirstAction
-
-	expiresAt := time.Now().Add(5 * time.Second)
+	expiresAt := time.Now().Add(15 * time.Second)
 	roomData.PendingEvent = &roomStructs.PendingEvent{
-		Type:      roomStructs.TypeDisplayingMessage,
+		Type:      roomStructs.EventWaitingFirstAction,
 		ExpiresAt: expiresAt,
 	}
 
@@ -102,6 +112,9 @@ func NextTurn(roomData *roomStructs.Room, rdb *redis.Client, ctx context.Context
 	if err := room.SaveRoom(ctx, rdb, roomData); err != nil {
 		return err
 	}
+
+	//
+	wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
 
 	// inicia novo turno
 	if err := WaitingFirstAction(ctx, rdb, roomData); err != nil {

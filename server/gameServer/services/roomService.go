@@ -40,7 +40,6 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		Players:       make(map[string]roomStructs.Player),
 		DeadDeck:      []string{},
 		CurrentPlayer: "",
-		State:         roomStructs.StateWaitingFirstAction,
 		PendingEvent:  &roomStructs.PendingEvent{},
 		PendingPlayer: "",
 		GameOver:      false,

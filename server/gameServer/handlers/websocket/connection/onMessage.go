@@ -10,7 +10,7 @@ import (
 )
 
 // Função chamada ao receber uma mensagem do cliente
-func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, playerPlay *roomStructs.PendingEvent, roomId string) {
+func OnMessage(ctx context.Context, conn *websocket.Conn, rdb *redis.Client, playerPlay *roomStructs.PlayerPlay, roomId string) {
 
 	// Process WebSocket debug command - adm command
 	messages.ProcessDebugCommand(ctx, rdb, roomId, playerPlay)
