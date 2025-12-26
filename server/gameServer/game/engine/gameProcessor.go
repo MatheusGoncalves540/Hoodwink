@@ -31,7 +31,7 @@ func StartGameProcessor(rdb *redis.Client) {
 
 // processExpiredRoomsEvents verifica eventos em salas com timeout expirado e avança o estado do jogo.
 func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client) error {
-	now := time.Now().UnixNano()
+	now := time.Now().UnixMilli()
 
 	roomIDs, err := rdb.ZRangeByScore(ctx, "rooms:timeouts", &redis.ZRangeBy{
 		Min:    "0",
@@ -99,7 +99,7 @@ func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *roomSt
 	wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
 
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixNano()),
+		Score:  float64(expiresAt.UnixMilli()),
 		Member: roomData.ID,
 	})
 	return nil

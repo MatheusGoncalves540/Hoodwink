@@ -59,7 +59,7 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomID string, playerPl
 		)
 
 		rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-			Score:  float64(expiresAt.UnixNano()),
+			Score:  float64(expiresAt.UnixMilli()),
 			Member: roomData.ID,
 		})
 		room.SaveRoom(ctx, rdb, roomData)

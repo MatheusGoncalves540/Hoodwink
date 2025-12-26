@@ -102,7 +102,7 @@ Arquivo central:
         ```go
         expiresAt := time.Now().Add(7 * time.Second).UTC()
         rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-            Score:  float64(expiresAt.UnixNano()),
+            Score:  float64(expiresAt.UnixMilli()),
             Member: roomId,
         })
         ```

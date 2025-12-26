@@ -52,7 +52,7 @@ func KillCard(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room
 		},
 	}
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixNano()),
+		Score:  float64(expiresAt.UnixMilli()),
 		Member: roomData.ID,
 	})
 }
