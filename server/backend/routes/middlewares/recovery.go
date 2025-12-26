@@ -25,7 +25,10 @@ type APIResponse struct {
 func RequestMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		reqID := uuid.New().String()
+		reqID, err := uuid.NewV7()
+		if err != nil {
+			utils.LogError(err.Error())
+		}
 
 		// Anexa request ID ao contexto
 		ctx := context.WithValue(r.Context(), RequestIDKey, reqID)

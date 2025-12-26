@@ -2,11 +2,8 @@ package utils
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -32,11 +29,8 @@ func ValidateInfos(w http.ResponseWriter, toValidate any) bool {
 	return true
 }
 
-func GenerateNewId() string {
-	rand.NewSource(time.Now().UnixNano())
-	randomFactor := rand.Float64() * rand.Float64()
-	id := int64(randomFactor * float64(time.Now().UnixNano()))
-	return strconv.FormatInt(id, 16)
+func LogError(msg any) {
+	fmt.Println(msg)
 }
 
 // if DEBUG = true, print on console
