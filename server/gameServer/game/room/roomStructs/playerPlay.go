@@ -11,10 +11,3 @@ type PlayerPlay struct {
 const (
 	PlayAssassinCard TypePlayerPlays = "PLAY_ASSASSIN_CARD"
 )
-
-//
-
-type AssassinPayload struct {
-	TargetPlayer string `json:"targetPlayer"`
-	TargetCard   int    `json:"targetCard"`
-}

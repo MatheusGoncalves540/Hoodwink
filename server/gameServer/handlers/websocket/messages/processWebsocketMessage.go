@@ -2,7 +2,6 @@ package messages
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -30,14 +29,9 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomID string, playerPl
 
 	switch playerPlay.Type {
 	case roomStructs.PlayAssassinCard:
-		// TODO Validar se o payload tem a estrutura de AssassinPayload de um jeito bom (agora ta provisório)
-		var assassinPayload roomStructs.AssassinPayload
-		payloadJSON, err := json.Marshal(playerPlay.Payload)
-		if err != nil {
-			return fmt.Errorf("failed to marshal payload: %w", err)
-		}
-		if err := json.Unmarshal(payloadJSON, &assassinPayload); err != nil {
-			return fmt.Errorf("payload does not match AssassinPayload structure: %w", err)
+		assassinPayload, ok := playerPlay.Payload.(roomStructs.AssassinPayload)
+		if !ok {
+			return fmt.Errorf("payload does not match AssassinPayload structure")
 		}
 
 		expiresAt := time.Now().Add(7 * time.Second).UTC()
