@@ -13,7 +13,7 @@ type PlayerPlayPayload struct {
 
 //
 
-func (p *PlayerPlayPayload) DecodePayload() (any, error) {
+func (p *PlayerPlayPayload) ValidatePayload() (any, error) {
 	switch p.Type {
 	case PlayAssassinCard:
 		var payload AssassinPayload
@@ -59,7 +59,7 @@ func ParsePlayerPlay(data []byte, playerId string) (*PlayerPlay, error) {
 
 	raw.PlayerID = playerId
 
-	payload, err := raw.DecodePayload()
+	payload, err := raw.ValidatePayload()
 	if err != nil {
 		return nil, err
 	}
