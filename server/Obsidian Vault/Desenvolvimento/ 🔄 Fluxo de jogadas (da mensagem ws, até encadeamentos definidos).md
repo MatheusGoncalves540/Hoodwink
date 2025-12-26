@@ -1,0 +1,1 @@
+# destinxar aqui todo o fluxo que vai da mensagem ws até quando todos os efeitos, eventos e timeouts são definidos. Para auxiliar a criar novas jogadas possiveis

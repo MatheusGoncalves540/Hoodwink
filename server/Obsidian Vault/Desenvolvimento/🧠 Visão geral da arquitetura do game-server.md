@@ -115,27 +115,3 @@
       "ticket": "<jwtDaSala>"
     }
     ```
-    
-
----
-
-## ✅ Benefícios da sua abordagem
-
-| Item | Benefício |
-| --- | --- |
-| 🔒 Separação de chaves | Segurança reforçada (cada servidor tem sua própria responsabilidade de assinatura) |
-| 🎟️ Ticket por sala | Tokens efêmeros, com escopo limitado, impossíveis de reutilizar em outras salas |
-| 👥 Suporte nativo a guests e autenticados | O mesmo endpoint lida com ambos de forma limpa |
-| 🔁 Permite reconexão | Desde que o token ainda seja válido |
-| 🚫 Evita múltiplas conexões | Com `presence:<uuid>` no Redis |
-
----
-
-## 🔐 Segurança recomendada
-
-| Medida | Explicação |
-| --- | --- |
-| Valide sempre a assinatura do `tokenJwt` do backend com a `publicKey` dele |  |
-| Tokens da sala devem expirar automaticamente (30 min, por exemplo) |  |
-| Rejeite múltiplas conexões com mesma `uuid` (via Redis) |  |
-| Nunca aceite nickname duplicado entre guests, use hash/aleatório para garantir unicidade |  |
