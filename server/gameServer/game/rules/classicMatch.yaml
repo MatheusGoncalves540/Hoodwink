@@ -1,0 +1,52 @@
+Cards:
+  Assassin:
+    price: 3
+    taxMinimum: 2
+
+  Kamikaze:
+    canKillSelf: true
+
+  Guardian:
+    price: 5
+    taxMinimum: 3
+
+  Political:
+    price: 2
+    doubled: 0
+
+  Rebel:
+    price: 2
+    doubled: 0
+
+  Trillionaire:
+    amountReceived: 3
+    taxMinimum: 1
+
+  Trickster:
+    amountWithdrawn: 2
+    taxMinimum: 2
+    taxMax: 5
+
+  Gravedigger:
+    price: 6
+    taxMinimum: 3
+
+  Croupier:
+    price: 6
+    taxMinimum: 3
+
+  Selfish:
+    fixPrice: 1
+    price: 6
+    taxMinimum: 3
+    taxMax: 9
+
+  Clairvoyant:
+    price: 4
+    taxMinimum: 2
+
+  Investor:
+    investPrice: 1
+    investedMaxAmount: 3
+    taxMinimum: 2
+    taxMax: 5

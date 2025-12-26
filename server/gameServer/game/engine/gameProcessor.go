@@ -75,7 +75,6 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, roomID string) 
 		resolveNextEffect(ctx, rdb, roomData)
 		room.SaveRoom(ctx, rdb, roomData)
 		wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
-		log.Print("DKIASDKSADKASMDKM")
 		return
 	}
 
