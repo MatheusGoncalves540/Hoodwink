@@ -3,13 +3,12 @@ package routes
 import (
 	"net/http"
 
-	httpHandlers "github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/http"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config/ctx"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/middlewares"
 	"github.com/go-chi/chi/v5"
-	"github.com/redis/go-redis/v9"
 )
 
-func SetupRoutes(handler *httpHandlers.HTTPHandler, rdb *redis.Client) http.Handler {
+func SetupRoutes(routesContext *ctx.RoutesContext) http.Handler {
 	routes := chi.NewRouter()
 	routes.Use(middlewares.RequestMiddleware)
 	routes.Use(middlewares.CORSMiddleware)
@@ -17,18 +16,18 @@ func SetupRoutes(handler *httpHandlers.HTTPHandler, rdb *redis.Client) http.Hand
 	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
 
 	routes.Route("/game", func(r chi.Router) {
-		r.Get("/", handler.WebSocketHandler(rdb))
+		r.Get("/", routesContext.Handler.WebSocketHandler(routesContext.Rdb))
 	})
 
 	// Rotas protegidas com JWT
 	routes.Group(func(r chi.Router) {
 		r.Use(func(next http.Handler) http.Handler {
-			return middlewares.JWTBackendMiddleware(next, handler)
+			return middlewares.JWTBackendMiddleware(next, routesContext.Handler)
 		})
 
-		r.Post("/newRoom", handler.CreateCustomRoom)
+		r.Post("/newRoom", routesContext.Handler.CreateCustomRoom)
 
-		r.Post("/getTicket/{RoomId}", handler.GetTicket(rdb))
+		r.Post("/getTicket/{RoomId}", routesContext.Handler.GetTicket(routesContext.Rdb))
 	})
 	// Rotas protegidas com ApiKey
 	routes.Group(func(r chi.Router) {
@@ -37,8 +36,8 @@ func SetupRoutes(handler *httpHandlers.HTTPHandler, rdb *redis.Client) http.Hand
 		// })
 
 		// Rotas para debug e monitoramento de instâncias
-		r.Get("/instances/status", handler.GetInstancesStatus(rdb))
-		r.Post("/instances/cleanup", handler.CleanupOrphanedPlayers(rdb))
+		r.Get("/instances/status", routesContext.Handler.GetInstancesStatus(routesContext.Rdb))
+		r.Post("/instances/cleanup", routesContext.Handler.CleanupOrphanedPlayers(routesContext.Rdb))
 	})
 
 	return routes

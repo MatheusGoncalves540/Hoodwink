@@ -31,6 +31,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 	RoomId := utils.GenerateNewId()
 	room := &roomStructs.Room{
 		ID:            RoomId,
+		Rules:         roomStructs.ClassicRules, // TODO: desmockar isso
 		Name:          roomData.RoomName,
 		Password:      roomData.Password,
 		MaxPlayers:    roomData.MaxPlayers,

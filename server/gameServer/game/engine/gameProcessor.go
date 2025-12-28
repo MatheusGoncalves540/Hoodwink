@@ -9,28 +9,30 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
 // StartGameProcessor inicia o processador de eventos do jogo.
-func StartGameProcessor(rdb *redis.Client) {
+func StartGameProcessor(rdb *redis.Client, RegistryRules *rules.Registry) {
 	log.Println("🔄 Inicializando gameProcessorEngine...")
 	ctx := context.Background()
+
 	go func() {
 		intervalMs := utils.MustEnvInt("PROCESSOR_INTERVAL_MS", 300)
 		ticker := time.NewTicker(time.Duration(intervalMs) * time.Millisecond)
 		defer ticker.Stop()
 
 		for range ticker.C {
-			processExpiredRoomsEvents(ctx, rdb)
+			processExpiredRoomsEvents(ctx, rdb, RegistryRules)
 		}
 	}()
 }
 
 // processExpiredRoomsEvents verifica eventos em salas com timeout expirado e avança o estado do jogo.
-func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client) error {
+func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry) error {
 	now := time.Now().UnixMilli()
 
 	roomIDs, err := rdb.ZRangeByScore(ctx, "rooms:timeouts", &redis.ZRangeBy{
@@ -47,12 +49,12 @@ func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client) error {
 	utils.LogDebug("Salas com timeout expirado: " + strconv.Itoa(len(roomIDs)))
 
 	for _, roomID := range roomIDs {
-		processRoomWithLock(ctx, rdb, roomID)
+		processRoomWithLock(ctx, rdb, RegistryRules, roomID)
 	}
 	return nil
 }
 
-func processRoomWithLock(ctx context.Context, rdb *redis.Client, roomID string) {
+func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry, roomID string) {
 	ok, err := room.AcquireRoomLock(ctx, rdb, roomID, config.InstanceID, 2*time.Second)
 	if err != nil || !ok {
 		return
@@ -72,7 +74,7 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, roomID string) 
 
 	// Resolve próximo efeito, se existir
 	if len(roomData.PendingEffects) > 0 {
-		resolveNextEffect(ctx, rdb, roomData)
+		resolveNextEffect(ctx, rdb, RegistryRules, roomData)
 		room.SaveRoom(ctx, rdb, roomData)
 		wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
 		return

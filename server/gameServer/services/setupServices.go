@@ -1,6 +1,8 @@
 package services
 
-import "github.com/redis/go-redis/v9"
+import (
+	"github.com/redis/go-redis/v9"
+)
 
 type Services struct {
 	RoomService      *RoomService

@@ -56,7 +56,7 @@ func (h *HeartbeatService) Start() {
 		}
 	}()
 
-	utils.LogDebug(fmt.Sprintf("Heartbeat iniciado para instância %s", h.instanceID))
+	utils.LogDebug(fmt.Sprintf("🫀 Heartbeat iniciado para instância %s", h.instanceID))
 }
 
 // Stop para o heartbeat

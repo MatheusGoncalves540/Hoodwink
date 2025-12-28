@@ -12,6 +12,7 @@ type Player struct {
 
 type Room struct {
 	ID             string            `json:"id"`
+	Rules          Rules             `json:"rules"`
 	Name           string            `json:"name"`
 	Password       string            `json:"password" validate:"max=24"`
 	MaxPlayers     int               `json:"maxPlayers"`

@@ -7,11 +7,9 @@ import (
 	"os"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config/ctx"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine"
-	httpHandlers "github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/http"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/joho/godotenv"
 )
@@ -23,17 +21,14 @@ func main() {
 		config.CheckEnvVars(".env.example")
 	}
 
-	redisClient := redis.ConnectRedis()
+	routesContext := ctx.SetupContext()
+	routes := routes.SetupRoutes(routesContext)
 
-	services := services.SetupServices(redisClient)
-	handler := httpHandlers.NewHandler(services)
-	routes := routes.SetupRoutes(handler, redisClient)
+	engine.StartGameProcessor(routesContext.Rdb, routesContext.RulesRegistry)
 
 	// Inicia o serviço de heartbeat
-	services.HeartbeatService.Start()
-	defer services.HeartbeatService.Stop()
-
-	engine.StartGameProcessor(redisClient)
+	routesContext.Services.HeartbeatService.Start()
+	defer routesContext.Services.HeartbeatService.Stop()
 
 	log.Printf("Servidor ouvindo em %s (Instância: %s)", os.Getenv("GAME_SERVER_URL"), config.InstanceID)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), routes))
