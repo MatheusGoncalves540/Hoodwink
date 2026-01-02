@@ -16,7 +16,7 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, RegistryRules *ru
 	switch effect.Cause {
 
 	case roomStructs.EffectAssassin:
-		cardRules, err := rules.GetCardRules(RegistryRules, *roomData, string(effect.Cause))
+		cardRules, err := roomData.GetCardRules(RegistryRules, string(effect.Cause))
 		if err != nil {
 			utils.LogError("Erro ao obter regras da carta Assassin: " + err.Error())
 			return

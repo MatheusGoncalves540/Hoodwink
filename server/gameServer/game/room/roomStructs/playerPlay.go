@@ -1,5 +1,7 @@
 package roomStructs
 
+import "encoding/json"
+
 type TypePlayerPlays string
 
 type PlayerPlay struct {
@@ -11,3 +13,11 @@ type PlayerPlay struct {
 const (
 	PlayAssassinCard TypePlayerPlays = "PLAY_ASSASSIN_CARD"
 )
+
+//--//--//--//--//--//--//--//--//--//
+
+type PlayerPlayPayload struct {
+	Type     TypePlayerPlays `json:"type"`
+	PlayerID string          `json:"playerId"`
+	Payload  json.RawMessage `json:"payload"`
+}

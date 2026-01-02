@@ -107,14 +107,14 @@ Arquivo central:
         })
         ```
 
-2.  pendingEvent - é o que está sendo mostrado na tela agora para os players.
+2.  gameEvent - é o que está sendo mostrado na tela agora para os players.
     -   Não é responsavel por executar nada
-    -   Não tem uma lista de pendingEvent, é unico
-    -   O pendingEvent é removido assim que ele é processado
+    -   Não tem uma lista de gameEvent, é unico
+    -   O gameEvent é removido assim que ele é processado
     -   exemplo:
         ```go
         expiresAt := time.Now().Add(7 * time.Second).UTC()
-        roomData.PendingEvent = &roomStructs.PendingEvent{
+        roomData.GameEvent = &roomStructs.GameEvent{
             PlayerID:  "ID DO PLAYER QUE FEZ AÇÃO",
             Type:      roomStructs."QUAL AÇÃO FEITA",
             ExpiresAt: expiresAt, // -> Tempo de Timeout
@@ -127,8 +127,8 @@ Arquivo central:
         ```
 
 3.  pendingEffect - é uma fila de efeitos que realmente vão ser executados na sala.
-    -   Segundo o motor, só é executado quando não tem um pendingEvent pois significa que chegou a hora de executar o efeito (ou lista de efeitos), que estava na tela.
-        -   A mesma coisa vale para quando ocorre ação de player (pendingEvent é marcado como nil)
+    -   Segundo o motor, só é executado quando não tem um gameEvent pois significa que chegou a hora de executar o efeito (ou lista de efeitos), que estava na tela.
+        -   A mesma coisa vale para quando ocorre ação de player (gameEvent é marcado como nil)
     -   Exemplo:
     ```go
     roomData.PendingEffects = append(roomData.PendingEffects,
@@ -142,8 +142,8 @@ Arquivo central:
         },
     )
     ```
-    -   Na maioria das vezes, os effects adicionam PendingEvents e outros Effects quando são executados
-        -   Exemplo: Assassino quando mata alguem -> PendingEvent mostrando para todos que ele matou a carta, e se possivel, abre janela para o atacado usar Kamikaze.
+    -   Na maioria das vezes, os effects adicionam GameEvents e outros Effects quando são executados
+        -   Exemplo: Assassino quando mata alguem -> GameEvent mostrando para todos que ele matou a carta, e se possivel, abre janela para o atacado usar Kamikaze.
 
 ---
 
@@ -154,7 +154,7 @@ Arquivo central:
 1.  A sala entra em um estado que exige espera  
     Exemplo: “aguardando fim do turno”
     
-2.  Um timeout, um pendingEvent e um gameEffect é agendado  
+2.  Um timeout, um gameEvent e um gameEffect é agendado  
     Exemplo: “daqui a 5 segundos”
     
 3.  O motor detecta que o tempo venceu
@@ -188,7 +188,7 @@ Ele apenas:
     
 -   Valida essas ações
     
--   Atualiza o estado da sala (adicionando pendingEvents ou effects)
+-   Atualiza o estado da sala (adicionando GameEvents ou effects)
 
 -   Cancela ou substitui timeouts existentes
     

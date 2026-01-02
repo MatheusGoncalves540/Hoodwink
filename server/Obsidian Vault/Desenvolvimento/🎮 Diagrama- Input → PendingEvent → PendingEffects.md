@@ -33,7 +33,7 @@ Ações feitas pelo servidor:
 
 ```diff
 + Criar PendingEffect: ASSASSINO
-+ Criar PendingEvent: WAIT_CONTEST
++ Criar GameEvent: WAIT_CONTEST
 + Salvar sala no Redis
 + Broadcast: "Player 1 usou Assassino"
 ```
@@ -43,7 +43,7 @@ Ações feitas pelo servidor:
 ## 📦 Estado da sala agora
 
 ```makefile
-PendingEvent:
+GameEvent:
   Type = WAIT_CONTEST
   ExpiresAt = +5s
 
@@ -74,14 +74,14 @@ Servidor:
 ```diff
 + Resolve contestação
 + Cria efeito PenalidadeContestação (se aplicável)
-+ Remove PendingEvent
++ Remove GameEvent
 + Salva sala
 ```
 
 Estado agora:
 
 ```makefile
-PendingEvent:
+GameEvent:
   nil
 
 PendingEffects:
@@ -102,13 +102,13 @@ PendingEffects:
 Servidor:
 
 ```diff
-+ Remove PendingEvent
++ Remove GameEvent
 ```
 
 Estado agora:
 
 ```makefile
-PendingEvent:
+GameEvent:
   nil
 
 PendingEffects:
@@ -123,7 +123,7 @@ PendingEffects:
 [ GameProcessor Tick ]
         |
         v
-Se PendingEvent == nil
+Se GameEvent == nil
 E PendingEffects != vazio
         |
         v
@@ -163,14 +163,14 @@ PendingEffects:
 [ ExecuteEffect CHECK_KAMIKAZE ]
         |
         v
-Criar PendingEvent: WAIT_KAMIKAZE_DECISION
+Criar GameEvent: WAIT_KAMIKAZE_DECISION
 Broadcast: "Player 2 quer usar Kamikaze?"
 ```
 
 Estado:
 
 ```makefile
-PendingEvent:
+GameEvent:
   WAIT_KAMIKAZE_DECISION
 
 PendingEffects:
@@ -199,7 +199,7 @@ Servidor:
 
 ```diff
 + Criar PendingEffect: EXECUTE_KAMIKAZE
-+ Remove PendingEvent
++ Remove GameEvent
 ```
 
 ---
@@ -207,7 +207,7 @@ Servidor:
 ### Player recusa ou timeout
 
 ```diff
-+ Remove PendingEvent
++ Remove GameEvent
 ```
 
 ---
@@ -231,7 +231,7 @@ Cada morte pode gerar novo `CHECK_KAMIKAZE`.
 
 ```yaml
 Enquanto:
-  PendingEvent == nil
+  GameEvent == nil
   AND
   PendingEffects != vazio
 ```
@@ -242,7 +242,7 @@ Quando acabar:
 
 ```bash
 + Avançar turno
-+ Criar PendingEvent do próximo turno
++ Criar GameEvent do próximo turno
 ```
 
 ---
@@ -253,23 +253,23 @@ Quando acabar:
 INPUT (WS)
    ↓
 Criar PendingEffect
-Criar PendingEvent
+Criar GameEvent
    ↓
 Esperar input ou timeout
    ↓
-Remover PendingEvent
+Remover GameEvent
    ↓
 Executar PendingEffects
    ↓
 Gerou nova decisão?
    ↓
-Criar novo PendingEvent
+Criar novo GameEvent
 ```
 
 ---
 
 # 🏁 Frase final (para fixar)
 
-> **PendingEvent é a pergunta.  
+> **GameEvent é a pergunta.  
 > PendingEffects é a resposta.  
 > O motor só responde quando ninguém precisa falar.**

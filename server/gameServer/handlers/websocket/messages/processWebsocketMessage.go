@@ -35,7 +35,7 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomID string, playerPl
 		}
 
 		expiresAt := time.Now().Add(7 * time.Second).UTC()
-		roomData.PendingEvent = &roomStructs.PendingEvent{
+		roomData.GameEvent = &roomStructs.GameEvent{
 			PlayerID:  playerPlay.PlayerId,
 			Type:      roomStructs.EventCardPlayedAssassin,
 			ExpiresAt: expiresAt, // TODO colocar tempo configuravel
@@ -46,8 +46,8 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomID string, playerPl
 				Cause:        roomStructs.EffectAssassin,
 				SourcePlayer: playerPlay.PlayerId,
 				Payload: roomStructs.AssassinPayload{
-					TargetPlayer: assassinPayload.TargetPlayer,
-					TargetCard:   assassinPayload.TargetCard,
+					TargetPlayer:    assassinPayload.TargetPlayer,
+					TargetCardIndex: assassinPayload.TargetCardIndex,
 				},
 			},
 		)

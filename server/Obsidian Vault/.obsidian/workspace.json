@@ -255,7 +255,7 @@
   "lastOpenFiles": [
     "Desenvolvimento/ 🔄 Fluxo de jogadas (da mensagem ws, até encadeamentos definidos).md",
     "Desenvolvimento/Fluxo de jogadas (da mensagem ws, até encadeamentos definidos).md",
-    "Desenvolvimento/🎮 Diagrama: Input → PendingEvent → PendingEffects.md",
+    "Desenvolvimento/🎮 Diagrama: Input → GameEvent → PendingEffects.md",
     "Desenvolvimento/Fluxo de jogadas.md",
     "Desenvolvimento/Fluxo de jogadas",
     "Desenvolvimento/🔐 Onde salvar o JWT no front-end.md",

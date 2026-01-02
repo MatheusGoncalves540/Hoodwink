@@ -1,14 +1,11 @@
 package roomStructs
 
-import "time"
+import (
+	"fmt"
+	"time"
 
-type Player struct {
-	Id    string `json:"id"`
-	Name  string `json:"name"`
-	Cards []int  `json:"cards"`
-	Coins int    `json:"coins"`
-	Alive bool   `json:"alive"`
-}
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+)
 
 type Room struct {
 	ID             string            `json:"id"`
@@ -22,10 +19,28 @@ type Room struct {
 	Players        map[string]Player `json:"players"`
 	DeadDeck       []string          `json:"deadDeck"`
 	CurrentPlayer  string            `json:"currentPlayer"`
-	PendingEvent   *PendingEvent     `json:"pendingEvent"`
+	GameEvent      *GameEvent        `json:"gameEvent"`
 	PendingEffects []Effect          `json:"pendingEffects"`
 	PendingPlayer  string            `json:"pendingPlayer"`
 	GameOver       bool              `json:"gameOver"`
 	StartTime      time.Time         `json:"startTime"`
 	Created        time.Time         `json:"created"`
+}
+
+// GetPlayer retorna o ponteiro do jogador pela playerId e um bool indicando se existe
+func (r *Room) GetPlayer(playerId string) (*Player, error) {
+	player, exists := r.Players[playerId]
+	if !exists {
+		return nil, fmt.Errorf("jogador alvo não encontrado: %s", playerId)
+	}
+	return &player, nil
+}
+
+func (r *Room) GetCardRules(registryRules *rules.Registry, card string) (*rules.CardRules, error) {
+	gameRules, err := registryRules.Get(string(r.Rules))
+	if err != nil {
+		return nil, err
+	}
+	cardRules := rules.CardRules(gameRules.Cards[card])
+	return &cardRules, nil
 }

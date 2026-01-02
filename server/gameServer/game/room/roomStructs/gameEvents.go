@@ -5,7 +5,7 @@ import "time"
 type GameEventType string
 
 // ===== EVENTO (janela de decisão / input) =====
-type PendingEvent struct {
+type GameEvent struct {
 	PlayerID  string
 	Type      GameEventType
 	ExpiresAt time.Time

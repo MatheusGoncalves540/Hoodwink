@@ -1,11 +1,11 @@
 package roomStructs
 
 type KillCardPayload struct {
-	TargetPlayer *string `json:"targetPlayer"`
-	TargetCard   *int    `json:"targetCard"`
+	TargetPlayer    *string `json:"targetPlayer"`
+	TargetCardIndex *int    `json:"targetCardIndex"`
 }
 
 type AssassinPayload struct {
-	TargetPlayer *string `json:"targetPlayer"`
-	TargetCard   *int    `json:"targetCard"`
+	TargetPlayer    *string `json:"targetPlayer"`
+	TargetCardIndex *int    `json:"targetCardIndex"`
 }

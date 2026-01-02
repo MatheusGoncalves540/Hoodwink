@@ -19,10 +19,13 @@ func AddPlayerInRoom(ctx context.Context, rdb *redis.Client, roomId string, play
 	// Adiciona o jogador à sala apenas se ainda não existir
 	if _, exists := roomData.Players[playerId]; !exists {
 		roomData.Players[playerId] = roomStructs.Player{
-			Id:    playerId,
-			Name:  username,
-			Cards: []int{1, 2}, // TODO remover valor fixo de teste
-			Coins: 2,           // Valor inicial padrão do jogo
+			Id:   playerId,
+			Name: username,
+			Cards: []roomStructs.Card{
+				{Name: roomStructs.CardAssassin, Index: 1, Protected: false, Dead: false},
+				{Name: roomStructs.CardKamikaze, Index: 2, Protected: false, Dead: false},
+			}, // TODO remover valor fixo de teste
+			Coins: 2, // Valor inicial padrão do jogo
 			Alive: true,
 		}
 	}

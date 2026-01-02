@@ -5,12 +5,6 @@ import (
 	"fmt"
 )
 
-type PlayerPlayPayload struct {
-	Type     TypePlayerPlays `json:"type"`
-	PlayerID string          `json:"playerId"`
-	Payload  json.RawMessage `json:"payload"`
-}
-
 //
 
 func (p *PlayerPlayPayload) ValidatePayload() (any, error) {
@@ -24,10 +18,10 @@ func (p *PlayerPlayPayload) ValidatePayload() (any, error) {
 		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
 			return nil, fmt.Errorf("targetPlayer é obrigatório e não pode ser vazio")
 		}
-		if payload.TargetCard == nil {
+		if payload.TargetCardIndex == nil {
 			return nil, fmt.Errorf("targetCard é obrigatório")
 		}
-		if *payload.TargetCard < 0 {
+		if *payload.TargetCardIndex < 0 {
 			return nil, fmt.Errorf("targetCard deve ser >= 0")
 		}
 		return payload, nil

@@ -68,8 +68,8 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 	}
 
 	// Fecha janela atual (se existir)
-	if roomData.PendingEvent != nil {
-		roomData.PendingEvent = nil
+	if roomData.GameEvent != nil {
+		roomData.GameEvent = nil
 	}
 
 	// Resolve próximo efeito, se existir
@@ -81,14 +81,14 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 	}
 
 	// Nada pendente → próximo turno
-	if roomData.PendingEvent == nil && len(roomData.PendingEffects) == 0 {
+	if roomData.GameEvent == nil && len(roomData.PendingEffects) == 0 {
 		NextTurn(roomData, rdb, ctx)
 	}
 }
 
 func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room) error {
 	expiresAt := time.Now().Add(15 * time.Second).UTC()
-	roomData.PendingEvent = &roomStructs.PendingEvent{
+	roomData.GameEvent = &roomStructs.GameEvent{
 		Type:      roomStructs.EventWaitingFirstAction,
 		ExpiresAt: expiresAt,
 	}
@@ -110,7 +110,7 @@ func NextTurn(roomData *roomStructs.Room, rdb *redis.Client, ctx context.Context
 	roomData.Turn++
 
 	// limpa evento anterior
-	roomData.PendingEvent = nil
+	roomData.GameEvent = nil
 
 	if err := room.SaveRoom(ctx, rdb, roomData); err != nil {
 		return err

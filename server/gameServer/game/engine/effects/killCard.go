@@ -15,7 +15,7 @@ func KillCard(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room
 	// decodifica o payload
 	var payload roomStructs.KillCardPayload
 	if err := mapstructure.Decode(effect.Payload, &payload); err != nil {
-		utils.LogError(err)
+		utils.LogError(err) // Pegar todos esses logerror e tratar na função chamadora
 		return
 	}
 
@@ -27,17 +27,27 @@ func KillCard(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room
 	}
 
 	// marca a targetCard do targetPlayer como morta (-1)
-	roomData.Players[*payload.TargetPlayer].Cards[*payload.TargetCard] = -1
+	player, err := roomData.GetPlayer(*payload.TargetPlayer)
+	if err != nil {
+		utils.LogError(err)
+		return
+	}
+
+	err = player.KillCard(*payload.TargetCardIndex)
+	if err != nil {
+		utils.LogError(err)
+		return
+	}
 
 	// cria o evento pendente de carta morta
 	expiresAt := time.Now().Add(7 * time.Second).UTC()
-	roomData.PendingEvent = &roomStructs.PendingEvent{
+	roomData.GameEvent = &roomStructs.GameEvent{
 		PlayerID:  effect.SourcePlayer,
 		Type:      roomStructs.EventCardKilled,
 		ExpiresAt: expiresAt, // TODO colocar tempo configuravel
 		Payload: map[string]interface{}{
 			"TargetPlayer": *payload.TargetPlayer,
-			"TargetCard":   *payload.TargetCard,
+			"TargetCard":   *payload.TargetCardIndex,
 			"Cause":        effect.Cause,
 		},
 	}
