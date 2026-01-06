@@ -8,6 +8,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// TODO PEGAR TODAS AS FUNÇÕES DESSA PASTA E INCORPORAR NA STRUCT DA SALA
 // AddPlayerInRoom adiciona um jogador à sala caso ele ainda não exista na estrutura da sala
 func AddPlayerInRoom(ctx context.Context, rdb *redis.Client, roomId string, playerId string, username string) error {
 	// Carrega a sala
@@ -22,8 +23,8 @@ func AddPlayerInRoom(ctx context.Context, rdb *redis.Client, roomId string, play
 			Id:   playerId,
 			Name: username,
 			Cards: []roomStructs.Card{
-				{Name: roomStructs.CardAssassin, Index: 1, Protected: false, Dead: false},
-				{Name: roomStructs.CardKamikaze, Index: 2, Protected: false, Dead: false},
+				{Name: roomStructs.CardAssassin, Index: 0, Protected: false, Dead: false},
+				{Name: roomStructs.CardKamikaze, Index: 1, Protected: false, Dead: false},
 			}, // TODO remover valor fixo de teste
 			Coins: 2, // Valor inicial padrão do jogo
 			Alive: true,

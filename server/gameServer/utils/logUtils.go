@@ -16,3 +16,7 @@ func LogDebug(msg any) {
 func LogError(msg any) {
 	fmt.Println(msg)
 }
+
+func LogInvldPlyrReq(msg any) {
+	fmt.Println(msg)
+}

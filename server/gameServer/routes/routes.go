@@ -16,7 +16,7 @@ func SetupRoutes(routesContext *ctx.RoutesContext) http.Handler {
 	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
 
 	routes.Route("/game", func(r chi.Router) {
-		r.Get("/", routesContext.Handler.WebSocketHandler(routesContext.Rdb))
+		r.Get("/", routesContext.Handler.WebSocketHandler(routesContext.Rdb, routesContext.RulesRegistry))
 	})
 
 	// Rotas protegidas com JWT

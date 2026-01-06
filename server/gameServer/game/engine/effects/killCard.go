@@ -19,20 +19,21 @@ func KillCard(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room
 		return
 	}
 
-	// valida o efeito
-	valid, err := effectsValidations.ValidateKillCardEffect(roomData, effect, payload)
-	if err != nil || !valid {
-		utils.LogError(err)
-		return
-	}
-
-	// marca a targetCard do targetPlayer como morta (-1)
+	// pega o player
 	player, err := roomData.GetPlayer(*payload.TargetPlayer)
 	if err != nil {
 		utils.LogError(err)
 		return
 	}
 
+	// valida o efeito
+	valid, err := effectsValidations.ValidateKillCardEffect(roomData, effect, payload, player)
+	if err != nil || !valid {
+		utils.LogError(err)
+		return
+	}
+
+	// marca a targetCard do targetPlayer como morta
 	err = player.KillCard(*payload.TargetCardIndex)
 	if err != nil {
 		utils.LogError(err)

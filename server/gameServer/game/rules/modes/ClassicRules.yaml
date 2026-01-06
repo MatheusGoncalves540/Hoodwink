@@ -50,3 +50,12 @@ Cards:
     investedMaxAmount: 3
     taxMinimum: 2
     taxMax: 5
+
+timeout:
+  default: 
+    displayMessage: 6
+    waitingAction: 10
+  suddenDeath: 
+    displayMessage: 3
+    waitingAction: 5
+

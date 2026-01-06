@@ -7,6 +7,7 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/connection"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/player"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
@@ -26,7 +27,7 @@ var upgrader = websocket.Upgrader{
 
 // WebSocketHandler lida com conexões WS
 // Enviar Token JWT na url: /game?ticket=SEU_TOKEN_JWT
-func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
+func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.Registry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -79,7 +80,7 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client) http.HandlerFunc {
 				break
 			}
 
-			connection.OnMessage(ctx, conn, rdb, play, roomId)
+			connection.OnMessage(ctx, conn, rdb, rulesRegistry, play, roomId)
 		}
 	}
 }

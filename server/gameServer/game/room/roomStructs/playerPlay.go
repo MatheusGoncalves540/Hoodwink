@@ -11,7 +11,7 @@ type PlayerPlay struct {
 }
 
 const (
-	PlayAssassinCard TypePlayerPlays = "PLAY_ASSASSIN_CARD"
+	PlayAssassinCard TypePlayerPlays = "ASSASSIN"
 )
 
 //--//--//--//--//--//--//--//--//--//

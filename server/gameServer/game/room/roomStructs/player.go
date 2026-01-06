@@ -11,22 +11,41 @@ type Player struct {
 }
 
 // GetCardByIndex retorna a carta do jogador pelo Card.Index fornecido
-func (p *Player) GetCardByIndex(index int) (*Card, bool) {
+func (p *Player) GetCardByIndex(index int) (*Card, error) {
 	for i := range p.Cards {
 		if p.Cards[i].Index == index {
-			return &p.Cards[i], true
+			return &p.Cards[i], nil
 		}
 	}
-	return nil, false
+	return nil, fmt.Errorf("carta não encontrada: índice %d do jogador %s", index, p.Id)
 }
 
 // KillCard marca a carta como morta pelo Card.Index
 func (p *Player) KillCard(index int) error {
-	for i := range p.Cards {
-		if p.Cards[i].Index == index {
-			p.Cards[i].Dead = true
-			return nil
-		}
+	card, err := p.GetCardByIndex(index)
+	if err != nil {
+		return err
 	}
-	return fmt.Errorf("carta não encontrada com index %d", index)
+	card.Dead = true
+	return nil
+}
+
+// ProtectCard marca a carta como protegida pelo Card.Index
+func (p *Player) ProtectCard(index int) error {
+	card, err := p.GetCardByIndex(index)
+	if err != nil {
+		return err
+	}
+	card.Protected = true
+	return nil
+}
+
+// UnprotectCard remove a proteção da carta pelo Card.Index
+func (p *Player) UnprotectCard(index int) error {
+	card, err := p.GetCardByIndex(index)
+	if err != nil {
+		return err
+	}
+	card.Protected = false
+	return nil
 }

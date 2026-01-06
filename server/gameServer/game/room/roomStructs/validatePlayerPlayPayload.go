@@ -19,10 +19,10 @@ func (p *PlayerPlayPayload) ValidatePayload() (any, error) {
 			return nil, fmt.Errorf("targetPlayer é obrigatório e não pode ser vazio")
 		}
 		if payload.TargetCardIndex == nil {
-			return nil, fmt.Errorf("targetCard é obrigatório")
+			return nil, fmt.Errorf("targetCardIndex é obrigatório")
 		}
 		if *payload.TargetCardIndex < 0 {
-			return nil, fmt.Errorf("targetCard deve ser >= 0")
+			return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
 		}
 		return payload, nil
 
