@@ -37,7 +37,7 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomID string, playerPl
 		}
 
 		if protocolsValidation.ValidateAssassinProtocol(roomData, playerPlay, assassinPayload, registryRules) {
-			protocols.AssassinProtocol(ctx, rdb, roomData, playerPlay, assassinPayload)
+			protocols.AssassinProtocol(ctx, rdb, registryRules, roomData, playerPlay, assassinPayload)
 		}
 	}
 

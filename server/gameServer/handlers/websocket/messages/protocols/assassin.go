@@ -6,17 +6,22 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/redis/go-redis/v9"
 )
 
-func AssassinProtocol(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room, playerPlay *roomStructs.PlayerPlay, assassinPayload roomStructs.AssassinPayload) error {
+func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *roomStructs.Room, playerPlay *roomStructs.PlayerPlay, assassinPayload roomStructs.AssassinPayload) error {
+	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayMessage") // TODO mudar tipo de timeout caso kamikaze esteja ativo na partida
+	if err != nil {
+		return err
+	}
+	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
-	expiresAt := time.Now().Add(7 * time.Second).UTC()
 	roomData.GameEvent = &roomStructs.GameEvent{
 		PlayerID:  playerPlay.PlayerId,
 		Type:      roomStructs.EventCardPlayedAssassin,
-		ExpiresAt: expiresAt, // TODO colocar tempo configuravel
+		ExpiresAt: expiresAt,
 		Payload:   assassinPayload,
 	}
 	roomData.PendingEffects = append(roomData.PendingEffects,
