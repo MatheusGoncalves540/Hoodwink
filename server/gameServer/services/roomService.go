@@ -6,6 +6,7 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/player"
 	redisRoom "github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
@@ -29,9 +30,11 @@ func NewRoomService(redisClient *redis.Client) *RoomService {
 
 func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest, customMatch bool) (*roomStructs.Room, error) {
 	RoomId := utils.GenerateNewId()
+	// TODO: desmockar tudo isso
 	room := &roomStructs.Room{
 		ID:            RoomId,
-		Rules:         roomStructs.ClassicRules, // TODO: desmockar isso
+		Rules:         roomStructs.ClassicRules,
+		TimeoutType:   string(rules.TimeoutsTypeDefault),
 		Name:          roomData.RoomName,
 		Password:      roomData.Password,
 		MaxPlayers:    roomData.MaxPlayers,

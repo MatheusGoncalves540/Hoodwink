@@ -51,11 +51,11 @@ Cards:
     taxMinimum: 2
     taxMax: 5
 
-timeout:
-  default: 
+Timeouts:
+  DEFAULT: 
     displayMessage: 6
     waitingAction: 10
-  suddenDeath: 
+  SUDDEN_DEATH: 
     displayMessage: 3
     waitingAction: 5
 

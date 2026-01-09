@@ -26,7 +26,7 @@ func AddPlayerInRoom(ctx context.Context, rdb *redis.Client, roomId string, play
 				{Name: roomStructs.CardAssassin, Index: 0, Protected: false, Dead: false},
 				{Name: roomStructs.CardKamikaze, Index: 1, Protected: false, Dead: false},
 			}, // TODO remover valor fixo de teste
-			Coins: 2, // Valor inicial padrão do jogo
+			Coins: 10, // Valor inicial padrão do jogo
 			Alive: true,
 		}
 	}

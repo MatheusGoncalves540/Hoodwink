@@ -6,46 +6,47 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects/effectsValidations"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/mitchellh/mapstructure"
 	"github.com/redis/go-redis/v9"
 )
 
-func KillCard(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room, effect roomStructs.Effect) {
+func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *roomStructs.Room, effect roomStructs.Effect) error {
 	// decodifica o payload
 	var payload roomStructs.KillCardPayload
 	if err := mapstructure.Decode(effect.Payload, &payload); err != nil {
-		utils.LogError(err) // Pegar todos esses logerror e tratar na função chamadora
-		return
+		return err
 	}
 
-	// pega o player
-	player, err := roomData.GetPlayer(*payload.TargetPlayer)
+	// pega o targetPlayer
+	targetPlayer, err := roomData.GetPlayer(*payload.TargetPlayer)
 	if err != nil {
-		utils.LogError(err)
-		return
+		return err
 	}
 
 	// valida o efeito
-	valid, err := effectsValidations.ValidateKillCardEffect(roomData, effect, payload, player)
+	valid, err := effectsValidations.ValidateKillCardEffect(roomData, effect, payload, targetPlayer)
 	if err != nil || !valid {
-		utils.LogError(err)
-		return
-	}
-
-	// marca a targetCard do targetPlayer como morta
-	err = player.KillCard(*payload.TargetCardIndex)
-	if err != nil {
-		utils.LogError(err)
-		return
+		return err
 	}
 
 	// cria o evento pendente de carta morta
-	expiresAt := time.Now().Add(7 * time.Second).UTC()
+	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayMessage") // TODO mudar tipo de timeout caso kamikaze esteja ativo na partida
+	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
+	if err != nil {
+		return err
+	}
+
+	// marca a targetCard do targetPlayer como morta
+	err = targetPlayer.KillCard(*payload.TargetCardIndex)
+	if err != nil {
+		return err
+	}
+
 	roomData.GameEvent = &roomStructs.GameEvent{
 		PlayerID:  effect.SourcePlayer,
 		Type:      roomStructs.EventCardKilled,
-		ExpiresAt: expiresAt, // TODO colocar tempo configuravel
+		ExpiresAt: expiresAt,
 		Payload: map[string]interface{}{
 			"TargetPlayer": *payload.TargetPlayer,
 			"TargetCard":   *payload.TargetCardIndex,
@@ -56,4 +57,5 @@ func KillCard(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room
 		Score:  float64(expiresAt.UnixMilli()),
 		Member: roomData.ID,
 	})
+	return nil
 }
