@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/player"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
+
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
@@ -13,11 +14,11 @@ import (
 
 // Função chamada quando o cliente se desconecta do WebSocket
 func OnDisconnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, playerId string, roomData *rooms.Room) {
-	player.AcquirePlayerLock(ctx, rdb, playerId, 0)
-	defer player.ReleasePlayerLock(ctx, rdb, playerId)
+	playerRedis.AcquirePlayerLock(ctx, rdb, playerId, 0)
+	defer playerRedis.ReleasePlayerLock(ctx, rdb, playerId)
 
-	startTime := roomData.StartTime
-	if startTime.IsZero() {
+	// Verifica se o jogo já foi iniciado
+	if roomData.StartTime.IsZero() {
 		// Jogo não iniciado, remove a estrutura do player na sala
 		err := roomData.RemovePlayerFromRoom(ctx, rdb, playerId)
 		if err != nil {

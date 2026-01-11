@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
@@ -76,10 +76,7 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 		return false, "Sala não encontrada"
 	}
 
-	player, err := roomData.GetPlayer(playerId)
-	if err != nil {
-		return false, "Erro ao verificar player"
-	}
+	player, _ := roomData.GetPlayer(playerId)
 
 	if player == nil && len(roomData.Players) >= roomData.MaxPlayers {
 		return false, "Sala está cheia"
@@ -89,38 +86,28 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 		return false, "Jogo já começou"
 	}
 
-	roomId, isPlaying, err := player.GetRegisteredRoomForPlayer(r.Context(), rdb)
-	if err != nil {
-		return false, "Erro ao verificar status do player"
-	}
-	if isPlaying && roomId != roomData.ID {
-		return false, "Player já está em outra sala"
+	if player != nil {
+		roomId, isPlaying, err := playerRedis.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
+
+		if err != nil {
+			return false, "Erro ao verificar status do player"
+		}
+		if isPlaying && roomId != roomData.ID {
+			return false, "Player já está em outra sala"
+		}
 	}
 
 	return true, ""
 }
 
-func (s *RoomService) SyncActivePlayers(r *http.Request, rdb *redis.Client, roomId string) error {
-	roomData, err := redisFuncs.LoadRoom(r.Context(), rdb, roomId)
-	if err != nil {
-		return err
-	}
-
+func (s *RoomService) SyncActivePlayers(r *http.Request, rdb *redis.Client, roomData *rooms.Room) error {
 	// Itera sobre os players e remove aqueles sem registro ativo
 	for playerId := range roomData.Players {
-		player, err := roomData.GetPlayer(playerId)
+		registeredRoom, registered, err := playerRedis.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
 		if err != nil {
 			return err
 		}
-		if player == nil {
-			return fmt.Errorf("jogador %s não encontrado na sala %s, sendo que devia estar", playerId, roomId)
-		}
-
-		registeredRoom, registered, err := player.GetRegisteredRoomForPlayer(r.Context(), rdb)
-		if err != nil {
-			return err
-		}
-		if !registered || registeredRoom != roomId {
+		if !registered || registeredRoom != roomData.ID {
 			delete(roomData.Players, playerId)
 		}
 	}

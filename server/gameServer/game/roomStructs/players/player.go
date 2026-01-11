@@ -68,50 +68,6 @@ func (p *Player) RemoveCoins(amount int) {
 	p.Coins -= amount
 }
 
-// UnregisterPlayerFromRoom remove do Redis o vínculo de um player com uma sala.
-// Normalmente chamado quando o player sai ou é desconectado.
-func (p *Player) UnregisterPlayerFromRoom(ctx context.Context, rdb *redis.Client) error {
-	return rdb.Del(ctx, "player:"+p.Id+":room").Err()
-}
-
-// GetRegisteredRoomForPlayer retorna a sala em que o player está registrado.
-// Agora lida com o formato "roomId:instanceId" e verifica se a instância está viva.
-// Retorno: roomId, bool (true se está registrado e instância viva), erro do Redis.
-func (p *Player) GetRegisteredRoomForPlayer(ctx context.Context, rdb *redis.Client) (string, bool, error) {
-	value, err := rdb.Get(ctx, "player:"+p.Id+":room").Result()
-	if err == redis.Nil {
-		return "", false, nil // player não está em nenhuma sala
-	}
-	if err != nil {
-		return "", false, err // erro de comunicação com Redis
-	}
-
-	// Parse do formato "roomId:instanceId"
-	parts := strings.Split(value, ":")
-	if len(parts) != 2 {
-		// Formato antigo ou inválido, remove registro
-		p.UnregisterPlayerFromRoom(ctx, rdb)
-		return "", false, nil
-	}
-
-	roomId := parts[0]
-	instanceId := parts[1]
-
-	// Verifica se a instância ainda está viva
-	instanceKey := fmt.Sprintf("instance:%s:alive", instanceId)
-	_, err = rdb.Get(ctx, instanceKey).Result()
-	if err == redis.Nil {
-		// Instância morreu, remove registro do player
-		p.UnregisterPlayerFromRoom(ctx, rdb)
-		return "", false, nil
-	}
-	if err != nil {
-		return "", false, err // erro de comunicação com Redis
-	}
-
-	return roomId, true, nil
-}
-
 // GetPlayerRegistrationInfo retorna informações completas do registro do player
 // Retorno: roomId, instanceId, bool (registrado), erro
 func (p *Player) GetPlayerRegistrationInfo(ctx context.Context, rdb *redis.Client) (string, string, bool, error) {

@@ -9,6 +9,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/connection"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
@@ -36,16 +37,12 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 			return
 		}
 
+		playerId := claims["playerId"].(string)
+		username := claims["username"].(string)
+
 		roomData, err := redisFuncs.LoadRoom(ctx, rdb, claims["roomId"].(string))
 		if err != nil {
 			utils.LogError("Erro ao carregar dados da sala: " + err.Error())
-			conn.Close()
-			return
-		}
-
-		player, err := roomData.GetPlayer(claims["playerId"].(string))
-		if err != nil || player == nil {
-			utils.LogError("Erro ao carregar dados do player na sala: " + err.Error())
 			conn.Close()
 			return
 		}
@@ -54,16 +51,23 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 		roomData.SubscribeRoomBroadcast(ctx, rdb)
 
 		// Adiciona conexão ao ConnManager
-		roomStructs.ConnManager.Add(roomData.ID, player.Id, conn)
-		defer roomStructs.ConnManager.Disconnect(roomData.ID, player.Id)
+		roomStructs.ConnManager.Add(roomData.ID, playerId, conn)
+		defer roomStructs.ConnManager.Disconnect(roomData.ID, playerId)
 
 		// Registra que player está em uma sala no Redis
-		roomData.RegisterPlayerInRoom(ctx, rdb, player.Id)
-		defer player.UnregisterPlayerFromRoom(ctx, rdb)
+		roomData.RegisterPlayerInRoom(ctx, rdb, playerId)
+		defer playerRedis.UnregisterPlayerFromRoom(ctx, rdb, playerId)
 
 		// Chamadas de hook
-		connection.OnConnect(conn, ctx, rdb, roomData, player.Id, player.Name)
-		defer connection.OnDisconnect(conn, ctx, rdb, player.Id, roomData)
+		connection.OnConnect(conn, ctx, rdb, roomData, playerId, username)
+		defer connection.OnDisconnect(conn, ctx, rdb, playerId, roomData)
+
+		player, err := roomData.GetPlayer(playerId)
+		if err != nil || player == nil {
+			utils.LogError("Erro ao carregar dados do player na sala: " + err.Error())
+			conn.Close()
+			return
+		}
 
 		// Loop de leitura das mensagens do cliente
 		for {

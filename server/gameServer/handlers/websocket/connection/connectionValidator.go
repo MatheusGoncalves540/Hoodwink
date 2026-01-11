@@ -7,6 +7,7 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -35,20 +36,13 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 
 	// Jogo não iniciado, sincroniza a estrutura dos players na sala
 	if roomData.StartTime.IsZero() {
-		if err := roomService.SyncActivePlayers(r, rdb, roomID); err != nil {
+		if err := roomService.SyncActivePlayers(r, rdb, roomData); err != nil {
 			utils.LogError("Erro ao sincronizar jogadores da estrutura da sala: " + err.Error())
 		}
 	}
 
-	// Verifica se o player está registrado na sala
-	player, err := roomData.GetPlayer(playerID)
-	if err != nil || player == nil {
-		utils.SendError(w, "Player não encontrado na sala", http.StatusUnauthorized)
-		return nil, nil
-	}
-
 	// Verifica se o player já está registrado em uma sala
-	connectedToRoomID, registered, err := player.GetRegisteredRoomForPlayer(ctx, rdb)
+	connectedToRoomID, registered, err := playerRedis.GetRegisteredRoomForPlayer(ctx, rdb, playerID)
 	if err != nil {
 		utils.SendError(w, "Falha ao obter sala registrada", http.StatusInternalServerError)
 		utils.LogError("Falha ao obter sala registrada: " + err.Error())

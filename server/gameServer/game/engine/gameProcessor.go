@@ -76,7 +76,7 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 	if len(roomData.PendingEffects) > 0 {
 		resolveNextEffect(ctx, rdb, RegistryRules, roomData)
 		roomData.SaveRoom(ctx, rdb)
-		roomData.PublishRoomBroadcast(ctx, rdb, roomData.ID)
+		roomData.PublishRoomBroadcast(ctx, rdb, roomData)
 		return
 	}
 
@@ -97,7 +97,7 @@ func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.
 		return err
 	}
 
-	if err := roomData.PublishRoomBroadcast(ctx, rdb, roomData.ID); err != nil {
+	if err := roomData.PublishRoomBroadcast(ctx, rdb, roomData); err != nil {
 		return err
 	}
 

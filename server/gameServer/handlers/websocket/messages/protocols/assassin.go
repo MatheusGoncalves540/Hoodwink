@@ -39,6 +39,6 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 		Member: roomData.ID,
 	})
 	roomData.SaveRoom(ctx, rdb)
-	roomData.PublishRoomBroadcast(ctx, rdb, roomData.ID)
+	roomData.PublishRoomBroadcast(ctx, rdb, roomData)
 	return nil
 }

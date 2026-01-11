@@ -10,6 +10,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
@@ -236,15 +237,7 @@ func (r *Room) RemoveTTL(ctx context.Context, rdb *redis.Client) error {
 func (r *Room) CheckIfItsEmpty(ctx context.Context, rdb *redis.Client) (bool, error) {
 	// Verifica se há jogadores conectados (registrados nesta sala)
 	for playerId := range r.Players {
-		player, err := r.GetPlayer(playerId)
-		if err != nil {
-			return false, err
-		}
-		if player == nil {
-			return false, fmt.Errorf("jogador %s não encontrado na sala %s, sendo que devia estar", playerId, r.ID)
-		}
-
-		registeredRoom, registered, err := player.GetRegisteredRoomForPlayer(ctx, rdb)
+		registeredRoom, registered, err := playerRedis.GetRegisteredRoomForPlayer(ctx, rdb, playerId)
 		if err != nil {
 			return false, err
 		}
