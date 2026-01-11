@@ -6,28 +6,23 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/messages/protocols"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/messages/protocolsValidation"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/redis/go-redis/v9"
 )
 
-func ProcessPlay(ctx context.Context, rdb *redis.Client, roomID string, playerPlay *roomStructs.PlayerPlay, registryRules *rules.Registry) error {
-	ok, err := room.AcquireRoomLock(ctx, rdb, roomID, config.InstanceID, 2*time.Second)
+func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, playerPlay *roomStructs.PlayerPlay, registryRules *rules.Registry) error {
+	ok, err := roomData.AcquireRoomLock(ctx, rdb, config.InstanceID, 2*time.Second)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return nil
 	}
-	defer room.ReleaseRoomLock(ctx, rdb, roomID, config.InstanceID)
-
-	roomData, err := room.LoadRoom(ctx, rdb, roomID)
-	if err != nil {
-		return err
-	}
+	defer roomData.ReleaseRoomLock(ctx, rdb, config.InstanceID)
 
 	switch playerPlay.Type {
 	case roomStructs.PlayAssassinCard:

@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/player"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -18,6 +16,7 @@ import (
 
 // Valida a conexão WebSocket e retorna o objeto de conexão ou um erro
 func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *services.JWTService, roomService *services.RoomService, upgrader websocket.Upgrader, rdb *redis.Client, ctx context.Context) (*websocket.Conn, jwt.MapClaims) {
+	// Valida o token JWT e extrai as claims
 	claims, err := jwtService.ParseTokenFromRequest(r)
 	if err != nil {
 		utils.SendError(w, "Ticket invalido: "+err.Error(), http.StatusUnauthorized)
@@ -27,21 +26,29 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 	playerID, _ := claims["playerId"].(string)
 	roomID, _ := claims["roomId"].(string)
 
-	// Sincroniza jogadores ativos na sala antes de permitir a conexão se o jogo não tiver iniciado
-	if startTimeAny, err := room.LoadRoomField(ctx, rdb, roomID, "StartTime"); err != nil {
-		utils.LogError("Erro ao verificar horário de início da sala:" + err.Error())
+	// Carrega os dados da sala
+	roomData, err := redisFuncs.LoadRoom(ctx, rdb, roomID)
+	if err != nil {
+		utils.LogError("Erro ao verificar informações da sala: " + err.Error())
 		return nil, nil
-	} else if startTime, ok := startTimeAny.(time.Time); !ok {
-		utils.LogError("Erro: StartTime não é do tipo time.Time")
-		return nil, nil
-	} else if startTime.IsZero() {
-		// Jogo não iniciado, sincroniza a estrutura dos players na sala
+	}
+
+	// Jogo não iniciado, sincroniza a estrutura dos players na sala
+	if roomData.StartTime.IsZero() {
 		if err := roomService.SyncActivePlayers(r, rdb, roomID); err != nil {
 			utils.LogError("Erro ao sincronizar jogadores da estrutura da sala: " + err.Error())
 		}
 	}
 
-	connectedToRoomID, registered, err := player.GetRegisteredRoomForPlayer(ctx, rdb, playerID)
+	// Verifica se o player está registrado na sala
+	player, err := roomData.GetPlayer(playerID)
+	if err != nil || player == nil {
+		utils.SendError(w, "Player não encontrado na sala", http.StatusUnauthorized)
+		return nil, nil
+	}
+
+	// Verifica se o player já está registrado em uma sala
+	connectedToRoomID, registered, err := player.GetRegisteredRoomForPlayer(ctx, rdb)
 	if err != nil {
 		utils.SendError(w, "Falha ao obter sala registrada", http.StatusInternalServerError)
 		utils.LogError("Falha ao obter sala registrada: " + err.Error())
@@ -54,10 +61,10 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 		return nil, nil
 	} else if registered && connectedToRoomID != "" {
 		// Se já está registrado na mesma sala, força reconexão: desconecta a anterior
-		wsRoom.ConnManager.Disconnect(roomID, playerID)
+		roomStructs.ConnManager.Disconnect(roomID, playerID)
 	}
 
-	_, err = room.LoadRoom(r.Context(), rdb, roomID)
+	_, err = redisFuncs.LoadRoom(r.Context(), rdb, roomID)
 	if err != nil {
 		utils.SendError(w, "Sala não encontrada", http.StatusNotFound)
 		return nil, nil

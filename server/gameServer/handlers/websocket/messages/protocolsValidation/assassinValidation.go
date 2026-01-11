@@ -1,12 +1,13 @@
 package protocolsValidation
 
 import (
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-func ValidateAssassinProtocol(roomData *roomStructs.Room, playerPlay *roomStructs.PlayerPlay, payload roomStructs.AssassinPayload, RegistryRules *rules.Registry) bool {
+func ValidateAssassinProtocol(roomData *rooms.Room, playerPlay *roomStructs.PlayerPlay, payload roomStructs.AssassinPayload, RegistryRules *rules.Registry) bool {
 	cardRules, err := roomData.GetCardRules(RegistryRules, string(playerPlay.Type))
 	if err != nil {
 		utils.LogError("Erro ao obter regras da carta Assassin: " + err.Error())

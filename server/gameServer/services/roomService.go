@@ -1,14 +1,16 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/players"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/player"
-	redisRoom "github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
@@ -28,10 +30,10 @@ func NewRoomService(redisClient *redis.Client) *RoomService {
 	}
 }
 
-func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest, customMatch bool) (*roomStructs.Room, error) {
+func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest, customMatch bool) (*rooms.Room, error) {
 	RoomId := utils.GenerateNewId()
 	// TODO: desmockar tudo isso
-	room := &roomStructs.Room{
+	room := &rooms.Room{
 		ID:            RoomId,
 		Rules:         roomStructs.ClassicRules,
 		TimeoutType:   string(rules.TimeoutsTypeDefault),
@@ -41,7 +43,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		CustomMatch:   customMatch,
 		Turn:          1,
 		Tax:           0,
-		Players:       make(map[string]roomStructs.Player),
+		Players:       make(map[string]players.Player),
 		DeadDeck:      []string{},
 		CurrentPlayer: "",
 		GameEvent:     &roomStructs.GameEvent{},
@@ -52,7 +54,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 	}
 
 	// Salva a sala com TTL inicial de 5 segundos
-	err := redisRoom.SaveRoomWithTTL(r.Context(), s.redisClient, room, time.Duration(s.roomTTL)*time.Second)
+	err := room.SaveRoomWithTTL(r.Context(), s.redisClient, time.Duration(s.roomTTL)*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -69,26 +71,29 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 		return false, "Erro ao verificar player no backend"
 	}
 
-	room, err := redisRoom.LoadRoom(r.Context(), rdb, roomId)
+	roomData, err := redisFuncs.LoadRoom(r.Context(), rdb, roomId)
 	if err != nil {
 		return false, "Sala não encontrada"
 	}
 
-	_, playerInRoom := room.Players[playerId]
+	player, err := roomData.GetPlayer(playerId)
+	if err != nil {
+		return false, "Erro ao verificar player"
+	}
 
-	if !playerInRoom && len(room.Players) >= room.MaxPlayers {
+	if player == nil && len(roomData.Players) >= roomData.MaxPlayers {
 		return false, "Sala está cheia"
 	}
 
-	if !room.StartTime.IsZero() && !playerInRoom {
+	if !roomData.StartTime.IsZero() && player == nil {
 		return false, "Jogo já começou"
 	}
 
-	roomId, isPlaying, err := player.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
+	roomId, isPlaying, err := player.GetRegisteredRoomForPlayer(r.Context(), rdb)
 	if err != nil {
 		return false, "Erro ao verificar status do player"
 	}
-	if isPlaying && roomId != room.ID {
+	if isPlaying && roomId != roomData.ID {
 		return false, "Player já está em outra sala"
 	}
 
@@ -96,22 +101,30 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 }
 
 func (s *RoomService) SyncActivePlayers(r *http.Request, rdb *redis.Client, roomId string) error {
-	room, err := redisRoom.LoadRoom(r.Context(), rdb, roomId)
+	roomData, err := redisFuncs.LoadRoom(r.Context(), rdb, roomId)
 	if err != nil {
 		return err
 	}
 
 	// Itera sobre os players e remove aqueles sem registro ativo
-	for playerId := range room.Players {
-		registeredRoom, registered, err := player.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
+	for playerId := range roomData.Players {
+		player, err := roomData.GetPlayer(playerId)
+		if err != nil {
+			return err
+		}
+		if player == nil {
+			return fmt.Errorf("jogador %s não encontrado na sala %s, sendo que devia estar", playerId, roomId)
+		}
+
+		registeredRoom, registered, err := player.GetRegisteredRoomForPlayer(r.Context(), rdb)
 		if err != nil {
 			return err
 		}
 		if !registered || registeredRoom != roomId {
-			delete(room.Players, playerId)
+			delete(roomData.Players, playerId)
 		}
 	}
 
 	// Salva a sala atualizada
-	return redisRoom.SaveRoom(r.Context(), rdb, room)
+	return roomData.SaveRoom(r.Context(), rdb)
 }

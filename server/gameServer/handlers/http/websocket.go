@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/connection"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/player"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
@@ -37,24 +36,34 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 			return
 		}
 
-		playerId := claims["playerId"].(string)
-		username := claims["username"].(string)
-		roomId := claims["roomId"].(string)
+		roomData, err := redisFuncs.LoadRoom(ctx, rdb, claims["roomId"].(string))
+		if err != nil {
+			utils.LogError("Erro ao carregar dados da sala: " + err.Error())
+			conn.Close()
+			return
+		}
+
+		player, err := roomData.GetPlayer(claims["playerId"].(string))
+		if err != nil || player == nil {
+			utils.LogError("Erro ao carregar dados do player na sala: " + err.Error())
+			conn.Close()
+			return
+		}
 
 		// Assina canal Redis Pub/Sub da sala
-		wsRoom.SubscribeRoomBroadcast(ctx, rdb, roomId)
+		roomData.SubscribeRoomBroadcast(ctx, rdb)
 
 		// Adiciona conexão ao ConnManager
-		wsRoom.ConnManager.Add(roomId, playerId, conn)
-		defer wsRoom.ConnManager.Disconnect(roomId, playerId)
+		roomStructs.ConnManager.Add(roomData.ID, player.Id, conn)
+		defer roomStructs.ConnManager.Disconnect(roomData.ID, player.Id)
 
 		// Registra que player está em uma sala no Redis
-		player.RegisterPlayerInRoom(ctx, rdb, playerId, roomId)
-		defer player.UnregisterPlayerFromRoom(ctx, rdb, playerId)
+		roomData.RegisterPlayerInRoom(ctx, rdb, player.Id)
+		defer player.UnregisterPlayerFromRoom(ctx, rdb)
 
 		// Chamadas de hook
-		connection.OnConnect(conn, ctx, rdb, roomId, playerId, username)
-		defer connection.OnDisconnect(conn, ctx, rdb, playerId, roomId)
+		connection.OnConnect(conn, ctx, rdb, roomData, player.Id, player.Name)
+		defer connection.OnDisconnect(conn, ctx, rdb, player.Id, roomData)
 
 		// Loop de leitura das mensagens do cliente
 		for {
@@ -63,9 +72,9 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 				utils.LogError(fmt.Sprintf("Erro ao ler mensagem: %v", err))
 				break
 			}
-			utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", playerId, roomId))
+			utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", player.Id, roomData.ID))
 
-			roomId, instanceId, registered, err := player.GetPlayerRegistrationInfo(ctx, rdb, playerId)
+			roomId, instanceId, registered, err := player.GetPlayerRegistrationInfo(ctx, rdb)
 			if err != nil || !registered || roomId == "" || instanceId == "" {
 				utils.LogError("Conexão perdida ou não registrada")
 				conn.Close()
@@ -73,14 +82,21 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 			}
 
 			// Valida e decodifica a jogada do player
-			play, err := roomStructs.ParsePlayerPlay(msg, playerId)
+			play, err := roomStructs.ParsePlayerPlay(msg, player.Id)
 			if err != nil {
 				utils.LogError(fmt.Sprintf("Evento inválido: %v", err))
 				conn.Close()
 				break
 			}
 
-			connection.OnMessage(ctx, conn, rdb, rulesRegistry, play, roomId)
+			roomData, err := redisFuncs.LoadRoom(ctx, rdb, roomId)
+			if err != nil {
+				utils.LogError(fmt.Sprintf("Erro ao carregar dados da sala: %v", err))
+				conn.Close()
+				break
+			}
+
+			connection.OnMessage(ctx, conn, rdb, rulesRegistry, play, roomData)
 		}
 	}
 }

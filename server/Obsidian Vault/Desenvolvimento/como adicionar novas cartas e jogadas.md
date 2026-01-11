@@ -93,7 +93,7 @@ import (
 	"gameServer/game/room/roomStructs"
 )
 
-func HandleUseMinhoca(ctx context.Context, room *roomStructs.Room, playerPlay *roomStructs.Event) error {
+func HandleUseMinhoca(ctx context.Context, room *rooms.Room, playerPlay *roomStructs.Event) error {
 	payload := playerPlay.Payload.(map[string]any)
 	targetUUID := payload["target"].(string)
 
@@ -148,7 +148,7 @@ case "use_minhoca":
 No `ApplyPendingEffects`, defina o que o efeito da carta faz. Exemplo:
 
 ```go
-func ApplyPendingEffects(room *roomStructs.Room) {
+func ApplyPendingEffects(room *rooms.Room) {
 	for _, eff := range room.PendingEffects {
 		if !eff.Executable {
 			continue

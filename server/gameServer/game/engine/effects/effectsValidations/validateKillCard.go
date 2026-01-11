@@ -3,10 +3,12 @@ package effectsValidations
 import (
 	"fmt"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/players"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 )
 
-func ValidateKillCardEffect(roomData *roomStructs.Room, effect roomStructs.Effect, payload roomStructs.KillCardPayload, targetPlayer *roomStructs.Player) (bool, error) {
+func ValidateKillCardEffect(roomData *rooms.Room, effect roomStructs.Effect, payload roomStructs.KillCardPayload, targetPlayer *players.Player) (bool, error) {
 	// verifica se o jogador que está tentando matar a carta é o mesmo que a carta pertence
 	if targetPlayer.Id == effect.SourcePlayer {
 		return false, fmt.Errorf("jogador não pode matar a si mesmo")

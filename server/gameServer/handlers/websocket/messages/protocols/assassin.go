@@ -4,14 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
 	"github.com/redis/go-redis/v9"
 )
 
-func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *roomStructs.Room, playerPlay *roomStructs.PlayerPlay, assassinPayload roomStructs.AssassinPayload) error {
+func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *roomStructs.PlayerPlay, assassinPayload roomStructs.AssassinPayload) error {
 	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayMessage") // TODO mudar tipo de timeout caso kamikaze esteja ativo na partida
 	if err != nil {
 		return err
@@ -39,7 +38,7 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 		Score:  float64(expiresAt.UnixMilli()),
 		Member: roomData.ID,
 	})
-	room.SaveRoom(ctx, rdb, roomData)
-	wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
+	roomData.SaveRoom(ctx, rdb)
+	roomData.PublishRoomBroadcast(ctx, rdb, roomData.ID)
 	return nil
 }

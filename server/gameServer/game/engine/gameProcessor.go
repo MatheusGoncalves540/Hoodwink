@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/wsRoom"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redis/room"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
@@ -55,17 +55,17 @@ func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client, RegistryR
 }
 
 func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry, roomID string) {
-	ok, err := room.AcquireRoomLock(ctx, rdb, roomID, config.InstanceID, 2*time.Second)
-	if err != nil || !ok {
-		return
-	}
-	defer room.ReleaseRoomLock(ctx, rdb, roomID, config.InstanceID)
-
-	roomData, err := room.LoadRoom(ctx, rdb, roomID)
+	roomData, err := redisFuncs.LoadRoom(ctx, rdb, roomID)
 	if err != nil {
 		rdb.ZRem(ctx, "rooms:timeouts", roomID)
 		return
 	}
+
+	ok, err := roomData.AcquireRoomLock(ctx, rdb, config.InstanceID, 2*time.Second)
+	if err != nil || !ok {
+		return
+	}
+	defer roomData.ReleaseRoomLock(ctx, rdb, config.InstanceID)
 
 	// Fecha janela atual (se existir)
 	if roomData.GameEvent != nil {
@@ -75,8 +75,8 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 	// Resolve próximo efeito, se existir
 	if len(roomData.PendingEffects) > 0 {
 		resolveNextEffect(ctx, rdb, RegistryRules, roomData)
-		room.SaveRoom(ctx, rdb, roomData)
-		wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
+		roomData.SaveRoom(ctx, rdb)
+		roomData.PublishRoomBroadcast(ctx, rdb, roomData.ID)
 		return
 	}
 
@@ -86,18 +86,20 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 	}
 }
 
-func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *roomStructs.Room) error {
+func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.Room) error {
 	expiresAt := time.Now().Add(15 * time.Second).UTC()
 	roomData.GameEvent = &roomStructs.GameEvent{
 		Type:      roomStructs.EventWaitingFirstAction,
 		ExpiresAt: expiresAt,
 	}
 
-	if err := room.SaveRoom(ctx, rdb, roomData); err != nil {
+	if err := roomData.SaveRoom(ctx, rdb); err != nil {
 		return err
 	}
 
-	wsRoom.PublishRoomBroadcast(ctx, rdb, roomData.ID, roomData)
+	if err := roomData.PublishRoomBroadcast(ctx, rdb, roomData.ID); err != nil {
+		return err
+	}
 
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixMilli()),
@@ -106,13 +108,13 @@ func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *roomSt
 	return nil
 }
 
-func NextTurn(roomData *roomStructs.Room, rdb *redis.Client, ctx context.Context) error {
+func NextTurn(roomData *rooms.Room, rdb *redis.Client, ctx context.Context) error {
 	roomData.Turn++
 
 	// limpa evento anterior
 	roomData.GameEvent = nil
 
-	if err := room.SaveRoom(ctx, rdb, roomData); err != nil {
+	if err := roomData.SaveRoom(ctx, rdb); err != nil {
 		return err
 	}
 

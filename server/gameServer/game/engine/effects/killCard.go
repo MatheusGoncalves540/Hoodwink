@@ -5,13 +5,14 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects/effectsValidations"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/room/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/mitchellh/mapstructure"
 	"github.com/redis/go-redis/v9"
 )
 
-func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *roomStructs.Room, effect roomStructs.Effect) error {
+func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect roomStructs.Effect) error {
 	// decodifica o payload
 	var payload roomStructs.KillCardPayload
 	if err := mapstructure.Decode(effect.Payload, &payload); err != nil {

@@ -1,4 +1,4 @@
-package wsRoom
+package roomStructs
 
 import (
 	"context"
