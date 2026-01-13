@@ -17,6 +17,34 @@ type Player struct {
 	Alive bool               `json:"alive"`
 }
 
+type PublicPlayerForUpdates struct {
+	Id    string                             `json:"id"`
+	Name  string                             `json:"name"`
+	Cards []roomStructs.PublicCardForUpdates `json:"cards"`
+	Coins int                                `json:"coins"`
+	Alive bool                               `json:"alive"`
+}
+
+// GetPublicPlayerForUpdates retorna a versão pública do jogador para updates
+func (p *Player) GetPublicPlayerForUpdates() PublicPlayerForUpdates {
+	PublicCardInfos := make([]roomStructs.PublicCardForUpdates, len(p.Cards))
+	for i := range p.Cards {
+		PublicCardInfos[i] = roomStructs.PublicCardForUpdates{
+			Index:     p.Cards[i].Index,
+			Protected: p.Cards[i].Protected,
+			Dead:      p.Cards[i].Dead,
+		}
+	}
+
+	return PublicPlayerForUpdates{
+		Id:    p.Id,
+		Name:  p.Name,
+		Cards: PublicCardInfos,
+		Coins: p.Coins,
+		Alive: p.Alive,
+	}
+}
+
 // GetCardByIndex retorna a carta do jogador pelo Card.Index fornecido
 func (p *Player) GetCardByIndex(index int) (*roomStructs.Card, error) {
 	for i := range p.Cards {

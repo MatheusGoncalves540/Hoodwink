@@ -9,6 +9,12 @@ type Card struct {
 	Dead      bool     `json:"dead"`
 }
 
+type PublicCardForUpdates struct {
+	Index     int  `json:"index"`
+	Protected bool `json:"protected"`
+	Dead      bool `json:"dead"`
+}
+
 const (
 	CardAssassin CardName = "ASSASSIN"
 	CardKamikaze CardName = "KAMIKAZE"

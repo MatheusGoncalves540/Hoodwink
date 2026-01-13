@@ -26,14 +26,26 @@ type Room struct {
 	Turn           int                       `json:"turn"`
 	Tax            int                       `json:"tax"`
 	Players        map[string]players.Player `json:"players"`
-	DeadDeck       []string                  `json:"deadDeck"`
+	Deck           []string                  `json:"Deck"`
 	CurrentPlayer  string                    `json:"currentPlayer"`
 	GameEvent      *roomStructs.GameEvent    `json:"gameEvent"`
 	PendingEffects []roomStructs.Effect      `json:"pendingEffects"`
-	PendingPlayer  string                    `json:"pendingPlayer"`
 	GameOver       bool                      `json:"gameOver"`
 	StartTime      time.Time                 `json:"startTime"`
 	Created        time.Time                 `json:"created"`
+}
+
+type PublicRoomForUpdates struct {
+	ID             string                                    `json:"id"`
+	Turn           int                                       `json:"turn"`
+	Tax            int                                       `json:"tax"`
+	Players        map[string]players.PublicPlayerForUpdates `json:"players"`
+	DeadDeck       []string                                  `json:"deadDeck"`
+	CurrentPlayer  string                                    `json:"currentPlayer"`
+	GameEvent      *roomStructs.GameEvent                    `json:"gameEvent"`
+	PendingEffects []roomStructs.Effect                      `json:"pendingEffects"`
+	GameOver       bool                                      `json:"gameOver"`
+	StartTime      time.Time                                 `json:"startTime"`
 }
 
 // GetPlayer retorna o ponteiro do jogador pela playerId e um bool indicando se existe
@@ -218,6 +230,35 @@ func (r *Room) RemovePlayerFromRoom(ctx context.Context, rdb *redis.Client, play
 // Publica mensagem para todos os players de uma sala
 func (r *Room) PublishRoomBroadcast(ctx context.Context, rdb *redis.Client, message any) error {
 	if pubMsg, err := json.Marshal(message); err == nil {
+		return rdb.Publish(ctx, "room:"+r.ID+":broadcast", pubMsg).Err()
+	}
+	return nil
+}
+
+// Publica a versão pública da sala para todos os players de uma sala
+func (r *Room) PublishRoomUpdate(ctx context.Context, rdb *redis.Client) error {
+	// Prepara os dados públicos da sala
+	roomDataPublic := PublicRoomForUpdates{
+		ID:             r.ID,
+		Turn:           r.Turn,
+		Tax:            r.Tax,
+		Players:        make(map[string]players.PublicPlayerForUpdates, len(r.Players)),
+		DeadDeck:       r.Deck,
+		CurrentPlayer:  r.CurrentPlayer,
+		GameEvent:      r.GameEvent,
+		PendingEffects: r.PendingEffects,
+		GameOver:       r.GameOver,
+		StartTime:      r.StartTime,
+	}
+
+	// Prepara os dados públicos dos jogadores
+	for playerId, player := range r.Players {
+		publicPlayer := player.GetPublicPlayerForUpdates()
+		roomDataPublic.Players[playerId] = publicPlayer
+	}
+
+	// Publica a mensagem
+	if pubMsg, err := json.Marshal(roomDataPublic); err == nil {
 		return rdb.Publish(ctx, "room:"+r.ID+":broadcast", pubMsg).Err()
 	}
 	return nil
