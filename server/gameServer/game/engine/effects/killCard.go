@@ -5,16 +5,16 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects/effectsValidations"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/mitchellh/mapstructure"
 	"github.com/redis/go-redis/v9"
 )
 
-func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect roomStructs.Effect) error {
+func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
 	// decodifica o payload
-	var payload roomStructs.KillCardPayload
+	var payload structs.KillCardPayload
 	if err := mapstructure.Decode(effect.Payload, &payload); err != nil {
 		return err
 	}
@@ -44,11 +44,11 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 		return err
 	}
 
-	roomData.GameEvent = &roomStructs.GameEvent{
+	roomData.GameEvent = &structs.GameEvent{
 		PlayerID:  effect.SourcePlayer,
-		Type:      roomStructs.EventCardKilled,
+		Type:      structs.EventCardKilled,
 		ExpiresAt: expiresAt,
-		Payload: roomStructs.KillCardPayload{
+		Payload: structs.KillCardPayload{
 			TargetPlayer:    payload.TargetPlayer,
 			TargetCardIndex: payload.TargetCardIndex,
 			Cause:           string(effect.Cause),

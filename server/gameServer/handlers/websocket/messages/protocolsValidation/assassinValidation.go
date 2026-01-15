@@ -1,13 +1,13 @@
 package protocolsValidation
 
 import (
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-func ValidateAssassinProtocol(roomData *rooms.Room, RegistryRules *rules.Registry, playerPlay *roomStructs.PlayerPlay, payload roomStructs.AssassinPayload) bool {
+func ValidateAssassinProtocol(roomData *rooms.Room, RegistryRules *rules.Registry, playerPlay *structs.PlayerPlay, payload structs.AssassinPayload) bool {
 	cardRules, err := roomData.GetCardRules(RegistryRules, string(playerPlay.Type))
 	if err != nil {
 		utils.LogError("Erro ao obter regras da carta Assassin: " + err.Error())
@@ -20,7 +20,7 @@ func ValidateAssassinProtocol(roomData *rooms.Room, RegistryRules *rules.Registr
 	}
 
 	// Assassin só pode ser usado durante o evento de espera de primeira ação
-	if roomData.GameEvent.Type != roomStructs.EventWaitingFirstAction {
+	if roomData.GameEvent.Type != structs.EventWaitingFirstAction {
 		utils.LogInvldPlyrReq("Assassin só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
 		return false
 	}

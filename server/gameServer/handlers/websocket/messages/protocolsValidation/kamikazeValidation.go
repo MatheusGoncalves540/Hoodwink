@@ -1,13 +1,13 @@
 package protocolsValidation
 
 import (
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-func ValidateKamikazeProtocol(roomData *rooms.Room, RegistryRules *rules.Registry, playerPlay *roomStructs.PlayerPlay, payload *roomStructs.KamikazePayload) bool {
+func ValidateKamikazeProtocol(roomData *rooms.Room, RegistryRules *rules.Registry, playerPlay *structs.PlayerPlay, payload *structs.KamikazePayload) bool {
 	cardRules, err := roomData.GetCardRules(RegistryRules, string(playerPlay.Type))
 	if err != nil {
 		utils.LogError("Erro ao obter regras da carta Kamikaze: " + err.Error())
@@ -16,7 +16,7 @@ func ValidateKamikazeProtocol(roomData *rooms.Room, RegistryRules *rules.Registr
 
 	// Se usado na primeira ação do jogo, marca que o jogador matou a propria carta
 	switch roomData.GameEvent.Type {
-	case roomStructs.EventWaitingFirstAction:
+	case structs.EventWaitingFirstAction:
 		if cardRules.CanKillSelf == nil || !*cardRules.CanKillSelf {
 			utils.LogInvldPlyrReq("Player tentou usar kamikaze para matar a própria carta na primeira ação, mas a carta não permite isso", playerPlay.PlayerId)
 			return false
@@ -32,7 +32,7 @@ func ValidateKamikazeProtocol(roomData *rooms.Room, RegistryRules *rules.Registr
 			return false
 		}
 		payload.KilledHimSelf = true
-	case roomStructs.EventCardKilled:
+	case structs.EventCardKilled:
 		payloadMap, ok := roomData.GameEvent.Payload.(map[string]interface{})
 		if !ok {
 			utils.LogInvldPlyrReq("payload does not match map structure", playerPlay.PlayerId)

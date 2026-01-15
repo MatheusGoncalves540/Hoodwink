@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/redis/go-redis/v9"
 )
 
-func KamikazeProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *roomStructs.PlayerPlay, kamikazePayload *roomStructs.KamikazePayload) error {
+func KamikazeProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, kamikazePayload *structs.KamikazePayload) error {
 	killedHimSelf := kamikazePayload.KilledHimSelf && kamikazePayload.TargetAllyCardIndex != nil
 
 	if killedHimSelf {
@@ -28,17 +28,17 @@ func KamikazeProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	}
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
-	roomData.GameEvent = &roomStructs.GameEvent{
+	roomData.GameEvent = &structs.GameEvent{
 		PlayerID:  playerPlay.PlayerId,
-		Type:      roomStructs.EventCardPlayedKamikaze,
+		Type:      structs.EventCardPlayedKamikaze,
 		ExpiresAt: expiresAt,
 		Payload:   kamikazePayload,
 	}
 	roomData.PendingEffects = append(roomData.PendingEffects,
-		roomStructs.Effect{
-			Cause:        roomStructs.EffectKamikaze,
+		structs.Effect{
+			Cause:        structs.EffectKamikaze,
 			SourcePlayer: playerPlay.PlayerId,
-			Payload: roomStructs.KamikazePayload{
+			Payload: structs.KamikazePayload{
 				TargetPlayer:        kamikazePayload.TargetPlayer,
 				TargetCardIndex:     kamikazePayload.TargetCardIndex,
 				KilledHimSelf:       killedHimSelf,

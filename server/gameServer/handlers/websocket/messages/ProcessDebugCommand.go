@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/commands"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/redis/go-redis/v9"
 )
 
-func ProcessDebugCommand(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, playerPlay *roomStructs.PlayerPlay) {
+func ProcessDebugCommand(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, playerPlay *structs.PlayerPlay) {
 	switch playerPlay.Type {
 	case "COMMAND_SEND_BROADCAST":
 		commands.CommandSendBroadcast(ctx, rdb, roomData, playerPlay.Payload)

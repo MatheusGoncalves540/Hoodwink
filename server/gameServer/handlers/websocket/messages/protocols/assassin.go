@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/redis/go-redis/v9"
 )
 
-func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *roomStructs.PlayerPlay, assassinPayload roomStructs.AssassinPayload) error {
+func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, assassinPayload structs.AssassinPayload) error {
 	cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
 	if err != nil {
 		return fmt.Errorf("%s", "Erro ao obter regras da carta Assassin: "+err.Error())
@@ -31,17 +31,17 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	// marca a remoção de coins
 	sourcePlayer.RemoveCoins(*cardRules.Price)
 
-	roomData.GameEvent = &roomStructs.GameEvent{
+	roomData.GameEvent = &structs.GameEvent{
 		PlayerID:  playerPlay.PlayerId,
-		Type:      roomStructs.EventCardPlayedAssassin,
+		Type:      structs.EventCardPlayedAssassin,
 		ExpiresAt: expiresAt,
 		Payload:   assassinPayload,
 	}
 	roomData.PendingEffects = append(roomData.PendingEffects,
-		roomStructs.Effect{
-			Cause:        roomStructs.EffectAssassin,
+		structs.Effect{
+			Cause:        structs.EffectAssassin,
 			SourcePlayer: playerPlay.PlayerId,
-			Payload: roomStructs.AssassinPayload{
+			Payload: structs.AssassinPayload{
 				TargetPlayer:    assassinPayload.TargetPlayer,
 				TargetCardIndex: assassinPayload.TargetCardIndex,
 			},

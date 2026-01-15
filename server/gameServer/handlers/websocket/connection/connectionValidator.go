@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
@@ -55,7 +55,7 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 		return nil, nil
 	} else if registered && connectedToRoomID != "" {
 		// Se já está registrado na mesma sala, força reconexão: desconecta a anterior
-		roomStructs.ConnManager.Disconnect(roomID, playerID)
+		structs.ConnManager.Disconnect(roomID, playerID)
 	}
 
 	_, err = redisFuncs.LoadRoom(r.Context(), rdb, roomID)

@@ -5,16 +5,16 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/messages/protocols"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/messages/protocolsValidation"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
-func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, playerPlay *roomStructs.PlayerPlay, registryRules *rules.Registry) {
+func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, playerPlay *structs.PlayerPlay, registryRules *rules.Registry) {
 	ok, err := roomData.AcquireRoomLock(ctx, rdb, config.InstanceID, 2*time.Second)
 	if err != nil {
 		utils.LogError(err)
@@ -39,8 +39,8 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 
 	// processa o protocolo específico
 	switch playerPlay.Type {
-	case roomStructs.PlayAssassinCard:
-		assassinPayload, ok := playerPlay.Payload.(roomStructs.AssassinPayload)
+	case structs.PlayAssassinCard:
+		assassinPayload, ok := playerPlay.Payload.(structs.AssassinPayload)
 		if !ok {
 			utils.LogInvldPlyrReq("payload does not match AssassinPayload structure", sourcePlayer.Id)
 			return
@@ -50,8 +50,8 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			protocols.AssassinProtocol(ctx, rdb, registryRules, roomData, playerPlay, assassinPayload)
 		}
 
-	case roomStructs.PlayKamikazeCard:
-		kamikazePayload, ok := playerPlay.Payload.(roomStructs.KamikazePayload)
+	case structs.PlayKamikazeCard:
+		kamikazePayload, ok := playerPlay.Payload.(structs.KamikazePayload)
 		if !ok {
 			utils.LogInvldPlyrReq("payload does not match KamikazePayload structure", sourcePlayer.Id)
 			return

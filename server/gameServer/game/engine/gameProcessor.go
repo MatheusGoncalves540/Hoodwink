@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
@@ -88,8 +88,8 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 
 func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.Room) error {
 	expiresAt := time.Now().Add(15 * time.Second).UTC()
-	roomData.GameEvent = &roomStructs.GameEvent{
-		Type:      roomStructs.EventWaitingFirstAction,
+	roomData.GameEvent = &structs.GameEvent{
+		Type:      structs.EventWaitingFirstAction,
 		ExpiresAt: expiresAt,
 	}
 

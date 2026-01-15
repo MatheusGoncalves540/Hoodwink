@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
@@ -35,7 +35,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 	// TODO: desmockar tudo isso
 	room := &rooms.Room{
 		ID:            RoomId,
-		Rules:         roomStructs.ClassicRules,
+		Rules:         structs.ClassicRules,
 		TimeoutType:   string(rules.TimeoutsTypeDefault),
 		Name:          roomData.RoomName,
 		Password:      roomData.Password,
@@ -46,7 +46,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		Players:       make(map[string]*players.Player),
 		Deck:          []string{},
 		CurrentPlayer: "",
-		GameEvent:     &roomStructs.GameEvent{},
+		GameEvent:     &structs.GameEvent{},
 		GameOver:      false,
 		StartTime:     time.Time{},
 		Created:       time.Now(),

@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
@@ -17,7 +16,7 @@ import (
 
 type Room struct {
 	ID             string                     `json:"id"`
-	Rules          roomStructs.Rules          `json:"rules"`
+	Rules          structs.Rules              `json:"rules"`
 	TimeoutType    string                     `json:"timeoutType"`
 	Name           string                     `json:"name"`
 	Password       string                     `json:"password" validate:"max=24"`
@@ -28,8 +27,8 @@ type Room struct {
 	Players        map[string]*players.Player `json:"players"`
 	Deck           []string                   `json:"Deck"`
 	CurrentPlayer  string                     `json:"currentPlayer"`
-	GameEvent      *roomStructs.GameEvent     `json:"gameEvent"`
-	PendingEffects []roomStructs.Effect       `json:"pendingEffects"`
+	GameEvent      *structs.GameEvent         `json:"gameEvent"`
+	PendingEffects []structs.Effect           `json:"pendingEffects"`
 	GameOver       bool                       `json:"gameOver"`
 	StartTime      time.Time                  `json:"startTime"`
 	Created        time.Time                  `json:"created"`
@@ -42,8 +41,8 @@ type PublicRoomForUpdates struct {
 	Players        map[string]players.PublicPlayerForUpdates `json:"players"`
 	DeadDeck       []string                                  `json:"deadDeck"`
 	CurrentPlayer  string                                    `json:"currentPlayer"`
-	GameEvent      *roomStructs.GameEvent                    `json:"gameEvent"`
-	PendingEffects []roomStructs.Effect                      `json:"pendingEffects"`
+	GameEvent      *structs.GameEvent                        `json:"gameEvent"`
+	PendingEffects []structs.Effect                          `json:"pendingEffects"`
 	GameOver       bool                                      `json:"gameOver"`
 	StartTime      time.Time                                 `json:"startTime"`
 }
@@ -145,9 +144,9 @@ func (r *Room) AddPlayerInRoom(ctx context.Context, rdb *redis.Client, playerId 
 	r.Players[playerId] = &players.Player{
 		Id:   playerId,
 		Name: username,
-		Cards: []roomStructs.Card{
-			{Name: roomStructs.CardAssassin, Index: 0, Protected: false, Dead: false},
-			{Name: roomStructs.CardKamikaze, Index: 1, Protected: false, Dead: false},
+		Cards: []structs.Card{
+			{Name: structs.CardAssassin, Index: 0, Protected: false, Dead: false},
+			{Name: structs.CardKamikaze, Index: 1, Protected: false, Dead: false},
 		}, // TODO remover valor fixo de teste
 		Coins: 10, // Valor inicial padrão do jogo
 		Alive: true,
@@ -290,25 +289,15 @@ func (r *Room) CheckIfItsEmpty(ctx context.Context, rdb *redis.Client) (bool, er
 	return true, nil
 }
 
-// RegisterPlayerInRoom registra no Redis que o player está conectado em uma sala.
-// O formato inclui a instanceID: "roomId:instanceId"
-// Com TTL sincronizado com o heartbeat da instância.
-func (r *Room) RegisterPlayerInRoom(ctx context.Context, rdb *redis.Client, playerId string) error {
-	key := fmt.Sprintf("player:%s:room", playerId)
-	value := fmt.Sprintf("%s:%s", r.ID, config.InstanceID)
-	// TTL igual ao heartbeat (10s)
-	return rdb.Set(ctx, key, value, 10*time.Second).Err()
-}
-
 // Assina o canal de broadcast de uma sala
 func (r *Room) SubscribeRoomBroadcast(parentCtx context.Context, rdb *redis.Client) {
-	if roomStructs.ConnManager.RoomExists(r.ID) {
+	if structs.ConnManager.RoomExists(r.ID) {
 		utils.LogDebug("Sala " + r.ID + " já está assinada no Pub/Sub")
 		return
 	}
 
 	ctx, cancel := context.WithCancel(parentCtx)
-	roomStructs.ConnManager.SetRoomCancel(r.ID, cancel)
+	structs.ConnManager.SetRoomCancel(r.ID, cancel)
 
 	pubsub := rdb.Subscribe(ctx, "room:"+r.ID+":broadcast")
 
@@ -329,7 +318,7 @@ func (r *Room) SubscribeRoomBroadcast(parentCtx context.Context, rdb *redis.Clie
 				if !ok {
 					return
 				}
-				roomStructs.ConnManager.Broadcast(r.ID, []byte(msg.Payload))
+				structs.ConnManager.Broadcast(r.ID, []byte(msg.Payload))
 			}
 		}
 	}()

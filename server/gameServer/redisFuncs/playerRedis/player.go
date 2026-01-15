@@ -64,8 +64,37 @@ func GetRegisteredRoomForPlayer(ctx context.Context, rdb *redis.Client, playerId
 	return roomId, true, nil
 }
 
+// RegisterPlayerInRoom registra no Redis que o player está conectado em uma sala.
+// O formato inclui a instanceID: "roomId:instanceId"
+// Com TTL sincronizado com o heartbeat da instância.
+func RegisterPlayerInRoom(ctx context.Context, rdb *redis.Client, roomId string, playerId string) error {
+	key := fmt.Sprintf("player:%s:room", playerId)
+	value := fmt.Sprintf("%s:%s", roomId, config.InstanceID)
+	// TTL igual ao heartbeat (10s)
+	return rdb.Set(ctx, key, value, 10*time.Second).Err()
+}
+
 // UnregisterPlayerFromRoom remove do Redis o vínculo de um player com uma sala.
 // Normalmente chamado quando o player sai ou é desconectado.
 func UnregisterPlayerFromRoom(ctx context.Context, rdb *redis.Client, playerId string) error {
 	return rdb.Del(ctx, "player:"+playerId+":room").Err()
+}
+
+// GetPlayerRegistrationInfo retorna informações completas do registro do player
+// Retorno: roomId, instanceId, bool (registrado), erro
+func GetPlayerRegistrationInfo(ctx context.Context, rdb *redis.Client, playerId string) (string, string, bool, error) {
+	value, err := rdb.Get(ctx, "player:"+playerId+":room").Result()
+	if err == redis.Nil {
+		return "", "", false, nil
+	}
+	if err != nil {
+		return "", "", false, err
+	}
+
+	parts := strings.Split(value, ":")
+	if len(parts) != 2 {
+		return "", "", false, nil
+	}
+
+	return parts[0], parts[1], true, nil
 }

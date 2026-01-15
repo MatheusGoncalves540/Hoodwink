@@ -1,4 +1,4 @@
-package roomStructs
+package structs
 
 type Rules string
 

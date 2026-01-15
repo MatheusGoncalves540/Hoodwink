@@ -1,35 +1,32 @@
 package players
 
 import (
-	"context"
 	"fmt"
-	"strings"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs"
-	"github.com/redis/go-redis/v9"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 )
 
 type Player struct {
-	Id    string             `json:"id"`
-	Name  string             `json:"name"`
-	Cards []roomStructs.Card `json:"cards"`
-	Coins int                `json:"coins"`
-	Alive bool               `json:"alive"`
+	Id    string         `json:"id"`
+	Name  string         `json:"name"`
+	Cards []structs.Card `json:"cards"`
+	Coins int            `json:"coins"`
+	Alive bool           `json:"alive"`
 }
 
 type PublicPlayerForUpdates struct {
-	Id    string                             `json:"id"`
-	Name  string                             `json:"name"`
-	Cards []roomStructs.PublicCardForUpdates `json:"cards"`
-	Coins int                                `json:"coins"`
-	Alive bool                               `json:"alive"`
+	Id    string                         `json:"id"`
+	Name  string                         `json:"name"`
+	Cards []structs.PublicCardForUpdates `json:"cards"`
+	Coins int                            `json:"coins"`
+	Alive bool                           `json:"alive"`
 }
 
 // GetPublicPlayerForUpdates retorna a versão pública do jogador para updates
 func (p *Player) GetPublicPlayerForUpdates() PublicPlayerForUpdates {
-	PublicCardInfos := make([]roomStructs.PublicCardForUpdates, len(p.Cards))
+	PublicCardInfos := make([]structs.PublicCardForUpdates, len(p.Cards))
 	for i := range p.Cards {
-		PublicCardInfos[i] = roomStructs.PublicCardForUpdates{
+		PublicCardInfos[i] = structs.PublicCardForUpdates{
 			Index:     p.Cards[i].Index,
 			Protected: p.Cards[i].Protected,
 			Dead:      p.Cards[i].Dead,
@@ -46,7 +43,7 @@ func (p *Player) GetPublicPlayerForUpdates() PublicPlayerForUpdates {
 }
 
 // GetCardByIndex retorna a carta do jogador pelo Card.Index fornecido
-func (p *Player) GetCardByIndex(index int) (*roomStructs.Card, error) {
+func (p *Player) GetCardByIndex(index int) (*structs.Card, error) {
 	for i := range p.Cards {
 		if p.Cards[i].Index == index {
 			return &p.Cards[i], nil
@@ -94,23 +91,4 @@ func (p *Player) AddCoins(amount int) {
 // RemoveCoins remove moedas do jogador
 func (p *Player) RemoveCoins(amount int) {
 	p.Coins -= amount
-}
-
-// GetPlayerRegistrationInfo retorna informações completas do registro do player
-// Retorno: roomId, instanceId, bool (registrado), erro
-func (p *Player) GetPlayerRegistrationInfo(ctx context.Context, rdb *redis.Client) (string, string, bool, error) {
-	value, err := rdb.Get(ctx, "player:"+p.Id+":room").Result()
-	if err == redis.Nil {
-		return "", "", false, nil
-	}
-	if err != nil {
-		return "", "", false, err
-	}
-
-	parts := strings.Split(value, ":")
-	if len(parts) != 2 {
-		return "", "", false, nil
-	}
-
-	return parts[0], parts[1], true, nil
 }

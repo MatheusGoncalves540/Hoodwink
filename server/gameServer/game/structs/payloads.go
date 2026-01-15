@@ -1,4 +1,4 @@
-package roomStructs
+package structs
 
 type KillCardPayload struct {
 	Cause           string  `json:"cause"`

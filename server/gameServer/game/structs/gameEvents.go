@@ -1,4 +1,4 @@
-package roomStructs
+package structs
 
 import "time"
 
