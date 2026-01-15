@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
 	"github.com/redis/go-redis/v9"
 )
 

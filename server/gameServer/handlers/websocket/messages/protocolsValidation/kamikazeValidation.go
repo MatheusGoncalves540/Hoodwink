@@ -1,9 +1,9 @@
 package protocolsValidation
 
 import (
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 

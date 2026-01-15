@@ -1,7 +1,7 @@
 package effectsValidations
 
 import (
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/players"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
 )
 
 // aqui não preisa verificar as mesmas coisas do efeito de killCard, isso já foi verificado na resolução do efeito

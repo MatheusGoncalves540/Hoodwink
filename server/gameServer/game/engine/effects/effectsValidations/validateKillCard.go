@@ -3,9 +3,9 @@ package effectsValidations
 import (
 	"fmt"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/players"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
 )
 
 func ValidateKillCardEffect(roomData *rooms.Room, effect structs.Effect, payload structs.KillCardPayload, targetPlayer *players.Player) (bool, error) {

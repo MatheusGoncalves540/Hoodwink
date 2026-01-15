@@ -40,15 +40,6 @@ func (cm *ConnectionManager) Add(roomId, playerId string, conn *websocket.Conn) 
 		}
 		utils.LogDebug("------------------------------------------------")
 	}
-
-	fmt.Println("------------ Debug ConnectionManager ADD ------------")
-	for rId, players := range cm.connections {
-		fmt.Println(fmt.Sprintf("Room: %s", rId))
-		for pId := range players {
-			fmt.Println(fmt.Sprintf("  Player: %s", pId))
-		}
-	}
-	fmt.Println("------------------------------------------------")
 }
 
 // Remove a conexão do jogador do mapa e fecha o WebSocket
@@ -70,14 +61,6 @@ func (cm *ConnectionManager) Disconnect(roomId, playerId string) {
 			delete(cm.connections, roomId)
 		}
 	}
-	fmt.Println("------------ Debug ConnectionManager RM ------------")
-	for rId, players := range cm.connections {
-		fmt.Println(fmt.Sprintf("Room: %s", rId))
-		for pId := range players {
-			fmt.Println(fmt.Sprintf("  Player: %s", pId))
-		}
-	}
-	fmt.Println("------------------------------------------------")
 }
 
 // Armazena a função cancel para a sala

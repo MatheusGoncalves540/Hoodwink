@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/roomStructs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
@@ -46,7 +46,7 @@ func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client, RegistryR
 		return err
 	}
 
-	utils.LogDebug("Salas com timeout expirado: " + strconv.Itoa(len(roomIDs)))
+	// utils.LogDebug("Salas com timeout expirado: " + strconv.Itoa(len(roomIDs)))
 
 	for _, roomID := range roomIDs {
 		processRoomWithLock(ctx, rdb, RegistryRules, roomID)
