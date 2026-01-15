@@ -32,7 +32,7 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 	}
 
 	// cria o evento pendente de carta morta
-	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayMessage") // TODO mudar tipo de timeout caso kamikaze esteja ativo na partida
+	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction") // TODO mudar tipo de timeout caso kamikaze esteja ativo na partida
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 	if err != nil {
 		return err
@@ -48,10 +48,10 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 		PlayerID:  effect.SourcePlayer,
 		Type:      roomStructs.EventCardKilled,
 		ExpiresAt: expiresAt,
-		Payload: map[string]interface{}{
-			"TargetPlayer": *payload.TargetPlayer,
-			"TargetCard":   *payload.TargetCardIndex,
-			"Cause":        effect.Cause,
+		Payload: roomStructs.KillCardPayload{
+			TargetPlayer:    payload.TargetPlayer,
+			TargetCardIndex: payload.TargetCardIndex,
+			Cause:           string(effect.Cause),
 		},
 	}
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{

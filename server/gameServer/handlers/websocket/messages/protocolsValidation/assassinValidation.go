@@ -7,7 +7,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-func ValidateAssassinProtocol(roomData *rooms.Room, playerPlay *roomStructs.PlayerPlay, payload roomStructs.AssassinPayload, RegistryRules *rules.Registry) bool {
+func ValidateAssassinProtocol(roomData *rooms.Room, RegistryRules *rules.Registry, playerPlay *roomStructs.PlayerPlay, payload roomStructs.AssassinPayload) bool {
 	cardRules, err := roomData.GetCardRules(RegistryRules, string(playerPlay.Type))
 	if err != nil {
 		utils.LogError("Erro ao obter regras da carta Assassin: " + err.Error())
@@ -19,15 +19,21 @@ func ValidateAssassinProtocol(roomData *rooms.Room, playerPlay *roomStructs.Play
 		return false
 	}
 
+	// Assassin só pode ser usado durante o evento de espera de primeira ação
+	if roomData.GameEvent.Type != roomStructs.EventWaitingFirstAction {
+		utils.LogInvldPlyrReq("Assassin só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
+		return false
+	}
+
 	// verifica se player tem moedas pra isso
 	if sourcePlayer.Coins < *cardRules.Price {
-		utils.LogInvldPlyrReq(playerPlay.PlayerId + " não tem moedas suficientes para jogar Assassin")
+		utils.LogInvldPlyrReq("player não tem moedas suficientes para jogar Assassin", playerPlay.PlayerId)
 		return false
 	}
 
 	// verifica se o jogador está tentando jurar de morte uma carta dele mesmo
 	if payload.TargetPlayer == &playerPlay.PlayerId {
-		utils.LogInvldPlyrReq("Player " + playerPlay.PlayerId + " tentou jurar de morte uma carta dele mesmo")
+		utils.LogInvldPlyrReq("Player tentou jurar de morte uma carta dele mesmo", playerPlay.PlayerId)
 		return false
 	}
 
@@ -43,7 +49,7 @@ func ValidateAssassinProtocol(roomData *rooms.Room, playerPlay *roomStructs.Play
 		return false
 	}
 	if card.Dead {
-		utils.LogInvldPlyrReq("Player " + playerPlay.PlayerId + " tentou jurar de morte uma carta já morta")
+		utils.LogInvldPlyrReq("Player tentou jurar de morte uma carta já morta", playerPlay.PlayerId)
 		return false
 	}
 

@@ -14,9 +14,11 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, RegistryRules *ru
 	effect := roomData.PendingEffects[0]
 
 	switch effect.Cause {
-
 	case roomStructs.EffectAssassin:
 		effects.AssassinEffect(ctx, rdb, RegistryRules, roomData, effect)
+
+	case roomStructs.EffectKamikaze:
+		effects.KamikazeEffect(ctx, rdb, RegistryRules, roomData, effect)
 	}
 	// remove o efeito que está sendo resolvido
 	roomData.PendingEffects = roomData.PendingEffects[1:]

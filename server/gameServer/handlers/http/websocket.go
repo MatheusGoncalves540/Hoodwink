@@ -30,10 +30,10 @@ var upgrader = websocket.Upgrader{
 // Enviar Token JWT na url: /game?ticket=SEU_TOKEN_JWT
 func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.Registry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
+		ctxConn := r.Context()
 
 		// Valida e faz upgrade para WebSocket
-		conn, claims := connection.ValidateConnection(w, r, h.JWTService, h.RoomService, upgrader, rdb, ctx)
+		conn, claims := connection.ValidateConnection(w, r, h.JWTService, h.RoomService, upgrader, rdb, ctxConn)
 		if conn == nil || claims == nil {
 			return
 		}
@@ -41,7 +41,7 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 		playerId := claims["playerId"].(string)
 		username := claims["username"].(string)
 
-		roomData, err := redisFuncs.LoadRoom(ctx, rdb, claims["roomId"].(string))
+		roomDataConn, err := redisFuncs.LoadRoom(ctxConn, rdb, claims["roomId"].(string))
 		if err != nil {
 			utils.LogError("Erro ao carregar dados da sala: " + err.Error())
 			conn.Close()
@@ -49,21 +49,21 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 		}
 
 		// Assina canal Redis Pub/Sub da sala
-		roomData.SubscribeRoomBroadcast(ctx, rdb)
+		roomDataConn.SubscribeRoomBroadcast(ctxConn, rdb)
 
 		// Adiciona conexão ao ConnManager
-		roomStructs.ConnManager.Add(roomData.ID, playerId, conn)
-		defer roomStructs.ConnManager.Disconnect(roomData.ID, playerId)
+		roomStructs.ConnManager.Add(roomDataConn.ID, playerId, conn)
+		defer roomStructs.ConnManager.Disconnect(roomDataConn.ID, playerId)
 
 		// Registra que player está em uma sala no Redis
-		roomData.RegisterPlayerInRoom(ctx, rdb, playerId)
-		defer playerRedis.UnregisterPlayerFromRoom(ctx, rdb, playerId)
+		roomDataConn.RegisterPlayerInRoom(ctxConn, rdb, playerId)
+		defer playerRedis.UnregisterPlayerFromRoom(ctxConn, rdb, playerId)
 
 		// Chamadas de hook
-		connection.OnConnect(conn, ctx, rdb, roomData, playerId, username)
-		defer connection.OnDisconnect(conn, ctx, rdb, playerId, roomData)
+		connection.OnConnect(conn, ctxConn, rdb, roomDataConn, playerId, username)
+		defer connection.OnDisconnect(conn, ctxConn, rdb, playerId, roomDataConn)
 
-		player, err := roomData.GetPlayer(playerId)
+		player, err := roomDataConn.GetPlayer(playerId)
 		if err != nil || player == nil {
 			utils.LogError("Erro ao carregar dados do player na sala: " + err.Error())
 			conn.Close()
@@ -72,12 +72,14 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 
 		// Loop de leitura das mensagens do cliente
 		for {
+			ctx := r.Context()
+
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
 				utils.LogError(fmt.Sprintf("Erro ao ler mensagem: %v", err))
 				break
 			}
-			utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", player.Id, roomData.ID))
+			utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", player.Id, roomDataConn.ID))
 
 			roomId, instanceId, registered, err := player.GetPlayerRegistrationInfo(ctx, rdb)
 			if err != nil || !registered || roomId == "" || instanceId == "" {
@@ -101,7 +103,10 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 				break
 			}
 
-			connection.OnMessage(ctx, conn, rdb, rulesRegistry, play, roomData)
+			connection.OnMessage(ctx, rdb, rulesRegistry, play, roomData)
+			// Salva e publica atualizações da sala
+			roomData.SaveRoom(ctx, rdb)
+			roomData.PublishRoomBroadcast(ctx, rdb, roomData)
 		}
 	}
 }

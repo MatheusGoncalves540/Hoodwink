@@ -16,23 +16,23 @@ import (
 )
 
 type Room struct {
-	ID             string                    `json:"id"`
-	Rules          roomStructs.Rules         `json:"rules"`
-	TimeoutType    string                    `json:"timeoutType"`
-	Name           string                    `json:"name"`
-	Password       string                    `json:"password" validate:"max=24"`
-	MaxPlayers     int                       `json:"maxPlayers"`
-	CustomMatch    bool                      `json:"customMatch"`
-	Turn           int                       `json:"turn"`
-	Tax            int                       `json:"tax"`
-	Players        map[string]players.Player `json:"players"`
-	Deck           []string                  `json:"Deck"`
-	CurrentPlayer  string                    `json:"currentPlayer"`
-	GameEvent      *roomStructs.GameEvent    `json:"gameEvent"`
-	PendingEffects []roomStructs.Effect      `json:"pendingEffects"`
-	GameOver       bool                      `json:"gameOver"`
-	StartTime      time.Time                 `json:"startTime"`
-	Created        time.Time                 `json:"created"`
+	ID             string                     `json:"id"`
+	Rules          roomStructs.Rules          `json:"rules"`
+	TimeoutType    string                     `json:"timeoutType"`
+	Name           string                     `json:"name"`
+	Password       string                     `json:"password" validate:"max=24"`
+	MaxPlayers     int                        `json:"maxPlayers"`
+	CustomMatch    bool                       `json:"customMatch"`
+	Turn           int                        `json:"turn"`
+	Tax            int                        `json:"tax"`
+	Players        map[string]*players.Player `json:"players"`
+	Deck           []string                   `json:"Deck"`
+	CurrentPlayer  string                     `json:"currentPlayer"`
+	GameEvent      *roomStructs.GameEvent     `json:"gameEvent"`
+	PendingEffects []roomStructs.Effect       `json:"pendingEffects"`
+	GameOver       bool                       `json:"gameOver"`
+	StartTime      time.Time                  `json:"startTime"`
+	Created        time.Time                  `json:"created"`
 }
 
 type PublicRoomForUpdates struct {
@@ -54,7 +54,7 @@ func (r *Room) GetPlayer(playerId string) (*players.Player, error) {
 	if !exists {
 		return nil, fmt.Errorf("jogador alvo não encontrado: %s", playerId)
 	}
-	return &player, nil
+	return player, nil
 }
 
 // GetCardRules retorna as regras da carta específica para a sala
@@ -142,7 +142,7 @@ func (r *Room) AddPlayerInRoom(ctx context.Context, rdb *redis.Client, playerId 
 	}
 
 	// Adiciona o jogador ao mapa
-	r.Players[playerId] = players.Player{
+	r.Players[playerId] = &players.Player{
 		Id:   playerId,
 		Name: username,
 		Cards: []roomStructs.Card{

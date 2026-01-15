@@ -16,6 +16,7 @@ type GameEvent struct {
 const (
 	EventWaitingFirstAction GameEventType = "WAITING_FIRST_ACTION"
 	EventCardPlayedAssassin GameEventType = "CARD_PLAYED_ASSASSIN"
+	EventCardPlayedKamikaze GameEventType = "CARD_PLAYED_KAMIKAZE"
 	EventCardKilled         GameEventType = "CARD_KILLED"
 	EventShowingMessage     GameEventType = "SHOWING_MESSAGE"
 )

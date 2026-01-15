@@ -17,6 +17,6 @@ func LogError(msg any) {
 	fmt.Println(msg)
 }
 
-func LogInvldPlyrReq(msg any) {
+func LogInvldPlyrReq(msg any, playerId string) {
 	fmt.Println(msg)
 }

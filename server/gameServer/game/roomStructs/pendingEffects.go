@@ -12,7 +12,7 @@ type Effect struct {
 // Tipos de efeitos
 const (
 	EffectAssassin       EffectCause = "ASSASSIN"
-	EffectContestPenalty EffectCause = "CONTEST_PENALTY"
 	EffectKamikaze       EffectCause = "KAMIKAZE"
+	EffectContestPenalty EffectCause = "CONTEST_PENALTY"
 	EffectGainCoins      EffectCause = "GAIN_COINS"
 )
