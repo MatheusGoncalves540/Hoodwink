@@ -43,14 +43,20 @@ db-up:
 ## Gera o arquivo redis.conf se não existir
 redis-conf:
 	@test -f $(REDIS_CONF) || printf '%s\n' \
+'bind 127.0.0.1' \
 'requirepass redis' \
+'protected-mode yes' \
 'appendonly yes' \
+'rename-command FLUSHALL' "" \
+'rename-command FLUSHDB' "" \
+'rename-command CONFIG' "" \
+'rename-command SHUTDOWN' "" \
 'appendfsync everysec' > $(REDIS_CONF)
 
 ## Sobe o container do Redis Stack
 redis-up: redis-conf
 	podman create --name $(REDIS_CONTAINER) \
-	  -p 6379:6379 \
+	  -p 127.0.0.1:6379:6379 \
 	  -v $(CURDIR)/$(REDIS_CONF):/usr/local/etc/redis/redis.conf:ro \
 	  $(REDIS_IMAGE) \
 	  redis-server /usr/local/etc/redis/redis.conf
