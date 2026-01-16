@@ -6,20 +6,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
 // AcquirePlayerLock tenta adquirir um lock distribuído para um player.
 // Isso garante que ele não seja registrado em duas salas ao mesmo tempo por instâncias diferentes.
 func AcquirePlayerLock(ctx context.Context, rdb *redis.Client, playerId string, ttl time.Duration) (bool, error) {
-	return rdb.SetNX(ctx, "lock:player:"+playerId, config.InstanceID, ttl).Result()
+	return rdb.SetNX(ctx, "lock:player:"+playerId, utils.GetInstanceID(), ttl).Result()
 }
 
 // ReleasePlayerLock remove o lock do player se ainda pertencer à instância atual.
 func ReleasePlayerLock(ctx context.Context, rdb *redis.Client, playerId string) error {
 	val, err := rdb.Get(ctx, "lock:player:"+playerId).Result()
-	if err == nil && val == config.InstanceID {
+	if err == nil && val == utils.GetInstanceID() {
 		return rdb.Del(ctx, "lock:player:"+playerId).Err()
 	}
 	// não remove se não for o dono do lock ou se não existir
@@ -69,7 +69,7 @@ func GetRegisteredRoomForPlayer(ctx context.Context, rdb *redis.Client, playerId
 // Com TTL sincronizado com o heartbeat da instância.
 func RegisterPlayerInRoom(ctx context.Context, rdb *redis.Client, roomId string, playerId string) error {
 	key := fmt.Sprintf("player:%s:room", playerId)
-	value := fmt.Sprintf("%s:%s", roomId, config.InstanceID)
+	value := fmt.Sprintf("%s:%s", roomId, utils.GetInstanceID())
 	// TTL igual ao heartbeat (10s)
 	return rdb.Set(ctx, key, value, 10*time.Second).Err()
 }

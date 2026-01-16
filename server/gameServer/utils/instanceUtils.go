@@ -8,11 +8,6 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// LogInstanceInfo registra informações sobre a instância atual
-func LogInstanceInfo(action string) {
-	LogDebug(fmt.Sprintf("[Instance %s] %s", config.InstanceID, action))
-}
-
 // CleanupPlayerRegistrations remove registros de players órfãos (instâncias mortas)
 func CleanupPlayerRegistrations(ctx context.Context, rdb *redis.Client) error {
 	// Busca todas as chaves de player:*:room
@@ -64,7 +59,7 @@ func CleanupPlayerRegistrations(ctx context.Context, rdb *redis.Client) error {
 	return nil
 }
 
-// Gera um UUID para identificar a instância/processo
+// Retorna o UUID que identifica a instância/pod atual
 func GetInstanceID() string {
 	return config.InstanceID
 }

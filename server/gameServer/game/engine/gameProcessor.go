@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
@@ -61,11 +60,11 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 		return
 	}
 
-	ok, err := roomData.AcquireRoomLock(ctx, rdb, config.InstanceID, 2*time.Second)
+	ok, err := roomData.AcquireRoomLock(ctx, rdb, utils.GetInstanceID(), 2*time.Second)
 	if err != nil || !ok {
 		return
 	}
-	defer roomData.ReleaseRoomLock(ctx, rdb, config.InstanceID)
+	defer roomData.ReleaseRoomLock(ctx, rdb, utils.GetInstanceID())
 
 	// Fecha janela atual (se existir)
 	if roomData.GameEvent != nil {
@@ -76,7 +75,7 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 	if len(roomData.PendingEffects) > 0 {
 		resolveNextEffect(ctx, rdb, RegistryRules, roomData)
 		roomData.SaveRoom(ctx, rdb)
-		roomData.PublishRoomBroadcast(ctx, rdb, roomData)
+		roomData.SendUpdatedRoomData(ctx, rdb)
 		return
 	}
 
@@ -97,7 +96,7 @@ func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.
 		return err
 	}
 
-	if err := roomData.PublishRoomBroadcast(ctx, rdb, roomData); err != nil {
+	if err := roomData.SendUpdatedRoomData(ctx, rdb); err != nil {
 		return err
 	}
 

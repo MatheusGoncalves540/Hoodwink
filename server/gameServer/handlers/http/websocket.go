@@ -101,7 +101,7 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 			connection.OnMessage(ctx, rdb, rulesRegistry, play, roomData)
 			// Salva e publica atualizações da sala
 			roomData.SaveRoom(ctx, rdb)
-			roomData.PublishRoomBroadcast(ctx, rdb, roomData)
+			roomData.SendUpdatedRoomData(ctx, rdb)
 		}
 	}
 }

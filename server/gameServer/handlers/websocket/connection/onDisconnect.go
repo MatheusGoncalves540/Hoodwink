@@ -47,5 +47,5 @@ func OnDisconnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, 
 	}
 
 	utils.LogDebug("Cliente desconectado do WebSocket")
-	roomData.PublishRoomBroadcast(ctx, rdb, roomData)
+	roomData.SendUpdatedRoomData(ctx, rdb)
 }

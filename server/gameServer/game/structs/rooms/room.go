@@ -227,8 +227,25 @@ func (r *Room) RemovePlayerFromRoom(ctx context.Context, rdb *redis.Client, play
 }
 
 // Publica mensagem para todos os players de uma sala
-func (r *Room) PublishRoomBroadcast(ctx context.Context, rdb *redis.Client, message any) error {
+func (r *Room) BroadcastMsgToRoom(ctx context.Context, rdb *redis.Client, message any) error {
 	if pubMsg, err := json.Marshal(message); err == nil {
+		return rdb.Publish(ctx, "room:"+r.ID+":broadcast", pubMsg).Err()
+	}
+	return nil
+}
+
+// Publica nova versão da sala para todos os players de uma sala
+func (r *Room) SendUpdatedRoomData(ctx context.Context, rdb *redis.Client) error {
+	if utils.IsUnsafeDebugMode() {
+		return r.PublishUnsafeRoomData(ctx, rdb)
+	} else {
+		return r.PublishRoomUpdate(ctx, rdb)
+	}
+}
+
+// Publica a versão privada completa, não segura da sala para todos os players de uma sala (APENAS PARA DEBUG)
+func (r *Room) PublishUnsafeRoomData(ctx context.Context, rdb *redis.Client) error {
+	if pubMsg, err := json.Marshal(r); err == nil {
 		return rdb.Publish(ctx, "room:"+r.ID+":broadcast", pubMsg).Err()
 	}
 	return nil

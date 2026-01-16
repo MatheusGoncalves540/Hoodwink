@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
@@ -15,7 +14,7 @@ import (
 )
 
 func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, playerPlay *structs.PlayerPlay, registryRules *rules.Registry) {
-	ok, err := roomData.AcquireRoomLock(ctx, rdb, config.InstanceID, 2*time.Second)
+	ok, err := roomData.AcquireRoomLock(ctx, rdb, utils.GetInstanceID(), 2*time.Second)
 	if err != nil {
 		utils.LogError(err)
 		return
@@ -24,7 +23,7 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 		utils.LogDebug("falha ao adquirir lock da sala")
 		return
 	}
-	defer roomData.ReleaseRoomLock(ctx, rdb, config.InstanceID)
+	defer roomData.ReleaseRoomLock(ctx, rdb, utils.GetInstanceID())
 
 	// verifica se o jogador está vivo antes de processar a jogada
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)

@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 // CheckEnvVars verifica se todas as variáveis de .env.example estão definidas no ambiente.
@@ -41,5 +43,19 @@ func CheckEnvVars(filePath string) {
 
 	if len(missingVars) > 0 {
 		log.Fatalf("As seguintes variáveis de ambiente estão ausentes:\n  - %s", strings.Join(missingVars, "\n  - "))
+	}
+}
+
+// SetupEnvs carrega as variáveis de ambiente e valida o modo de debug inseguro.
+func SetupEnvs() {
+	godotenv.Load(".env")
+	log.Printf("🌐 Ambiente definido como %s", os.Getenv("ENVIRONMENT"))
+
+	if os.Getenv("ENVIRONMENT") == "local" {
+		CheckEnvVars(".env.example")
+	}
+
+	if os.Getenv("UNSAFE_DEBUG") == "true" && os.Getenv("ENVIRONMENT") != "local" || os.Getenv("ENVIRONMENT") != "development" {
+		log.Fatal("⚠️ Modo de debug inseguro só deve ser usado em ambiente local ou de desenvolvimento")
 	}
 }

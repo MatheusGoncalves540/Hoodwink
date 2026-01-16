@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
@@ -29,7 +28,7 @@ func NewHeartbeatService(rdb *redis.Client) *HeartbeatService {
 
 	return &HeartbeatService{
 		rdb:               rdb,
-		instanceID:        config.InstanceID,
+		instanceID:        utils.GetInstanceID(),
 		ctx:               ctx,
 		cancel:            cancel,
 		HeartbeatInterval: HeartbeatInterval,

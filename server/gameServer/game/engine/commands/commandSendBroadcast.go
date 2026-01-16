@@ -8,5 +8,5 @@ import (
 )
 
 func CommandSendBroadcast(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, payloadSent any) {
-	roomData.PublishRoomBroadcast(ctx, rdb, payloadSent)
+	roomData.BroadcastMsgToRoom(ctx, rdb, payloadSent)
 }
