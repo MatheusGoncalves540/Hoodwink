@@ -55,7 +55,7 @@ func SetupEnvs() {
 		CheckEnvVars(".env.example")
 	}
 
-	if os.Getenv("UNSAFE_DEBUG") == "true" && os.Getenv("ENVIRONMENT") != "local" || os.Getenv("ENVIRONMENT") != "development" {
+	if os.Getenv("UNSAFE_DEBUG") == "true" && (os.Getenv("ENVIRONMENT") != "local" && os.Getenv("ENVIRONMENT") != "development") {
 		log.Fatal("⚠️ Modo de debug inseguro só deve ser usado em ambiente local ou de desenvolvimento")
 	}
 }
