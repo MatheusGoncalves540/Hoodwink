@@ -13,11 +13,13 @@ type ConnectionManager struct {
 	mu          sync.RWMutex
 	connections map[string]map[string]*websocket.Conn // roomId -> playerId -> conn
 	cancels     map[string]context.CancelFunc         // roomId -> cancel
+	subscribed  map[string]bool
 }
 
 var ConnManager = &ConnectionManager{
 	connections: make(map[string]map[string]*websocket.Conn),
 	cancels:     make(map[string]context.CancelFunc),
+	subscribed:  make(map[string]bool),
 }
 
 // Adiciona uma nova conexão WebSocket de um jogador no mapa de conexões
@@ -37,6 +39,9 @@ func (cm *ConnectionManager) Add(roomId, playerId string, conn *websocket.Conn) 
 			for pId := range players {
 				utils.LogDebug(fmt.Sprintf("  Player: %s", pId))
 			}
+		}
+		for rId, IsSubscribed := range cm.subscribed {
+			utils.LogDebug(fmt.Sprintf("Room: %s, Subscribed: %t", rId, IsSubscribed))
 		}
 		utils.LogDebug("------------------------------------------------")
 	}
@@ -59,7 +64,23 @@ func (cm *ConnectionManager) Disconnect(roomId, playerId string) {
 				delete(cm.cancels, roomId)
 			}
 			delete(cm.connections, roomId)
+			delete(cm.subscribed, roomId)
 		}
+	}
+
+	// Debug log das conexões
+	if utils.IsDebugMode() {
+		utils.LogDebug("------------ Debug ConnectionManager ------------")
+		for rId, players := range cm.connections {
+			utils.LogDebug(fmt.Sprintf("Room: %s", rId))
+			for pId := range players {
+				utils.LogDebug(fmt.Sprintf("  Player: %s", pId))
+			}
+		}
+		for rId, IsSubscribed := range cm.subscribed {
+			utils.LogDebug(fmt.Sprintf("Room: %s, Subscribed: %t", rId, IsSubscribed))
+		}
+		utils.LogDebug("------------------------------------------------")
 	}
 }
 
@@ -81,6 +102,7 @@ func (cm *ConnectionManager) CancelRoom(roomId string) {
 	}
 
 	delete(cm.connections, roomId)
+	delete(cm.subscribed, roomId)
 
 	utils.LogDebug("Sala " + roomId + " encerrada e cancelada")
 }
@@ -96,25 +118,20 @@ func (cm *ConnectionManager) Broadcast(roomId string, message []byte) {
 	}
 }
 
-// Retorna mapa de conexões dos jogadores em uma sala
-func (cm *ConnectionManager) GetRoomPlayers(roomId string) map[string]*websocket.Conn {
+func (cm *ConnectionManager) IsSubscribed(roomId string) bool {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
-	if players, ok := cm.connections[roomId]; ok {
-		// Retorna uma cópia para evitar modificações externas
-		copy := make(map[string]*websocket.Conn)
-		for k, v := range players {
-			copy[k] = v
-		}
-		return copy
-	}
-	return nil
+	return cm.subscribed[roomId]
 }
 
-// Verifica se uma sala existe no ConnectionManager
-func (cm *ConnectionManager) RoomExists(roomId string) bool {
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-	_, exists := cm.connections[roomId]
-	return exists
+func (cm *ConnectionManager) MarkSubscribed(roomId string) {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	cm.subscribed[roomId] = true
+}
+
+func (cm *ConnectionManager) ClearSubscribed(roomId string) {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	delete(cm.subscribed, roomId)
 }

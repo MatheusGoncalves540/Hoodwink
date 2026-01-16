@@ -290,31 +290,30 @@ func (r *Room) CheckIfItsEmpty(ctx context.Context, rdb *redis.Client) (bool, er
 }
 
 // Assina o canal de broadcast de uma sala
-func (r *Room) SubscribeRoomBroadcast(parentCtx context.Context, rdb *redis.Client) {
-	if structs.ConnManager.RoomExists(r.ID) {
+func (r *Room) SubscribeRoomBroadcast(rdb *redis.Client) {
+	if structs.ConnManager.IsSubscribed(r.ID) {
 		utils.LogDebug("Sala " + r.ID + " já está assinada no Pub/Sub")
 		return
 	}
 
-	ctx, cancel := context.WithCancel(parentCtx)
+	ctx, cancel := context.WithCancel(context.Background())
 	structs.ConnManager.SetRoomCancel(r.ID, cancel)
+	structs.ConnManager.MarkSubscribed(r.ID)
 
 	pubsub := rdb.Subscribe(ctx, "room:"+r.ID+":broadcast")
 
 	go func() {
 		defer func() {
 			_ = pubsub.Close()
+			structs.ConnManager.ClearSubscribed(r.ID)
 			utils.LogDebug("Pub/Sub encerrado da sala " + r.ID)
 		}()
-
-		ch := pubsub.Channel()
 
 		for {
 			select {
 			case <-ctx.Done():
 				return
-
-			case msg, ok := <-ch:
+			case msg, ok := <-pubsub.Channel():
 				if !ok {
 					return
 				}

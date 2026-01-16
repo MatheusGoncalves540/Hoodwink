@@ -50,7 +50,7 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 		}
 
 		// Assina canal Redis Pub/Sub da sala
-		roomObj.SubscribeRoomBroadcast(ctxConn, rdb)
+		roomObj.SubscribeRoomBroadcast(rdb)
 
 		// Adiciona conexão ao ConnManager
 		structs.ConnManager.Add(roomId, playerId, conn)
