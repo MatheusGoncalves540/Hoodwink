@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -64,39 +65,39 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 	return room, nil
 }
 
-func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, backendService *BackendService, roomId string, playerId string) (bool, string) {
+func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, backendService *BackendService, roomId string, playerId string) (bool, error) {
 	_, err := backendService.GetToBackend("/getUserInfoById/" + playerId)
 	if err != nil {
-		return false, "Erro ao verificar player no backend"
+		return false, fmt.Errorf("Erro ao verificar player")
 	}
 
 	roomData, err := redisFuncs.LoadRoom(r.Context(), rdb, roomId)
 	if err != nil {
-		return false, "Sala não encontrada"
+		return false, fmt.Errorf("Sala não encontrada")
 	}
 
 	player, _ := roomData.GetPlayer(playerId)
 
 	if player == nil && len(roomData.Players) >= roomData.MaxPlayers {
-		return false, "Sala está cheia"
+		return false, fmt.Errorf("Sala está cheia")
 	}
 
 	if !roomData.StartTime.IsZero() && player == nil {
-		return false, "Jogo já começou"
+		return false, fmt.Errorf("Jogo já começou")
 	}
 
 	if player != nil {
-		roomId, isPlaying, err := playerRedis.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
+		_, isPlaying, err := playerRedis.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
 
 		if err != nil {
-			return false, "Erro ao verificar status do player"
+			return false, fmt.Errorf("Erro ao verificar status do player")
 		}
-		if isPlaying && roomId != roomData.ID {
-			return false, "Player já está em outra sala"
+		if isPlaying {
+			return false, fmt.Errorf("Player já está em uma sala")
 		}
 	}
 
-	return true, ""
+	return true, nil
 }
 
 func (s *RoomService) SyncActivePlayers(r *http.Request, rdb *redis.Client, roomData *rooms.Room) error {

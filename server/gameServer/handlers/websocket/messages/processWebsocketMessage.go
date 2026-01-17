@@ -46,7 +46,11 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 		}
 
 		if protocolsValidation.ValidateAssassinProtocol(roomData, registryRules, playerPlay, assassinPayload) {
-			protocols.AssassinProtocol(ctx, rdb, registryRules, roomData, playerPlay, assassinPayload)
+			err := protocols.AssassinProtocol(ctx, rdb, registryRules, roomData, playerPlay, assassinPayload)
+			if err != nil {
+				utils.LogError(err)
+				return
+			}
 		}
 
 	case structs.PlayKamikazeCard:
@@ -57,7 +61,11 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 		}
 
 		if protocolsValidation.ValidateKamikazeProtocol(roomData, registryRules, playerPlay, &kamikazePayload) {
-			protocols.KamikazeProtocol(ctx, rdb, registryRules, roomData, playerPlay, &kamikazePayload)
+			err := protocols.KamikazeProtocol(ctx, rdb, registryRules, roomData, playerPlay, &kamikazePayload)
+			if err != nil {
+				utils.LogError(err)
+				return
+			}
 		}
 	}
 }

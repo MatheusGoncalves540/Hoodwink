@@ -31,7 +31,7 @@ func SendSuccess(w http.ResponseWriter, data any, message string) {
 func SendError(w http.ResponseWriter, errMessage string, status int) {
 	LogDebug(errMessage)
 	SendJSON(w, status, APIResponse{
-		Error:   errMessage,
-		Message: "Erro ao processar a requisição",
+		Error:   "Erro ao processar a requisição",
+		Message: errMessage,
 	})
 }

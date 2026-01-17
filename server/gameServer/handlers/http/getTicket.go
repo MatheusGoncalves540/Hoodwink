@@ -21,9 +21,9 @@ func (h *HTTPHandler) GetTicket(rdb *redis.Client) http.HandlerFunc {
 			return
 		}
 
-		isValid, errMsg := h.RoomService.ValidatePlayerEntry(r, rdb, h.BackendService, roomId, playerClaims.Id)
+		isValid, err := h.RoomService.ValidatePlayerEntry(r, rdb, h.BackendService, roomId, playerClaims.Id)
 		if !isValid {
-			utils.SendError(w, errMsg, http.StatusNotFound)
+			utils.SendError(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
