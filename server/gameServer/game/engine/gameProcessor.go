@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"math/rand/v2"
 	"strconv"
@@ -25,7 +24,7 @@ func StartGameProcessor(rdb *redis.Client, RegistryRules *rules.Registry) {
 		// Adiciona um atraso aleatório para evitar picos de carga e melhor distribuição entre instâncias
 		delay := time.Duration(rand.IntN(1000)) * time.Millisecond
 		time.Sleep(delay)
-		fmt.Printf("⏱️  gameProcessorEngine iniciado após atraso de %v\n", delay)
+		log.Printf("⏱️  gameProcessorEngine iniciado após atraso de %v\n", delay)
 
 		intervalMs := utils.MustEnvInt("PROCESSOR_INTERVAL_MS", 300)
 		ticker := time.NewTicker(time.Duration(intervalMs) * time.Millisecond)

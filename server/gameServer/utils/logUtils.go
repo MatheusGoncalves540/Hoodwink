@@ -1,22 +1,22 @@
 package utils
 
 import (
-	"fmt"
+	"log"
 	"os"
 )
 
 // if DEBUG = true, print on console
 func LogDebug(msg any) {
 	if os.Getenv("DEBUG") == "true" {
-		fmt.Println(msg)
+		log.Println(msg)
 	}
 }
 
 // LogError sempre usado para printar mensagem de erro no console
 func LogError(msg any) {
-	fmt.Println(msg)
+	log.Println(msg)
 }
 
 func LogInvldPlyrReq(msg any, playerId string) {
-	fmt.Println(msg)
+	log.Println(msg)
 }

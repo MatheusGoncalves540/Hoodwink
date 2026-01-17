@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -30,12 +31,12 @@ func ValidateInfos(w http.ResponseWriter, toValidate any) bool {
 }
 
 func LogError(msg any) {
-	fmt.Println(msg)
+	log.Println(msg)
 }
 
 // if DEBUG = true, print on console
 func LogDebug(msg any) {
 	if os.Getenv("DEBUG") == "true" {
-		fmt.Println(msg)
+		log.Println(msg)
 	}
 }
