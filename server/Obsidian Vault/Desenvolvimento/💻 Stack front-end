@@ -1,0 +1,414 @@
+# Visão geral da stack
+
+**Pipeline conceitual**
+
+Servidor → WebSocket → Validação → Estado global → Render → Animação
+
+Cada ferramenta ocupa **uma posição clara** nesse fluxo. Nada está ali “por moda”.
+
+---
+
+# 1\. TypeScript
+
+## Propósito
+
+Garantir **consistência, previsibilidade e segurança** no código do front-end.
+
+## O que ele resolve
+
+-   Erros de tipo em tempo de desenvolvimento
+    
+-   Dados inválidos vindos do servidor
+    
+-   Estados impossíveis no jogo
+    
+
+## Vantagens no Hoodwink
+
+-   Modela corretamente:
+    
+    -   Eventos do jogo
+        
+    -   Estados da sala
+        
+    -   Tipos de cartas
+        
+    -   Ações possíveis
+        
+-   Facilita refactors conforme novas cartas surgem
+    
+-   Reduz bugs difíceis de reproduzir em tempo real
+    
+
+## Em resumo
+
+TypeScript é o **contrato mental** do jogo no front.
+
+---
+
+# 2\. React + Vite
+
+## 2.1 React
+
+### Propósito
+
+Construir a interface como **função do estado**.
+
+### O que ele resolve
+
+-   Atualização automática da UI
+    
+-   Separação clara entre lógica e visual
+    
+-   Composição de componentes
+    
+
+### Vantagens no Hoodwink
+
+-   Cada mudança de estado do servidor vira:
+    
+    -   Uma nova renderização
+        
+    -   Uma transição visual
+        
+-   Facilita lidar com:
+    
+    -   Turnos
+        
+    -   Janelas de contestação
+        
+    -   Mini games
+        
+-   Excelente integração com animações
+    
+
+---
+
+## 2.2 Vite
+
+### Propósito
+
+Servir e empacotar o projeto de forma **rápida e simples**.
+
+### O que ele resolve
+
+-   Build complexo
+    
+-   Configuração pesada
+    
+-   Lentidão em desenvolvimento
+    
+
+### Vantagens no Hoodwink
+
+-   Feedback imediato ao programar
+    
+-   Builds rápidos
+    
+-   Zero esforço mental no setup
+    
+
+## Em resumo
+
+React desenha o jogo.  
+Vite cuida da infraestrutura invisível.
+
+---
+
+# 3\. React Router
+
+## Propósito
+
+Gerenciar **navegação e estados de página**.
+
+## O que ele resolve
+
+-   Transição entre telas
+    
+-   URLs sem recarregar a página
+    
+-   Organização de fluxos
+    
+
+## Vantagens no Hoodwink
+
+-   Fluxos claros:
+    
+    -   Login
+        
+    -   Lobby
+        
+    -   Sala
+        
+    -   Espectador
+        
+-   Permite deep linking
+    
+-   Facilita controle de acesso
+    
+
+## Em resumo
+
+Define **onde** o jogador está no jogo.
+
+---
+
+# 4\. Zustand
+
+## Propósito
+
+Centralizar o **estado global do jogo**.
+
+## O que ele resolve
+
+-   Prop drilling
+    
+-   Estados duplicados
+    
+-   Lógica espalhada
+    
+
+## Vantagens no Hoodwink
+
+-   Um único lugar para:
+    
+    -   Estado da sala
+        
+    -   Jogadores
+        
+    -   Turno atual
+        
+    -   Evento ativo
+        
+-   Atualizações diretas vindas do WebSocket
+    
+-   Código simples e previsível
+    
+
+## Em resumo
+
+Zustand é a **memória viva da partida** no cliente.
+
+---
+
+# 5\. WebSocket nativo
+
+## Propósito
+
+Comunicação **em tempo real** com o servidor.
+
+## O que ele resolve
+
+-   Latência
+    
+-   Sincronização entre jogadores
+    
+-   Broadcast de eventos
+    
+
+## Vantagens no Hoodwink
+
+-   Modelo 1:1 com sua fila de eventos em Go
+    
+-   Baixa latência
+    
+-   Controle total do protocolo
+    
+-   Menos abstração, menos bugs
+    
+
+## Em resumo
+
+É o **canal de verdade** do jogo.
+
+---
+
+# 6\. Zod
+
+## Propósito
+
+Validar dados em tempo de execução.
+
+## O que ele resolve
+
+-   Dados malformados
+    
+-   Erros silenciosos
+    
+-   Trust excessivo no backend
+    
+
+## Vantagens no Hoodwink
+
+-   Valida mensagens WebSocket
+    
+-   Garante integridade do estado
+    
+-   Facilita debug de eventos inválidos
+    
+
+## Em resumo
+
+Zod é o **porteiro** entre o servidor e o estado do front.
+
+---
+
+# 7\. TanStack Query (React Query)
+
+## Propósito
+
+Gerenciar **requisições HTTP** e cache.
+
+## O que ele resolve
+
+-   Loading manual
+    
+-   Cache inconsistente
+    
+-   Revalidação complexa
+    
+
+## Vantagens no Hoodwink
+
+-   Ideal para:
+    
+    -   Login
+        
+    -   Lobby
+        
+    -   Entrar em sala
+        
+-   Deixa o WebSocket focado no jogo
+    
+-   Código mais limpo
+    
+
+## Em resumo
+
+É o **braço HTTP** do front.
+
+---
+
+# 8\. Tailwind CSS
+
+## Propósito
+
+Criar UI de forma **rápida, previsível e controlada**.
+
+## O que ele resolve
+
+-   CSS global caótico
+    
+-   Classes genéricas
+    
+-   Conflitos de estilo
+    
+
+## Vantagens no Hoodwink
+
+-   Estados visuais claros:
+    
+    -   Ativo
+        
+    -   Morto
+        
+    -   Protegido
+        
+-   Estilo explícito no componente
+    
+-   Integração perfeita com animações
+    
+
+## Em resumo
+
+Tailwind desenha **o estado visual do jogo**.
+
+---
+
+# 9\. Radix UI
+
+## Propósito
+
+Fornecer **comportamento complexo** sem impor estilo.
+
+## O que ele resolve
+
+-   Acessibilidade
+    
+-   Teclado
+    
+-   Foco
+    
+-   Estados de UI avançados
+    
+
+## Vantagens no Hoodwink
+
+-   Modais de evento
+    
+-   Tooltips de cartas
+    
+-   Menus contextuais
+    
+-   Overlays de mini game
+    
+
+## Em resumo
+
+Radix cuida do **como interagir**, não do visual.
+
+---
+
+# 10\. Framer Motion
+
+## Propósito
+
+Animar transições de estado.
+
+## O que ele resolve
+
+-   Animações imperativas
+    
+-   Código complexo de timing
+    
+
+## Vantagens no Hoodwink
+
+-   Feedback visual imediato
+    
+-   Animações reativas a eventos
+    
+-   Integração com React e Tailwind
+    
+
+## Em resumo
+
+Framer Motion **dá vida ao estado**.
+
+---
+
+# 11\. clsx / class-variance-authority
+
+## Propósito
+
+Gerenciar classes condicionais.
+
+## O que ele resolve
+
+-   JSX poluído
+    
+-   Condições confusas
+    
+
+## Vantagens no Hoodwink
+
+-   Estados visuais limpos
+    
+-   Código legível
+    
+-   Menos bugs visuais
+    
+
+## Em resumo
+
+Organiza o **caos visual**.
