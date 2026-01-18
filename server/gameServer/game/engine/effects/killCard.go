@@ -31,7 +31,7 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 		return err
 	}
 
-	// cria o evento pendente de carta morta
+	// calcula o tempo de expiração do efeito
 	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction") // TODO mudar tipo de timeout caso kamikaze esteja ativo na partida
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 	if err != nil {
@@ -44,6 +44,7 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 		return err
 	}
 
+	// cria o evento pendente de carta morta
 	roomData.GameEvent = &structs.GameEvent{
 		PlayerID:  effect.SourcePlayer,
 		Type:      structs.EventCardKilled,

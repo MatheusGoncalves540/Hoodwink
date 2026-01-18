@@ -1,6 +1,14 @@
 package structs
 
+import "encoding/json"
+
 type EffectCause string
+
+type EffectDTO struct {
+	Cause        EffectCause     `json:"cause"`
+	SourcePlayer string          `json:"sourcePlayer"`
+	Payload      json.RawMessage `json:"payload"`
+}
 
 // ===== EFEITO (precisa ser executado) =====
 type Effect struct {
@@ -13,6 +21,7 @@ type Effect struct {
 const (
 	EffectAssassin       EffectCause = "ASSASSIN"
 	EffectKamikaze       EffectCause = "KAMIKAZE"
+	EffectContest        EffectCause = "CONTEST"
 	EffectContestPenalty EffectCause = "CONTEST_PENALTY"
 	EffectGainCoins      EffectCause = "GAIN_COINS"
 )

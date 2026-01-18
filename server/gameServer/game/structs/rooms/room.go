@@ -145,7 +145,7 @@ func (r *Room) AddPlayerInRoom(ctx context.Context, rdb *redis.Client, playerId 
 		Id:   playerId,
 		Name: username,
 		Cards: []structs.Card{
-			{Name: structs.CardAssassin, Index: 0, Protected: false, Dead: false},
+			{Name: structs.CardKamikaze, Index: 0, Protected: false, Dead: false},
 			{Name: structs.CardKamikaze, Index: 1, Protected: false, Dead: false},
 		}, // TODO remover valor fixo de teste
 		Coins: 10, // Valor inicial padrão do jogo
@@ -340,4 +340,9 @@ func (r *Room) SubscribeRoomBroadcast(rdb *redis.Client) {
 	}()
 
 	utils.LogDebug("Assinada sala " + r.ID + " no Pub/Sub")
+}
+
+// Cancela o ultimo efeito pendente da sala
+func (r *Room) CancelLastPendingEffect(ctx context.Context, rdb *redis.Client) {
+	r.PendingEffects = r.PendingEffects[:len(r.PendingEffects)-1]
 }

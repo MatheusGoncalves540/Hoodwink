@@ -22,7 +22,7 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	}
 
 	// calcula o tempo de expiração do evento
-	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction") // TODO mudar tipo de timeout caso kamikaze esteja ativo na partida
+	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction")
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	sourcePlayer.RemoveCoins(*cardRules.Price)
 
 	roomData.GameEvent = &structs.GameEvent{
-		PlayerID:  playerPlay.PlayerId,
+		PlayerID:  sourcePlayer.Id,
 		Type:      structs.EventCardPlayedAssassin,
 		ExpiresAt: expiresAt,
 		Payload:   assassinPayload,
@@ -40,11 +40,8 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	roomData.PendingEffects = append(roomData.PendingEffects,
 		structs.Effect{
 			Cause:        structs.EffectAssassin,
-			SourcePlayer: playerPlay.PlayerId,
-			Payload: structs.AssassinPayload{
-				TargetPlayer:    assassinPayload.TargetPlayer,
-				TargetCardIndex: assassinPayload.TargetCardIndex,
-			},
+			SourcePlayer: sourcePlayer.Id,
+			Payload:      assassinPayload,
 		},
 	)
 

@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,8 +33,13 @@ func ValidateInfos(w http.ResponseWriter, toValidate any) bool {
 
 // GenerateNewId cria um ID de 16 caracteres baseado em timestamp e fator randômico
 func GenerateNewId() string {
-	rand.NewSource(time.Now().UnixMilli())
 	randomFactor := rand.Float64() * rand.Float64()
 	id := int64(randomFactor * float64(time.Now().UnixMilli()))
 	return strconv.FormatInt(id, 16)
+}
+
+// GetRandomElementFromSlice retorna um elemento aleatório de um slice genérico
+func GetRandomElementFromSlice[T any](slice []T) T {
+	randomIndex := rand.IntN(len(slice))
+	return slice[randomIndex]
 }

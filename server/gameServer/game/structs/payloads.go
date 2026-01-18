@@ -6,6 +6,18 @@ type KillCardPayload struct {
 	TargetCardIndex *int    `json:"targetCardIndex"`
 }
 
+type ContestPayload struct {
+	ContestedPlayer string `json:"contestedPlayer"`
+	ContestedCard   string `json:"contestedCard"`
+}
+
+type ContestPenaltyPayload struct {
+	ContestedPlayer string `json:"contestedPlayer"`
+	ContestedCard   string `json:"contestedCard"`
+	HasCard         bool   `json:"hasCard"`
+	TargetCardIndex *int   `json:"targetCardIndex,omitempty"`
+}
+
 type AssassinPayload struct {
 	TargetPlayer    *string `json:"targetPlayer"`
 	TargetCardIndex *int    `json:"targetCardIndex"`

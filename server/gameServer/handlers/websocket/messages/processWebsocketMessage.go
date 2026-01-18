@@ -38,6 +38,33 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 
 	// processa o protocolo específico
 	switch playerPlay.Type {
+	case structs.PlayContest:
+		if !protocolsValidation.ValidateContestProtocol(roomData, playerPlay) {
+			return
+		}
+		err := protocols.ContestProtocol(ctx, rdb, registryRules, roomData, playerPlay)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
+
+	case structs.PlayContestPenalty:
+		contestPenaltyPayload, ok := playerPlay.Payload.(structs.ContestPenaltyPayload)
+		if !ok {
+			utils.LogInvldPlyrReq("payload does not match ContestPenaltyPayload structure", sourcePlayer.Id)
+			return
+		}
+
+		sourcePlayerId, targetPlayerId, valid := protocolsValidation.ValidateContestPenaltyProtocol(roomData, playerPlay, contestPenaltyPayload)
+		if !valid {
+			return
+		}
+		err := protocols.ContestPenaltyProtocol(ctx, rdb, registryRules, roomData, contestPenaltyPayload, *sourcePlayerId, *targetPlayerId)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
+
 	case structs.PlayAssassinCard:
 		assassinPayload, ok := playerPlay.Payload.(structs.AssassinPayload)
 		if !ok {
@@ -45,12 +72,13 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			return
 		}
 
-		if protocolsValidation.ValidateAssassinProtocol(roomData, registryRules, playerPlay, assassinPayload) {
-			err := protocols.AssassinProtocol(ctx, rdb, registryRules, roomData, playerPlay, assassinPayload)
-			if err != nil {
-				utils.LogError(err)
-				return
-			}
+		if !protocolsValidation.ValidateAssassinProtocol(roomData, registryRules, playerPlay, assassinPayload) {
+			return
+		}
+		err := protocols.AssassinProtocol(ctx, rdb, registryRules, roomData, playerPlay, assassinPayload)
+		if err != nil {
+			utils.LogError(err)
+			return
 		}
 
 	case structs.PlayKamikazeCard:
@@ -60,12 +88,17 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			return
 		}
 
-		if protocolsValidation.ValidateKamikazeProtocol(roomData, registryRules, playerPlay, &kamikazePayload) {
-			err := protocols.KamikazeProtocol(ctx, rdb, registryRules, roomData, playerPlay, &kamikazePayload)
-			if err != nil {
-				utils.LogError(err)
-				return
-			}
+		if !protocolsValidation.ValidateKamikazeProtocol(roomData, registryRules, playerPlay, &kamikazePayload) {
+			return
+		}
+		err := protocols.KamikazeProtocol(ctx, rdb, registryRules, roomData, playerPlay, &kamikazePayload)
+		if err != nil {
+			utils.LogError(err)
+			return
 		}
 	}
+
+	// Salva e publica atualizações da sala
+	roomData.SaveRoom(ctx, rdb)
+	roomData.SendUpdatedRoomData(ctx, rdb)
 }

@@ -35,7 +35,7 @@ func ValidateKamikazeProtocol(roomData *rooms.Room, RegistryRules *rules.Registr
 	case structs.EventCardKilled:
 		payloadMap, ok := roomData.GameEvent.Payload.(map[string]interface{})
 		if !ok {
-			utils.LogInvldPlyrReq("payload does not match map structure", playerPlay.PlayerId)
+			utils.LogError("payload does not match map structure")
 			return false
 		}
 

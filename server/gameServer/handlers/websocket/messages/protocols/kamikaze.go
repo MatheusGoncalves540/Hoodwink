@@ -13,23 +13,23 @@ import (
 func KamikazeProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, kamikazePayload *structs.KamikazePayload) error {
 	killedHimSelf := kamikazePayload.KilledHimSelf && kamikazePayload.TargetAllyCardIndex != nil
 
-	if killedHimSelf {
-		sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
-		if err != nil {
-			return err
-		}
+	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
+	if err != nil {
+		return err
+	}
 
+	if killedHimSelf {
 		sourcePlayer.KillCard(*kamikazePayload.TargetAllyCardIndex)
 	}
 
-	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction") // TODO mudar tipo de timeout caso kamikaze esteja ativo na partida
+	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction")
 	if err != nil {
 		return err
 	}
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
 	roomData.GameEvent = &structs.GameEvent{
-		PlayerID:  playerPlay.PlayerId,
+		PlayerID:  sourcePlayer.Id,
 		Type:      structs.EventCardPlayedKamikaze,
 		ExpiresAt: expiresAt,
 		Payload:   kamikazePayload,
@@ -37,13 +37,8 @@ func KamikazeProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	roomData.PendingEffects = append(roomData.PendingEffects,
 		structs.Effect{
 			Cause:        structs.EffectKamikaze,
-			SourcePlayer: playerPlay.PlayerId,
-			Payload: structs.KamikazePayload{
-				TargetPlayer:        kamikazePayload.TargetPlayer,
-				TargetCardIndex:     kamikazePayload.TargetCardIndex,
-				KilledHimSelf:       killedHimSelf,
-				TargetAllyCardIndex: kamikazePayload.TargetAllyCardIndex,
-			},
+			SourcePlayer: sourcePlayer.Id,
+			Payload:      kamikazePayload,
 		},
 	)
 

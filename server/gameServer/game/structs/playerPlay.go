@@ -11,8 +11,10 @@ type PlayerPlay struct {
 }
 
 const (
-	PlayAssassinCard TypePlayerPlays = "ASSASSIN"
-	PlayKamikazeCard TypePlayerPlays = "KAMIKAZE"
+	PlayContest        TypePlayerPlays = "CONTEST"
+	PlayContestPenalty TypePlayerPlays = "CONTEST_PENALTY"
+	PlayAssassinCard   TypePlayerPlays = "ASSASSIN"
+	PlayKamikazeCard   TypePlayerPlays = "KAMIKAZE"
 )
 
 //--//--//--//--//--//--//--//--//--//
@@ -20,5 +22,5 @@ const (
 type PlayerPlayPayload struct {
 	Type     TypePlayerPlays `json:"type"`
 	PlayerID string          `json:"playerId"`
-	Payload  json.RawMessage `json:"payload"`
+	Payload  json.RawMessage `json:"payload,omitempty"`
 }

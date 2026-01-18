@@ -52,6 +52,17 @@ func (p *Player) GetCardByIndex(index int) (*structs.Card, error) {
 	return nil, fmt.Errorf("carta não encontrada: índice %d do jogador %s", index, p.Id)
 }
 
+// GetAliveCards retorna os índices das cartas vivas do jogador
+func (p *Player) GetAliveCardsIndexes() []int {
+	aliveIndexes := []int{}
+	for i := range p.Cards {
+		if !p.Cards[i].Dead {
+			aliveIndexes = append(aliveIndexes, p.Cards[i].Index)
+		}
+	}
+	return aliveIndexes
+}
+
 // KillCard marca a carta como morta pelo Card.Index
 func (p *Player) KillCard(index int) error {
 	card, err := p.GetCardByIndex(index)
