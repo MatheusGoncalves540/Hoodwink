@@ -29,6 +29,7 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 	// Carrega os dados da sala
 	roomData, err := redisFuncs.LoadRoom(ctx, rdb, roomID)
 	if err != nil {
+		utils.SendError(w, "Sala não encontrada", http.StatusNotFound)
 		utils.LogError("Erro ao verificar informações da sala: " + err.Error())
 		return nil, nil
 	}
@@ -54,15 +55,9 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 		return nil, nil
 	}
 
-	_, err = redisFuncs.LoadRoom(r.Context(), rdb, roomID)
-	if err != nil {
-		utils.SendError(w, "Sala não encontrada", http.StatusNotFound)
-		return nil, nil
-	}
-
+	// Faz upgrade ANTES de qualquer validação que possa falhar após hijack
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		utils.SendError(w, "Erro ao verificar sala na entrada", http.StatusInternalServerError)
 		utils.LogError(fmt.Sprintf("Verify FRONTEND_URL, WebSocket upgrade error: %v", err))
 		return nil, nil
 	}

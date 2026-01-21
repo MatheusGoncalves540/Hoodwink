@@ -25,7 +25,12 @@ func ValidateKillCardEffect(roomData *rooms.Room, effect structs.Effect, payload
 		return false, err
 	}
 	if card.Dead {
-		return false, fmt.Errorf("carta já está morta: índice %d do jogador %s", *payload.TargetCardIndex, *payload.TargetPlayer)
+		// escolhe a carta com menor índice que não esteja morta
+		aliveIndexes := targetPlayer.GetAliveCardsIndexes()
+		if len(aliveIndexes) == 0 {
+			return false, fmt.Errorf("todas as cartas do jogador %s estão mortas", *payload.TargetPlayer)
+		}
+		*payload.TargetCardIndex = aliveIndexes[0]
 	}
 
 	return true, nil

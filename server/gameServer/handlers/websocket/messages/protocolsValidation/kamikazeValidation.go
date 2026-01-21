@@ -22,6 +22,12 @@ func ValidateKamikazeProtocol(roomData *rooms.Room, RegistryRules *rules.Registr
 			return false
 		}
 
+		// Verifica se o índice da carta aliada foi fornecido
+		if payload.TargetAllyCardIndex == nil {
+			utils.LogInvldPlyrReq("Player tentou usar kamikaze para matar a própria carta na primeira ação, mas não forneceu o índice da carta aliada", playerPlay.PlayerId)
+			return false
+		}
+
 		// verifica se o jogador forneceu um índice válido da carta aliada
 		player, _ := roomData.GetPlayer(playerPlay.PlayerId)
 		targetAllyCard, _ := player.GetCardByIndex(*payload.TargetAllyCardIndex)
