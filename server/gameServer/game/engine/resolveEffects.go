@@ -27,5 +27,8 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, RegistryRules *ru
 
 	case structs.EffectKamikaze:
 		effects.KamikazeEffect(ctx, rdb, RegistryRules, roomData, effect)
+
+	case structs.EffectTrillionaire:
+		effects.TrillionaireEffect(ctx, rdb, RegistryRules, roomData, effect)
 	}
 }

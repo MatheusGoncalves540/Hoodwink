@@ -29,3 +29,7 @@ type KamikazePayload struct {
 	TargetAllyCardIndex *int    `json:"targetAllyCardIndex,omitempty"`
 	KilledHimSelf       bool    `json:"killedHimself,omitempty"`
 }
+
+type TrillionairePayload struct {
+	EarnedCoins int `json:"earnedCoins,omitempty"`
+}

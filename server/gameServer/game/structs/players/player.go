@@ -96,7 +96,6 @@ func (p *Player) UnprotectCard(index int) error {
 // AddCoins adiciona moedas ao jogador
 func (p *Player) AddCoins(amount int) {
 	p.Coins += amount
-	// TODO: adicionar verificação de limite máximo de 20 moedas
 }
 
 // RemoveCoins remove moedas do jogador

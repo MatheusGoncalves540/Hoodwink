@@ -9,6 +9,21 @@ import (
 
 func (p *PlayerPlayPayload) ValidatePayload() (any, error) {
 	switch p.Type {
+	case PlayContest:
+		return struct{}{}, nil
+
+	case PlayContestPenalty:
+		var payload ContestPenaltyPayload
+		if err := json.Unmarshal(p.Payload, &payload); err != nil {
+			return nil, err
+		}
+		if payload.TargetCardIndex != nil {
+			if *payload.TargetCardIndex < 0 {
+				return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
+			}
+		}
+		return payload, nil
+
 	case PlayAssassinCard:
 		var payload AssassinPayload
 		if err := json.Unmarshal(p.Payload, &payload); err != nil {
@@ -47,20 +62,8 @@ func (p *PlayerPlayPayload) ValidatePayload() (any, error) {
 		}
 		return payload, nil
 
-	case PlayContest:
+	case PlayTrillionaireCard:
 		return struct{}{}, nil
-
-	case PlayContestPenalty:
-		var payload ContestPenaltyPayload
-		if err := json.Unmarshal(p.Payload, &payload); err != nil {
-			return nil, err
-		}
-		if payload.TargetCardIndex != nil {
-			if *payload.TargetCardIndex < 0 {
-				return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
-			}
-		}
-		return payload, nil
 
 	default:
 		return nil, fmt.Errorf("tipo de jogada inválido: %s", p.Type)

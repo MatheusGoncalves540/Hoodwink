@@ -21,7 +21,9 @@ type Effect struct {
 const (
 	EffectAssassin       EffectCause = "ASSASSIN"
 	EffectKamikaze       EffectCause = "KAMIKAZE"
+	EffectTrillionaire   EffectCause = "TRILLIONAIRE"
 	EffectContest        EffectCause = "CONTEST"
 	EffectContestPenalty EffectCause = "CONTEST_PENALTY"
-	EffectGainCoins      EffectCause = "GAIN_COINS"
+	EffectGreed          EffectCause = "GREED"
+	EffectEarnCoins      EffectCause = "EARN_COINS"
 )

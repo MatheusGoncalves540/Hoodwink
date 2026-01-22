@@ -8,6 +8,7 @@ import (
 // GameRules representa as regras do jogo carregadas do arquivo YAML
 type GameRules struct {
 	Cards    map[string]CardRules `yaml:"Cards"`
+	Generals Generals             `yaml:"General"`
 	Timeouts map[string]Timeouts  `yaml:"Timeouts"`
 }
 
@@ -52,4 +53,11 @@ func (t *Timeouts) Get(field string) (int, error) {
 	}
 	// retorna o valor do campo como int
 	return int(val.Elem().Int()), nil
+}
+
+// Generals representa regras gerais do jogo configuradas no arquivo YAML
+type Generals struct {
+	InitialCoins *int `yaml:"initialCoins"`
+	MaxPlayers   *int `yaml:"maxPlayers"`
+	MaxCoins     *int `yaml:"maxCoins"`
 }

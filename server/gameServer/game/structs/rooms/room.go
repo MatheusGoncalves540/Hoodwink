@@ -66,6 +66,16 @@ func (r *Room) GetCardRules(registryRules *rules.Registry, card string) (*rules.
 	return &cardRules, nil
 }
 
+// GetGeneralRules retorna as regras gerais do jogo para a sala
+func (r *Room) GetGeneralRules(registryRules *rules.Registry) (*rules.Generals, error) {
+	// Obtém as regras do jogo para a sala
+	gameRules, err := registryRules.Get(string(r.Rules))
+	if err != nil {
+		return nil, err
+	}
+	return &gameRules.Generals, nil
+}
+
 // GetTimeoutDuration retorna a duração do timeout específico
 func (r *Room) GetTimeoutDuration(registryRules *rules.Registry, timeoutField string) (time.Duration, error) {
 	// Obtém as regras do jogo para a sala

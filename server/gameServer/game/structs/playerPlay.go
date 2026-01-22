@@ -11,10 +11,11 @@ type PlayerPlay struct {
 }
 
 const (
-	PlayContest        TypePlayerPlays = "CONTEST"
-	PlayContestPenalty TypePlayerPlays = "CONTEST_PENALTY"
-	PlayAssassinCard   TypePlayerPlays = "ASSASSIN"
-	PlayKamikazeCard   TypePlayerPlays = "KAMIKAZE"
+	PlayContest          TypePlayerPlays = "CONTEST"
+	PlayContestPenalty   TypePlayerPlays = "CONTEST_PENALTY"
+	PlayAssassinCard     TypePlayerPlays = "ASSASSIN"
+	PlayKamikazeCard     TypePlayerPlays = "KAMIKAZE"
+	PlayTrillionaireCard TypePlayerPlays = "TRILLIONAIRE"
 )
 
 //--//--//--//--//--//--//--//--//--//

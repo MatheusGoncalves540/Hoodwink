@@ -96,6 +96,16 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			utils.LogError(err)
 			return
 		}
+
+	case structs.PlayTrillionaireCard:
+		if !protocolsValidation.ValidateTrillionaireProtocol(roomData, registryRules, playerPlay) {
+			return
+		}
+		err := protocols.TrillionaireProtocol(ctx, rdb, registryRules, roomData, playerPlay)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
 	}
 
 	// Salva e publica atualizações da sala
