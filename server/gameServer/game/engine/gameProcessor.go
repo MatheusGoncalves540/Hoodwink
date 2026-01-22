@@ -18,7 +18,6 @@ import (
 // StartGameProcessor inicia o processador de eventos do jogo.
 func StartGameProcessor(rdb *redis.Client, RegistryRules *rules.Registry) {
 	log.Println("🔄 Inicializando gameProcessorEngine...")
-	ctx := context.Background()
 
 	go func() {
 		// Adiciona um atraso aleatório para evitar picos de carga e melhor distribuição entre instâncias
@@ -31,7 +30,7 @@ func StartGameProcessor(rdb *redis.Client, RegistryRules *rules.Registry) {
 		defer ticker.Stop()
 
 		for range ticker.C {
-			processExpiredRoomsEvents(ctx, rdb, RegistryRules)
+			processExpiredRoomsEvents(context.Background(), rdb, RegistryRules)
 		}
 	}()
 }
