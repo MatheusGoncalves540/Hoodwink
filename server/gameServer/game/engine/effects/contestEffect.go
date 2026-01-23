@@ -64,27 +64,16 @@ func ContestEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.
 		roomData.CancelLastPendingEffect(ctx, rdb)
 	}
 
+	penaltyPayload := structs.NewContestPenaltyPayload(contestedPlayer.Id, contestPayload.ContestedCard, hasCard, nil)
+
 	// Jogador contestado/que contestou escolhe uma carta do outro jogador para matar (esse evento)
-	roomData.GameEvent = &structs.GameEvent{
-		PlayerID:  sourcePlayer.Id,
-		Type:      structs.EventContestPenalty,
-		ExpiresAt: expiresAt,
-		Payload: structs.ContestPenaltyPayload{
-			ContestedPlayer: contestedPlayer.Id,
-			ContestedCard:   contestPayload.ContestedCard,
-			HasCard:         hasCard,
-		},
-	}
+	roomData.GameEvent = structs.NewGameEvent(sourcePlayer.Id, structs.EventContestPenalty, expiresAt, penaltyPayload)
 
 	roomData.PendingEffects = append(roomData.PendingEffects,
 		structs.Effect{
 			Cause:        structs.EffectContestPenalty,
 			SourcePlayer: sourcePlayer.Id,
-			Payload: structs.ContestPenaltyPayload{
-				ContestedPlayer: contestedPlayer.Id,
-				ContestedCard:   contestPayload.ContestedCard,
-				HasCard:         hasCard,
-			},
+			Payload:      penaltyPayload,
 		},
 	)
 

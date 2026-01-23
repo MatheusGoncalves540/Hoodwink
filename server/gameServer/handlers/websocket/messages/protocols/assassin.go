@@ -31,12 +31,7 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	// marca a remoção de coins
 	sourcePlayer.RemoveCoins(*cardRules.Price)
 
-	roomData.GameEvent = &structs.GameEvent{
-		PlayerID:  sourcePlayer.Id,
-		Type:      structs.EventCardPlayedAssassin,
-		ExpiresAt: expiresAt,
-		Payload:   assassinPayload,
-	}
+	roomData.GameEvent = structs.NewGameEvent(sourcePlayer.Id, structs.EventCardPlayedAssassin, expiresAt, assassinPayload)
 	roomData.PendingEffects = append(roomData.PendingEffects,
 		structs.Effect{
 			Cause:        structs.EffectAssassin,

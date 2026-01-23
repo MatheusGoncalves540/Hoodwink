@@ -28,12 +28,7 @@ func KamikazeProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	}
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
-	roomData.GameEvent = &structs.GameEvent{
-		PlayerID:  sourcePlayer.Id,
-		Type:      structs.EventCardPlayedKamikaze,
-		ExpiresAt: expiresAt,
-		Payload:   kamikazePayload,
-	}
+	roomData.GameEvent = structs.NewGameEvent(sourcePlayer.Id, structs.EventCardPlayedKamikaze, expiresAt, kamikazePayload)
 	roomData.PendingEffects = append(roomData.PendingEffects,
 		structs.Effect{
 			Cause:        structs.EffectKamikaze,

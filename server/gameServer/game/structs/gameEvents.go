@@ -12,6 +12,16 @@ type GameEvent struct {
 	Payload   any
 }
 
+// NewGameEvent centralizes creation of a GameEvent pointer.
+func NewGameEvent(playerID string, eventType GameEventType, expiresAt time.Time, payload any) *GameEvent {
+	return &GameEvent{
+		PlayerID:  playerID,
+		Type:      eventType,
+		ExpiresAt: expiresAt,
+		Payload:   payload,
+	}
+}
+
 // Eventos = INPUT / JANELAS
 const (
 	EventWaitingFirstAction     GameEventType = "WAITING_FIRST_ACTION"

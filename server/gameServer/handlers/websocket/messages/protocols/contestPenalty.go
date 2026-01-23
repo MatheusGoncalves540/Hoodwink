@@ -27,14 +27,12 @@ func ContestPenaltyProtocol(ctx context.Context, rdb *redis.Client, registryRule
 	roomData.CancelLastPendingEffect(ctx, rdb)
 
 	// cria o efeito de penalidade por contestação
+	killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &targetPlayer.Id, contestPenaltyPayload.TargetCardIndex)
+
 	effect := structs.Effect{
 		Cause:        structs.EffectContestPenalty,
 		SourcePlayer: sourcePlayer.Id,
-		Payload: structs.KillCardPayload{
-			Cause:           string(structs.EffectContestPenalty),
-			TargetPlayer:    &targetPlayer.Id,
-			TargetCardIndex: contestPenaltyPayload.TargetCardIndex,
-		},
+		Payload:      killPayload,
 	}
 
 	effects.KillCard(ctx, rdb, registryRules, roomData, effect)

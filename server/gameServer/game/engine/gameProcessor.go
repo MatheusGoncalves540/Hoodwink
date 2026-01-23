@@ -92,10 +92,7 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 
 func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.Room) error {
 	expiresAt := time.Now().Add(15 * time.Second).UTC()
-	roomData.GameEvent = &structs.GameEvent{
-		Type:      structs.EventWaitingFirstAction,
-		ExpiresAt: expiresAt,
-	}
+	roomData.GameEvent = structs.NewGameEvent("", structs.EventWaitingFirstAction, expiresAt, nil)
 
 	if err := roomData.SaveRoom(ctx, rdb); err != nil {
 		return err

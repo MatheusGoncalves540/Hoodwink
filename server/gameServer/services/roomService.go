@@ -47,7 +47,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		Players:       make(map[string]*players.Player),
 		Deck:          []string{},
 		CurrentPlayer: "",
-		GameEvent:     &structs.GameEvent{},
+		GameEvent:     structs.NewGameEvent("", "", time.Time{}, nil),
 		GameOver:      false,
 		StartTime:     time.Time{},
 		Created:       time.Now(),

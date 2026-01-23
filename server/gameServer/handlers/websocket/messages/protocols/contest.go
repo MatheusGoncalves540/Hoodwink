@@ -30,24 +30,15 @@ func ContestProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 	}
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
-	roomData.GameEvent = &structs.GameEvent{
-		PlayerID:  sourcePlayer.Id,
-		Type:      structs.EventContest,
-		ExpiresAt: expiresAt,
-		Payload: structs.ContestPayload{
-			ContestedPlayer: ContestedPlayerId,
-			ContestedCard:   ContestedCard,
-		},
-	}
+	contestPayload := structs.NewContestPayload(ContestedPlayerId, ContestedCard)
+
+	roomData.GameEvent = structs.NewGameEvent(sourcePlayer.Id, structs.EventContest, expiresAt, contestPayload)
 
 	roomData.PendingEffects = append(roomData.PendingEffects,
 		structs.Effect{
 			Cause:        structs.EffectContest,
 			SourcePlayer: sourcePlayer.Id,
-			Payload: structs.ContestPayload{
-				ContestedPlayer: ContestedPlayerId,
-				ContestedCard:   ContestedCard,
-			},
+			Payload:      contestPayload,
 		},
 	)
 

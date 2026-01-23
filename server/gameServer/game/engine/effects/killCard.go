@@ -44,17 +44,10 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 		return err
 	}
 
+	killPayload := structs.NewKillCardPayload(string(effect.Cause), payload.TargetPlayer, payload.TargetCardIndex)
+
 	// cria o evento pendente de carta morta
-	roomData.GameEvent = &structs.GameEvent{
-		PlayerID:  effect.SourcePlayer,
-		Type:      structs.EventCardKilled,
-		ExpiresAt: expiresAt,
-		Payload: structs.KillCardPayload{
-			TargetPlayer:    payload.TargetPlayer,
-			TargetCardIndex: payload.TargetCardIndex,
-			Cause:           string(effect.Cause),
-		},
-	}
+	roomData.GameEvent = structs.NewGameEvent(effect.SourcePlayer, structs.EventCardKilled, expiresAt, killPayload)
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixMilli()),
 		Member: roomData.ID,

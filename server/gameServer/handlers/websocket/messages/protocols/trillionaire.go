@@ -23,22 +23,15 @@ func TrillionaireProtocol(ctx context.Context, rdb *redis.Client, registryRules 
 	}
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
-	roomData.GameEvent = &structs.GameEvent{
-		PlayerID:  playerPlay.PlayerId,
-		Type:      structs.EventCardPlayedTrillionaire,
-		ExpiresAt: expiresAt,
-		Payload: structs.TrillionairePayload{
-			EarnedCoins: *cardRules.AmountReceived,
-		},
-	}
+	trillionairePayload := structs.NewTrillionairePayload(*cardRules.AmountReceived)
+
+	roomData.GameEvent = structs.NewGameEvent(playerPlay.PlayerId, structs.EventCardPlayedTrillionaire, expiresAt, trillionairePayload)
 
 	roomData.PendingEffects = append(roomData.PendingEffects,
 		structs.Effect{
 			Cause:        structs.EffectTrillionaire,
 			SourcePlayer: playerPlay.PlayerId,
-			Payload: structs.TrillionairePayload{
-				EarnedCoins: *cardRules.AmountReceived,
-			},
+			Payload:      trillionairePayload,
 		},
 	)
 

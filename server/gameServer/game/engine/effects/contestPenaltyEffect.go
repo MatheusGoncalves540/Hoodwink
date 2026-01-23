@@ -48,14 +48,12 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 		possibleIndexes := sourcePlayer.GetAliveCardsIndexes()
 		indexChosen := utils.GetRandomElementFromSlice(possibleIndexes)
 
+		killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &rawEffect.SourcePlayer, &indexChosen)
+
 		effect := structs.Effect{
 			Cause:        structs.EffectContestPenalty,
 			SourcePlayer: contestedPlayer.Id,
-			Payload: structs.KillCardPayload{
-				Cause:           string(structs.EffectContestPenalty),
-				TargetPlayer:    &rawEffect.SourcePlayer,
-				TargetCardIndex: &indexChosen,
-			},
+			Payload:      killPayload,
 		}
 
 		err := KillCard(ctx, rdb, registryRules, roomData, effect)
@@ -70,14 +68,12 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 		possibleIndexes := contestedPlayer.GetAliveCardsIndexes()
 		indexChosen := utils.GetRandomElementFromSlice(possibleIndexes)
 
+		killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &contestedPlayer.Id, &indexChosen)
+
 		effect := structs.Effect{
 			Cause:        structs.EffectContestPenalty,
 			SourcePlayer: rawEffect.SourcePlayer,
-			Payload: structs.KillCardPayload{
-				Cause:           string(structs.EffectContestPenalty),
-				TargetPlayer:    &contestedPlayer.Id,
-				TargetCardIndex: &indexChosen,
-			},
+			Payload:      killPayload,
 		}
 
 		err := KillCard(ctx, rdb, registryRules, roomData, effect)

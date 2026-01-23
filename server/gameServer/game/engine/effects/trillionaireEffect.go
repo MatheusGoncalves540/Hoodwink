@@ -41,12 +41,7 @@ func TrillionaireEffect(ctx context.Context, rdb *redis.Client, RegistryRules *r
 	breakLimit := sourcePlayer.AddCoins(*cardRules.AmountReceived, *generalRules.MaxCoins)
 
 	// cria o evento de ganho de moedas
-	roomData.GameEvent = &structs.GameEvent{
-		PlayerID:  effect.SourcePlayer,
-		Type:      structs.EventEarnCoins,
-		ExpiresAt: expiresAt,
-		Payload:   effect.Payload,
-	}
+	roomData.GameEvent = structs.NewGameEvent(effect.SourcePlayer, structs.EventEarnCoins, expiresAt, effect.Payload)
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixMilli()),
 		Member: roomData.ID,
@@ -56,14 +51,12 @@ func TrillionaireEffect(ctx context.Context, rdb *redis.Client, RegistryRules *r
 		// se o limite de moedas for ultrapassado, mata a carta viva de menor índice
 		aliveIndexes := sourcePlayer.GetAliveCardsIndexes()
 
+		greedPayload := structs.NewKillCardPayload(string(structs.EffectGreed), &sourcePlayer.Id, &aliveIndexes[0])
+
 		effect := structs.Effect{
 			Cause:        structs.EffectGreed,
 			SourcePlayer: sourcePlayer.Id,
-			Payload: structs.KillCardPayload{
-				Cause:           string(structs.EffectGreed),
-				TargetPlayer:    &sourcePlayer.Id,
-				TargetCardIndex: &aliveIndexes[0],
-			},
+			Payload:      greedPayload,
 		}
 
 		KillCard(ctx, rdb, RegistryRules, roomData, effect)
