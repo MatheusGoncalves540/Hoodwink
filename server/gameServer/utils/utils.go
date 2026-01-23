@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"math/rand/v2"
 	"net/http"
 	"strconv"
@@ -42,4 +45,25 @@ func GenerateNewId() string {
 func GetRandomElementFromSlice[T any](slice []T) T {
 	randomIndex := rand.IntN(len(slice))
 	return slice[randomIndex]
+}
+
+// DecodeStrictJSON decodifica JSON em uma struct, retornando erro se houver campos desconhecidos
+func DecodeStrictJSON(data []byte, target any) error {
+	if target == nil {
+		return fmt.Errorf("target não pode ser nil")
+	}
+
+	reader := bytes.NewReader(data)
+	decoder := json.NewDecoder(reader)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(target); err != nil {
+		return fmt.Errorf("json inválido: %w", err)
+	}
+
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		return fmt.Errorf("json contém dados extras não esperados")
+	}
+
+	return nil
 }

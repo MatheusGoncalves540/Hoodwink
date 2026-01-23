@@ -1,6 +1,9 @@
 package structs
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type EffectCause string
 
@@ -15,6 +18,27 @@ type Effect struct {
 	Cause        EffectCause
 	SourcePlayer string
 	Payload      any
+}
+
+func NewEffect(cause EffectCause, sourcePlayer string, payload any) Effect {
+	return Effect{Cause: cause, SourcePlayer: sourcePlayer, Payload: payload}
+}
+
+func (e Effect) ToDTO() (EffectDTO, error) {
+	var payload json.RawMessage
+	if e.Payload != nil {
+		data, err := json.Marshal(e.Payload)
+		if err != nil {
+			return EffectDTO{}, fmt.Errorf("falha ao serializar payload do efeito %s: %w", e.Cause, err)
+		}
+		payload = data
+	}
+
+	return EffectDTO{
+		Cause:        e.Cause,
+		SourcePlayer: e.SourcePlayer,
+		Payload:      payload,
+	}, nil
 }
 
 // Tipos de efeitos

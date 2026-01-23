@@ -20,7 +20,7 @@ const (
 
 //--//--//--//--//--//--//--//--//--//
 
-type PlayerPlayPayload struct {
+type PlayerPlayDTO struct {
 	Type     TypePlayerPlays `json:"type"`
 	PlayerID string          `json:"playerId"`
 	Payload  json.RawMessage `json:"payload,omitempty"`

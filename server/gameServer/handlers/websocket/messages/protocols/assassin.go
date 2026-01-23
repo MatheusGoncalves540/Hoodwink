@@ -8,6 +8,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -32,13 +33,10 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	sourcePlayer.RemoveCoins(*cardRules.Price)
 
 	roomData.GameEvent = structs.NewGameEvent(sourcePlayer.Id, structs.EventCardPlayedAssassin, expiresAt, assassinPayload)
-	roomData.PendingEffects = append(roomData.PendingEffects,
-		structs.Effect{
-			Cause:        structs.EffectAssassin,
-			SourcePlayer: sourcePlayer.Id,
-			Payload:      assassinPayload,
-		},
-	)
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectAssassin, sourcePlayer.Id, assassinPayload)); err != nil {
+		utils.LogError(err)
+		return fmt.Errorf("falha ao registrar efeito assassin: %w", err)
+	}
 
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixMilli()),

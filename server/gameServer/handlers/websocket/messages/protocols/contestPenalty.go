@@ -24,7 +24,7 @@ func ContestPenaltyProtocol(ctx context.Context, rdb *redis.Client, registryRule
 	}
 
 	// Remove o efeito de escolha randomica de carta
-	roomData.CancelLastPendingEffect(ctx, rdb)
+	roomData.PopLastPendingEffect()
 
 	// cria o efeito de penalidade por contestação
 	killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &targetPlayer.Id, contestPenaltyPayload.TargetCardIndex)

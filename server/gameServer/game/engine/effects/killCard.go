@@ -15,8 +15,15 @@ import (
 func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
 	// decodifica o payload
 	var payload structs.KillCardPayload
-	if err := mapstructure.Decode(effect.Payload, &payload); err != nil {
-		return err
+	switch typed := effect.Payload.(type) {
+	case structs.KillCardPayload:
+		payload = typed
+	case *structs.KillCardPayload:
+		payload = *typed
+	default:
+		if err := mapstructure.Decode(effect.Payload, &payload); err != nil {
+			return err
+		}
 	}
 
 	// pega o targetPlayer

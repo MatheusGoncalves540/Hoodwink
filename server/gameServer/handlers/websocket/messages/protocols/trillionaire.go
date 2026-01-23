@@ -2,6 +2,7 @@ package protocols
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
@@ -27,13 +28,9 @@ func TrillionaireProtocol(ctx context.Context, rdb *redis.Client, registryRules 
 
 	roomData.GameEvent = structs.NewGameEvent(playerPlay.PlayerId, structs.EventCardPlayedTrillionaire, expiresAt, trillionairePayload)
 
-	roomData.PendingEffects = append(roomData.PendingEffects,
-		structs.Effect{
-			Cause:        structs.EffectTrillionaire,
-			SourcePlayer: playerPlay.PlayerId,
-			Payload:      trillionairePayload,
-		},
-	)
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectTrillionaire, playerPlay.PlayerId, trillionairePayload)); err != nil {
+		return fmt.Errorf("falha ao registrar efeito trillionaire: %w", err)
+	}
 
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixMilli()),

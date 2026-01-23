@@ -27,19 +27,16 @@
 - Handlers de WebSocket sempre validam JWT e registro do jogador antes do upgrade.
 - Eventos do jogo são processados e publicados via Redis Pub/Sub para sincronização entre instâncias.
 - O código utiliza convenções de erro explícitas e logging detalhado para rastreabilidade.
-- Estruturas de dados do jogo (cartas, jogadores, eventos) estão em `gameServer/game/room/roomStructs`.
+- Estruturas de dados do jogo (cartas, jogadores, eventos) estão em `gameServer/game/structs`.
 - Utilitários e helpers estão em `gameServer/utils` e `backend/utils`.
-
-## Exemplos de Integração
-- Para adicionar uma nova ação de jogo, crie um handler em `gameServer/game/room/handlers` e registre no processador de eventos.
-- Para autenticação customizada, edite `backend/routes/auth` ou `gameServer/routes/rHandlers/wsHandlers/connectionValidator.go`.
-- Para novas integrações com Redis, utilize helpers em `gameServer/game/room/redisHandlers`.
 
 ## Observações
 - Sempre valide dados críticos antes de upgrades de conexão ou operações sensíveis.
 - Siga os exemplos de logging e tratamento de erro para manter rastreabilidade.
 - Consulte os arquivos `README.md` para regras do jogo e comandos de desenvolvimento.
 - SEMPRE APLIQUE AS MODIFICAÇÕES RECOMENDADAS NOS ARQUIVOS
+- SEMPRE SIGA AS CONVENÇÕES DE CÓDIGO EXISTENTES NO PROJETO
+- SEMPRE MANTENHA EM MENTE A FILOSOFIA DEVSECOPS EM TODAS AS ALTERAÇÕES
 
 ---
 

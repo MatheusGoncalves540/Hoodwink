@@ -2,6 +2,7 @@ package protocols
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
@@ -29,13 +30,9 @@ func KamikazeProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
 	roomData.GameEvent = structs.NewGameEvent(sourcePlayer.Id, structs.EventCardPlayedKamikaze, expiresAt, kamikazePayload)
-	roomData.PendingEffects = append(roomData.PendingEffects,
-		structs.Effect{
-			Cause:        structs.EffectKamikaze,
-			SourcePlayer: sourcePlayer.Id,
-			Payload:      kamikazePayload,
-		},
-	)
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectKamikaze, sourcePlayer.Id, kamikazePayload)); err != nil {
+		return fmt.Errorf("falha ao registrar efeito kamikaze: %w", err)
+	}
 
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixMilli()),

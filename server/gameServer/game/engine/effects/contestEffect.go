@@ -2,7 +2,6 @@ package effects
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
@@ -13,18 +12,9 @@ import (
 )
 
 func ContestEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
-	// extrai o payload do efeito
-	raw, ok := effect.Payload.(map[string]interface{})
+	contestPayload, ok := effect.Payload.(structs.ContestPayload)
 	if !ok {
-		utils.LogError("payload inválido")
-		return
-	}
-
-	b, _ := json.Marshal(raw)
-
-	var contestPayload structs.ContestPayload
-	if err := json.Unmarshal(b, &contestPayload); err != nil {
-		utils.LogError(err)
+		utils.LogError("payload inválido para EffectContest")
 		return
 	}
 
@@ -61,7 +51,7 @@ func ContestEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.
 
 	// se o jogador contestado não possuir a carta, cancela o efeito pendente (o ultimo adicionado)
 	if !hasCard {
-		roomData.CancelLastPendingEffect(ctx, rdb)
+		roomData.PopLastPendingEffect()
 	}
 
 	penaltyPayload := structs.NewContestPenaltyPayload(contestedPlayer.Id, contestPayload.ContestedCard, hasCard, nil)
@@ -69,13 +59,10 @@ func ContestEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.
 	// Jogador contestado/que contestou escolhe uma carta do outro jogador para matar (esse evento)
 	roomData.GameEvent = structs.NewGameEvent(sourcePlayer.Id, structs.EventContestPenalty, expiresAt, penaltyPayload)
 
-	roomData.PendingEffects = append(roomData.PendingEffects,
-		structs.Effect{
-			Cause:        structs.EffectContestPenalty,
-			SourcePlayer: sourcePlayer.Id,
-			Payload:      penaltyPayload,
-		},
-	)
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectContestPenalty, sourcePlayer.Id, penaltyPayload)); err != nil {
+		utils.LogError(err)
+		return
+	}
 
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixMilli()),

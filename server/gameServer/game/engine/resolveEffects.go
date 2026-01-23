@@ -2,18 +2,28 @@ package engine
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
 func resolveNextEffect(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry, roomData *rooms.Room) {
-	effect := roomData.PendingEffects[len(roomData.PendingEffects)-1]
-	// remove o efeito que está sendo resolvido
-	roomData.CancelLastPendingEffect(ctx, rdb)
+	effectDto, ok := roomData.PopLastPendingEffect()
+	if !ok {
+		utils.LogError(fmt.Errorf("no pending effects to resolve"))
+		return
+	}
+
+	effect, err := BuildEffect(effectDto)
+	if err != nil {
+		utils.LogError(err)
+		return
+	}
 
 	switch effect.Cause {
 	case structs.EffectContest:

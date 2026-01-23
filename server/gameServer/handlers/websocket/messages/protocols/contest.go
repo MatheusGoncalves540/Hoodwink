@@ -2,6 +2,7 @@ package protocols
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -34,13 +35,9 @@ func ContestProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 
 	roomData.GameEvent = structs.NewGameEvent(sourcePlayer.Id, structs.EventContest, expiresAt, contestPayload)
 
-	roomData.PendingEffects = append(roomData.PendingEffects,
-		structs.Effect{
-			Cause:        structs.EffectContest,
-			SourcePlayer: sourcePlayer.Id,
-			Payload:      contestPayload,
-		},
-	)
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectContest, sourcePlayer.Id, contestPayload)); err != nil {
+		return fmt.Errorf("falha ao registrar efeito de contestação: %w", err)
+	}
 
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixMilli()),

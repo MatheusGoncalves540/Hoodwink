@@ -28,7 +28,7 @@ type Room struct {
 	Deck           []string                   `json:"Deck"`
 	CurrentPlayer  string                     `json:"currentPlayer"`
 	GameEvent      *structs.GameEvent         `json:"gameEvent"`
-	PendingEffects []structs.Effect           `json:"pendingEffects"`
+	PendingEffects []structs.EffectDTO        `json:"pendingEffects"`
 	GameOver       bool                       `json:"gameOver"`
 	StartTime      time.Time                  `json:"startTime"`
 	Created        time.Time                  `json:"created"`
@@ -42,7 +42,7 @@ type PublicRoomForUpdates struct {
 	DeadDeck       []string                                  `json:"deadDeck"`
 	CurrentPlayer  string                                    `json:"currentPlayer"`
 	GameEvent      *structs.GameEvent                        `json:"gameEvent"`
-	PendingEffects []structs.Effect                          `json:"pendingEffects"`
+	PendingEffects []structs.EffectDTO                       `json:"pendingEffects"`
 	GameOver       bool                                      `json:"gameOver"`
 	StartTime      time.Time                                 `json:"startTime"`
 }
@@ -352,7 +352,23 @@ func (r *Room) SubscribeRoomBroadcast(rdb *redis.Client) {
 	utils.LogDebug("Assinada sala " + r.ID + " no Pub/Sub")
 }
 
-// Cancela o ultimo efeito pendente da sala
-func (r *Room) CancelLastPendingEffect(ctx context.Context, rdb *redis.Client) {
-	r.PendingEffects = r.PendingEffects[:len(r.PendingEffects)-1]
+func (r *Room) AppendPendingEffect(effect structs.Effect) error {
+	dto, err := effect.ToDTO()
+	if err != nil {
+		return err
+	}
+
+	r.PendingEffects = append(r.PendingEffects, dto)
+	return nil
+}
+
+func (r *Room) PopLastPendingEffect() (structs.EffectDTO, bool) {
+	if len(r.PendingEffects) == 0 {
+		return structs.EffectDTO{}, false
+	}
+
+	lastIdx := len(r.PendingEffects) - 1
+	effect := r.PendingEffects[lastIdx]
+	r.PendingEffects = r.PendingEffects[:lastIdx]
+	return effect, true
 }

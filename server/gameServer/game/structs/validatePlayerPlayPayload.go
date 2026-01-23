@@ -1,35 +1,38 @@
 package structs
 
 import (
-	"encoding/json"
 	"fmt"
+
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-//
-
-func (p *PlayerPlayPayload) ValidatePayload() (any, error) {
+func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 	switch p.Type {
 	case PlayContest:
-		return struct{}{}, nil
+		if len(p.Payload) == 0 {
+			return struct{}{}, nil
+		}
+		var empty struct{}
+		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+			return nil, fmt.Errorf("payload inválido para contest: %w", err)
+		}
+		return empty, nil
 
 	case PlayContestPenalty:
 		var payload ContestPenaltyPayload
-		if err := json.Unmarshal(p.Payload, &payload); err != nil {
-			return nil, err
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para contest penalty: %w", err)
 		}
-		if payload.TargetCardIndex != nil {
-			if *payload.TargetCardIndex < 0 {
-				return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
-			}
+		if payload.TargetCardIndex != nil && *payload.TargetCardIndex < 0 {
+			return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
 		}
 		return payload, nil
 
 	case PlayAssassinCard:
 		var payload AssassinPayload
-		if err := json.Unmarshal(p.Payload, &payload); err != nil {
-			return nil, err
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para assassin: %w", err)
 		}
-		// Validação: campos obrigatórios devem estar presentes
 		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
 			return nil, fmt.Errorf("targetPlayer é obrigatório e não pode ser vazio")
 		}
@@ -43,8 +46,8 @@ func (p *PlayerPlayPayload) ValidatePayload() (any, error) {
 
 	case PlayKamikazeCard:
 		var payload KamikazePayload
-		if err := json.Unmarshal(p.Payload, &payload); err != nil {
-			return nil, err
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para kamikaze: %w", err)
 		}
 		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
 			return nil, fmt.Errorf("targetPlayer é obrigatório e não pode ser vazio")
@@ -55,30 +58,32 @@ func (p *PlayerPlayPayload) ValidatePayload() (any, error) {
 		if *payload.TargetCardIndex < 0 {
 			return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
 		}
-		if payload.TargetAllyCardIndex != nil {
-			if *payload.TargetAllyCardIndex < 0 {
-				return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
-			}
+		if payload.TargetAllyCardIndex != nil && *payload.TargetAllyCardIndex < 0 {
+			return nil, fmt.Errorf("targetAllyCardIndex deve ser >= 0")
 		}
 		return payload, nil
 
 	case PlayTrillionaireCard:
-		return struct{}{}, nil
+		if len(p.Payload) == 0 {
+			return struct{}{}, nil
+		}
+		var empty struct{}
+		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+			return nil, fmt.Errorf("payload inválido para trillionaire: %w", err)
+		}
+		return empty, nil
 
 	default:
 		return nil, fmt.Errorf("tipo de jogada inválido: %s", p.Type)
 	}
 }
 
-//
-
 func ParsePlayerPlay(data []byte, playerId string) (*PlayerPlay, error) {
-	var raw PlayerPlayPayload
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return nil, fmt.Errorf("json inválido: %w", err)
+	var raw PlayerPlayDTO
+	if err := utils.DecodeStrictJSON(data, &raw); err != nil {
+		return nil, err
 	}
 
-	// Validação: type é obrigatório
 	if raw.Type == "" {
 		return nil, fmt.Errorf("campo 'type' está faltando ou vazio")
 	}

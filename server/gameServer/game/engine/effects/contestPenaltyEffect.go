@@ -2,7 +2,6 @@ package effects
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
@@ -11,24 +10,15 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, rawEffect structs.Effect) {
-	// extrai o payload do efeito
-	raw, ok := rawEffect.Payload.(map[string]interface{})
+func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+	contestPenaltyPayload, ok := effect.Payload.(structs.ContestPenaltyPayload)
 	if !ok {
-		utils.LogError("payload inválido")
-		return
-	}
-
-	b, _ := json.Marshal(raw)
-
-	var contestPenaltyPayload structs.ContestPenaltyPayload
-	if err := json.Unmarshal(b, &contestPenaltyPayload); err != nil {
-		utils.LogError(err)
+		utils.LogError("payload inválido para EffectContestPenalty")
 		return
 	}
 
 	// obtém o jogador que iniciou contestou
-	sourcePlayer, err := roomData.GetPlayer(rawEffect.SourcePlayer)
+	sourcePlayer, err := roomData.GetPlayer(effect.SourcePlayer)
 	if err != nil {
 		utils.LogError(err)
 		return
@@ -48,13 +38,9 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 		possibleIndexes := sourcePlayer.GetAliveCardsIndexes()
 		indexChosen := utils.GetRandomElementFromSlice(possibleIndexes)
 
-		killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &rawEffect.SourcePlayer, &indexChosen)
+		killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &effect.SourcePlayer, &indexChosen)
 
-		effect := structs.Effect{
-			Cause:        structs.EffectContestPenalty,
-			SourcePlayer: contestedPlayer.Id,
-			Payload:      killPayload,
-		}
+		effect := structs.NewEffect(structs.EffectContestPenalty, contestedPlayer.Id, killPayload)
 
 		err := KillCard(ctx, rdb, registryRules, roomData, effect)
 		if err != nil {
@@ -70,11 +56,7 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 
 		killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &contestedPlayer.Id, &indexChosen)
 
-		effect := structs.Effect{
-			Cause:        structs.EffectContestPenalty,
-			SourcePlayer: rawEffect.SourcePlayer,
-			Payload:      killPayload,
-		}
+		effect := structs.NewEffect(structs.EffectContestPenalty, effect.SourcePlayer, killPayload)
 
 		err := KillCard(ctx, rdb, registryRules, roomData, effect)
 		if err != nil {
