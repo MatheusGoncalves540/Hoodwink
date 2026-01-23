@@ -94,8 +94,16 @@ func (p *Player) UnprotectCard(index int) error {
 }
 
 // AddCoins adiciona moedas ao jogador
-func (p *Player) AddCoins(amount int) {
+func (p *Player) AddCoins(amount int, maxCoins int) bool {
+	// breakLimit indica se o limite de moedas será ultrapassado
+	breakLimit := false
+	if p.Coins+amount > maxCoins {
+		breakLimit = true
+	}
+
 	p.Coins += amount
+
+	return breakLimit
 }
 
 // RemoveCoins remove moedas do jogador

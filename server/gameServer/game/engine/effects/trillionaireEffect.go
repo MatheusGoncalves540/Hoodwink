@@ -37,14 +37,8 @@ func TrillionaireEffect(ctx context.Context, rdb *redis.Client, RegistryRules *r
 		return
 	}
 
-	// breakLimit indica se o limite de moedas será ultrapassado
-	breakLimit := false
-	if sourcePlayer.Coins+*cardRules.AmountReceived > *generalRules.MaxCoins {
-		breakLimit = true
-	}
-
-	// adiciona as moedas ao jogador
-	sourcePlayer.AddCoins(*cardRules.AmountReceived)
+	// adiciona as moedas ao jogador e retorna breakLimit, que indica se o limite de moedas será ultrapassado
+	breakLimit := sourcePlayer.AddCoins(*cardRules.AmountReceived, *generalRules.MaxCoins)
 
 	// cria o evento de ganho de moedas
 	roomData.GameEvent = &structs.GameEvent{
