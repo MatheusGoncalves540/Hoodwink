@@ -40,5 +40,11 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, RegistryRules *ru
 
 	case structs.EffectTrillionaire:
 		effects.TrillionaireEffect(ctx, rdb, RegistryRules, roomData, effect)
+
+	case structs.EffectPolitical:
+		effects.PoliticalEffect(ctx, rdb, RegistryRules, roomData, effect)
+
+	case structs.EffectRebel:
+		effects.RebelEffect(ctx, rdb, RegistryRules, roomData, effect)
 	}
 }

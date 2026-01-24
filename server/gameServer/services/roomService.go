@@ -35,23 +35,37 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 	RoomId := utils.GenerateNewId()
 	// TODO: desmockar tudo isso
 	room := &rooms.Room{
-		ID:             RoomId,
-		Rules:          structs.ClassicRules,
-		TimeoutType:    string(rules.TimeoutsTypeDefault),
-		Name:           roomData.RoomName,
-		Password:       roomData.Password,
-		MaxPlayers:     roomData.MaxPlayers,
-		CustomMatch:    customMatch,
-		Turn:           1,
-		Tax:            0,
-		Players:        make(map[string]*players.Player),
-		Deck:           []string{},
-		CurrentPlayer:  "",
-		GameEvent:      structs.NewGameEvent("", "", time.Time{}, nil),
-		PendingEffects: []structs.EffectDTO{},
-		GameOver:       false,
-		StartTime:      time.Time{},
-		Created:        time.Now(),
+		ID:                RoomId,
+		Rules:             structs.ClassicRules,
+		TimeoutType:       string(rules.TimeoutsTypeDefault),
+		Name:              roomData.RoomName,
+		Password:          roomData.Password,
+		MaxPlayers:        roomData.MaxPlayers,
+		CustomMatch:       customMatch,
+		Turn:              1,
+		Tax:               0,
+		DoubledCardValues: make(map[structs.TypePlayerPlays]structs.DoubledCardValues),
+		Players:           make(map[string]*players.Player),
+		Deck:              []string{},
+		CurrentPlayer:     "",
+		GameEvent:         structs.NewGameEvent("", "", time.Time{}, nil),
+		PendingEffects:    []structs.EffectDTO{},
+		GameOver:          false,
+		StartTime:         time.Time{},
+		Created:           time.Now(),
+	}
+
+	// para cada carta, verifica se a carta tem valor que dobra
+
+	room.DoubledCardValues = map[structs.TypePlayerPlays]structs.DoubledCardValues{
+		structs.PlayPoliticalCard: {
+			TimesValueDoubled:   0,
+			RoundsUntilDecrease: 0,
+		},
+		structs.PlayRebelCard: {
+			TimesValueDoubled:   0,
+			RoundsUntilDecrease: 0,
+		},
 	}
 
 	// Salva a sala com TTL inicial de 5 segundos

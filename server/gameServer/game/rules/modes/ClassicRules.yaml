@@ -1,55 +1,81 @@
+# value = Valores afetados pelas taxas (nem sempre são os preços das cartas)
+
 Cards:
   ASSASSIN:
-    price: 3
+    value: 3
+    taxMaximum: 9
     taxMinimum: 2
+    affectedByTaxes: true
 
   KAMIKAZE:
     canKillSelf: true
+    affectedByTaxes: false
 
   GUARDIAN:
-    price: 5
+    value: 5
+    taxMaximum: 15
     taxMinimum: 3
+    affectedByTaxes: true
 
   POLITICAL:
-    price: 2
-    doubled: 0
+    fixedValue: 1
+    value: 2
+    affectedByTaxes: false
+    doubledValueCard: true
+    roundsUntilDecrease: 3
+    maxDoubled: 2
 
   REBEL:
-    price: 2
-    doubled: 0
+    fixedValue: 1
+    value: 2
+    affectedByTaxes: false
+    doubledValueCard: true
+    roundsUntilDecrease: 3
+    maxDoubled: 2
 
   TRILLIONAIRE:
-    amountReceived: 3
+    value: 3
     taxMinimum: 1
+    taxMaximum: 20
+    affectedByTaxes: true
 
   TRICKSTER:
-    amountWithdrawn: 2
+    value: 2
     taxMinimum: 2
-    taxMax: 5
+    taxMaximum: 5
+    affectedByTaxes: true
 
   GRAVEDIGGER:
-    price: 6
+    value: 6
+    taxMaximum: 18
     taxMinimum: 3
+    affectedByTaxes: true
 
   CROUPIER:
-    price: 6
+    value: 6
+    taxMaximum: 18
     taxMinimum: 3
+    affectedByTaxes: true
 
   SELFISH:
-    fixPrice: 1
-    price: 6
+    fixedValue: 1
+    value: 6
     taxMinimum: 3
-    taxMax: 9
+    taxMaximum: 9
+    affectedByTaxes: true
 
   CLAIRVOYANT:
-    price: 4
+    value: 4
+    taxMaximum: 12
     taxMinimum: 2
+    affectedByTaxes: true
 
   INVESTOR:
-    investPrice: 1
-    investedMaxAmount: 3
+    fixedValue: 1
+    value: 3
     taxMinimum: 2
-    taxMax: 5
+    taxMaximum: 5
+    affectedByTaxes: true
 
 Timeouts:
   DEFAULT: 
@@ -63,3 +89,5 @@ General:
   initialCoins: 3
   maxPlayers: 6
   maxCoins: 20
+  maxTax: 10
+  minTax: -3

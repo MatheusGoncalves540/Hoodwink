@@ -115,6 +115,9 @@ func NextTurn(roomData *rooms.Room, rdb *redis.Client, ctx context.Context) erro
 	// limpa evento anterior
 	roomData.GameEvent = nil
 
+	// decrementa os rounds restantes para redução dos valores dobrados
+	roomData.DecreaseDoubledCardValuesRounds()
+
 	if err := roomData.SaveRoom(ctx, rdb); err != nil {
 		return err
 	}

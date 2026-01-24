@@ -16,6 +16,8 @@ const (
 	PlayAssassinCard     TypePlayerPlays = "ASSASSIN"
 	PlayKamikazeCard     TypePlayerPlays = "KAMIKAZE"
 	PlayTrillionaireCard TypePlayerPlays = "TRILLIONAIRE"
+	PlayPoliticalCard    TypePlayerPlays = "POLITICAL"
+	PlayRebelCard        TypePlayerPlays = "REBEL"
 )
 
 //--//--//--//--//--//--//--//--//--//

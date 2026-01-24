@@ -15,36 +15,38 @@ import (
 )
 
 type Room struct {
-	ID             string                     `json:"id"`
-	Rules          structs.Rules              `json:"rules"`
-	TimeoutType    string                     `json:"timeoutType"`
-	Name           string                     `json:"name"`
-	Password       string                     `json:"password" validate:"max=24"`
-	MaxPlayers     int                        `json:"maxPlayers"`
-	CustomMatch    bool                       `json:"customMatch"`
-	Turn           int                        `json:"turn"`
-	Tax            int                        `json:"tax"`
-	Players        map[string]*players.Player `json:"players"`
-	Deck           []string                   `json:"Deck"`
-	CurrentPlayer  string                     `json:"currentPlayer"`
-	GameEvent      *structs.GameEvent         `json:"gameEvent"`
-	PendingEffects []structs.EffectDTO        `json:"pendingEffects"`
-	GameOver       bool                       `json:"gameOver"`
-	StartTime      time.Time                  `json:"startTime"`
-	Created        time.Time                  `json:"created"`
+	ID                string                                                `json:"id"`
+	Rules             structs.Rules                                         `json:"rules"`
+	TimeoutType       string                                                `json:"timeoutType"`
+	Name              string                                                `json:"name"`
+	Password          string                                                `json:"password" validate:"max=24"`
+	MaxPlayers        int                                                   `json:"maxPlayers"`
+	CustomMatch       bool                                                  `json:"customMatch"`
+	Turn              int                                                   `json:"turn"`
+	Tax               int                                                   `json:"tax"`
+	DoubledCardValues map[structs.TypePlayerPlays]structs.DoubledCardValues `json:"doubledCardValues"`
+	Players           map[string]*players.Player                            `json:"players"`
+	Deck              []string                                              `json:"deck"`
+	CurrentPlayer     string                                                `json:"currentPlayer"`
+	GameEvent         *structs.GameEvent                                    `json:"gameEvent"`
+	PendingEffects    []structs.EffectDTO                                   `json:"pendingEffects"`
+	GameOver          bool                                                  `json:"gameOver"`
+	StartTime         time.Time                                             `json:"startTime"`
+	Created           time.Time                                             `json:"created"`
 }
 
 type PublicRoomForUpdates struct {
-	ID             string                                    `json:"id"`
-	Turn           int                                       `json:"turn"`
-	Tax            int                                       `json:"tax"`
-	Players        map[string]players.PublicPlayerForUpdates `json:"players"`
-	DeadDeck       []string                                  `json:"deadDeck"`
-	CurrentPlayer  string                                    `json:"currentPlayer"`
-	GameEvent      *structs.GameEvent                        `json:"gameEvent"`
-	PendingEffects []structs.EffectDTO                       `json:"pendingEffects"`
-	GameOver       bool                                      `json:"gameOver"`
-	StartTime      time.Time                                 `json:"startTime"`
+	ID                string                                                `json:"id"`
+	Turn              int                                                   `json:"turn"`
+	Tax               int                                                   `json:"tax"`
+	DoubledCardValues map[structs.TypePlayerPlays]structs.DoubledCardValues `json:"doubledCardValues"`
+	Players           map[string]players.PublicPlayerForUpdates             `json:"players"`
+	Deck              []string                                              `json:"deck"`
+	CurrentPlayer     string                                                `json:"currentPlayer"`
+	GameEvent         *structs.GameEvent                                    `json:"gameEvent"`
+	PendingEffects    []structs.EffectDTO                                   `json:"pendingEffects"`
+	GameOver          bool                                                  `json:"gameOver"`
+	StartTime         time.Time                                             `json:"startTime"`
 }
 
 // GetPlayer retorna o ponteiro do jogador pela playerId e um bool indicando se existe
@@ -269,7 +271,7 @@ func (r *Room) PublishRoomUpdate(ctx context.Context, rdb *redis.Client) error {
 		Turn:           r.Turn,
 		Tax:            r.Tax,
 		Players:        make(map[string]players.PublicPlayerForUpdates, len(r.Players)),
-		DeadDeck:       r.Deck,
+		Deck:           r.Deck,
 		CurrentPlayer:  r.CurrentPlayer,
 		GameEvent:      r.GameEvent,
 		PendingEffects: r.PendingEffects,
@@ -371,4 +373,112 @@ func (r *Room) PopLastPendingEffect() (structs.EffectDTO, bool) {
 	effect := r.PendingEffects[lastIdx]
 	r.PendingEffects = r.PendingEffects[:lastIdx]
 	return effect, true
+}
+
+// Verifica se jogador tem moedas suficientes para jogar a carta
+func (r *Room) VerifyPlayerHasEnoughCoins(player *players.Player, registryRules *rules.Registry, card structs.TypePlayerPlays) error {
+	cardPrice, err := r.GetCardValue(registryRules, card)
+	if err != nil {
+		return err
+	}
+
+	if player.Coins < cardPrice {
+		return fmt.Errorf("jogador %s não tem moedas suficientes para jogar a carta %s (tem %d, precisa de %d)", player.Id, card, player.Coins, cardPrice)
+	}
+
+	return nil
+}
+
+// Marca como dobrado o preço da carta específica
+func (r *Room) MarkCardValueAsDoubled(registryRules *rules.Registry, card structs.TypePlayerPlays) {
+	timesDoubledCardConf, exist := r.DoubledCardValues[card]
+	if !exist {
+		return
+	}
+
+	cardRules, err := r.GetCardRules(registryRules, string(card))
+	if err != nil {
+		utils.LogError(err)
+		return
+	}
+
+	if timesDoubledCardConf.TimesValueDoubled < *cardRules.MaxDoubled {
+		// ainda pode dobrar o preço
+		timesDoubledCardConf.TimesValueDoubled++
+		timesDoubledCardConf.RoundsUntilDecrease = *cardRules.RoundsUntilDecrease
+	} else {
+		// já atingiu o máximo de vezes que pode ser dobrado, apenas reseta o contador de rounds
+		timesDoubledCardConf.RoundsUntilDecrease = *cardRules.RoundsUntilDecrease
+	}
+
+	timesDoubledCardConf.UsedThisTurn = true
+
+	r.DoubledCardValues[card] = timesDoubledCardConf
+}
+
+// DecreaseDoubledCardValuesRounds decrementa o contador de rounds para redução do preço dobrado das cartas e abaixa o preço se o contador estiver em 0
+func (r *Room) DecreaseDoubledCardValuesRounds() {
+	for cardType, timesDoubledCardConf := range r.DoubledCardValues {
+		// decrementa o contador de rounds
+		if !timesDoubledCardConf.UsedThisTurn {
+			if timesDoubledCardConf.RoundsUntilDecrease > 0 {
+				timesDoubledCardConf.RoundsUntilDecrease--
+				r.DoubledCardValues[cardType] = timesDoubledCardConf
+			} else {
+				// diminui o preço dobrado em 1, se possível
+				if timesDoubledCardConf.TimesValueDoubled > 0 {
+					timesDoubledCardConf.TimesValueDoubled--
+					r.DoubledCardValues[cardType] = timesDoubledCardConf
+				}
+			}
+		} else {
+			// reseta o flag de uso nesta rodada
+			timesDoubledCardConf.UsedThisTurn = false
+			r.DoubledCardValues[cardType] = timesDoubledCardConf
+		}
+	}
+}
+
+// GetCardValue retorna o value atual da carta, considerando se está dobrado ou não, taxas e limites.
+//
+// Taxas são aplicadas depois dos valores dobrados (ambos apenas se aplicáveis)
+func (r *Room) GetCardValue(registryRules *rules.Registry, card structs.TypePlayerPlays) (int, error) {
+	cardRules, err := r.GetCardRules(registryRules, string(card))
+	if err != nil {
+		return 0, err
+	}
+
+	value := *cardRules.Value
+
+	// se a carta funcionar com preço dobrado, aplica o valor dobrado
+	timesDoubledCardConf, exist := r.DoubledCardValues[card]
+	if exist {
+		value = value << timesDoubledCardConf.TimesValueDoubled
+	}
+
+	// se a carta for afetada por taxas, aplica a taxa
+	if cardRules.AffectedByTaxes != nil && *cardRules.AffectedByTaxes {
+		if value+r.Tax > *cardRules.TaxMaximum {
+			// se a taxa ultrapassar os limites, aplica os limites
+			value = *cardRules.TaxMaximum
+		} else if value+r.Tax < *cardRules.TaxMinimum {
+			// se a taxa for menor que o mínimo, aplica o mínimo
+			value = *cardRules.TaxMinimum
+		} else {
+			// caso contrário, aplica a taxa normalmente
+			value += r.Tax
+		}
+	}
+
+	return value, nil
+}
+
+// Incrementa as taxas pelo valor passado
+func (r *Room) IncrementTax(amount int) {
+	r.Tax += amount
+}
+
+// Decrementa as taxas pelo valor passado
+func (r *Room) DecrementTax(amount int) {
+	r.Tax -= amount
 }

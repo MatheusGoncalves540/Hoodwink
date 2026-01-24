@@ -8,11 +8,6 @@ import (
 )
 
 func ValidateAssassinProtocol(roomData *rooms.Room, RegistryRules *rules.Registry, playerPlay *structs.PlayerPlay, payload structs.AssassinPayload) bool {
-	cardRules, err := roomData.GetCardRules(RegistryRules, string(playerPlay.Type))
-	if err != nil {
-		utils.LogError("Erro ao obter regras da carta Assassin: " + err.Error())
-		return false
-	}
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		utils.LogError(err)
@@ -26,8 +21,9 @@ func ValidateAssassinProtocol(roomData *rooms.Room, RegistryRules *rules.Registr
 	}
 
 	// verifica se player tem moedas pra isso
-	if sourcePlayer.Coins < *cardRules.Price {
-		utils.LogInvldPlyrReq("player não tem moedas suficientes para jogar Assassin", playerPlay.PlayerId)
+	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, RegistryRules, playerPlay.Type)
+	if err != nil {
+		utils.LogInvldPlyrReq(err, playerPlay.PlayerId)
 		return false
 	}
 

@@ -9,11 +9,6 @@ import (
 )
 
 func ValidateKillCardEffect(roomData *rooms.Room, effect structs.Effect, payload structs.KillCardPayload, targetPlayer *players.Player) (bool, error) {
-	// verifica se o jogador que está tentando matar a carta é o mesmo que a carta pertence
-	if targetPlayer.Id == effect.SourcePlayer {
-		return false, fmt.Errorf("jogador não pode matar a si mesmo")
-	}
-
 	// verifica se o índice da carta é válido
 	if *payload.TargetCardIndex < 0 || *payload.TargetCardIndex >= len(targetPlayer.Cards) {
 		return false, fmt.Errorf("índice de carta inválido: %d para jogador %s", *payload.TargetCardIndex, *payload.TargetPlayer)

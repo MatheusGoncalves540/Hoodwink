@@ -25,6 +25,6 @@ func main() {
 	routesContext.Services.HeartbeatService.Start()
 	defer routesContext.Services.HeartbeatService.Stop()
 
-	log.Printf("Servidor ouvindo em %s (Instância: %s)", os.Getenv("GAME_SERVER_URL"), utils.GetInstanceID())
+	log.Printf("📡 Servidor ouvindo em %s (Instância: %s)", os.Getenv("GAME_SERVER_URL"), utils.GetInstanceID())
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), routes))
 }

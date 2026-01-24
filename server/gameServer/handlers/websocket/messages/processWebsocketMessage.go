@@ -106,6 +106,26 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			utils.LogError(err)
 			return
 		}
+
+	case structs.PlayPoliticalCard:
+		if !protocolsValidation.ValidatePoliticalProtocol(roomData, registryRules, playerPlay) {
+			return
+		}
+		err := protocols.PoliticalProtocol(ctx, rdb, registryRules, roomData, playerPlay)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
+
+	case structs.PlayRebelCard:
+		if !protocolsValidation.ValidateRebelProtocol(roomData, registryRules, playerPlay) {
+			return
+		}
+		err := protocols.RebelProtocol(ctx, rdb, registryRules, roomData, playerPlay)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
 	}
 
 	// Salva e publica atualizações da sala

@@ -43,11 +43,14 @@ func (e Effect) ToDTO() (EffectDTO, error) {
 
 // Tipos de efeitos
 const (
-	EffectAssassin       EffectCause = "ASSASSIN"
-	EffectKamikaze       EffectCause = "KAMIKAZE"
-	EffectTrillionaire   EffectCause = "TRILLIONAIRE"
 	EffectContest        EffectCause = "CONTEST"
 	EffectContestPenalty EffectCause = "CONTEST_PENALTY"
 	EffectGreed          EffectCause = "GREED"
 	EffectEarnCoins      EffectCause = "EARN_COINS"
+
+	EffectAssassin     EffectCause = "ASSASSIN"
+	EffectKamikaze     EffectCause = "KAMIKAZE"
+	EffectTrillionaire EffectCause = "TRILLIONAIRE"
+	EffectPolitical    EffectCause = "POLITICAL"
+	EffectRebel        EffectCause = "REBEL"
 )

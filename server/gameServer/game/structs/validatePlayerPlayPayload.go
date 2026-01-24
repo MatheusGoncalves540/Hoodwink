@@ -73,6 +73,26 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 		}
 		return empty, nil
 
+	case PlayPoliticalCard:
+		if len(p.Payload) == 0 {
+			return struct{}{}, nil
+		}
+		var empty struct{}
+		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+			return nil, fmt.Errorf("payload inválido para political: %w", err)
+		}
+		return empty, nil
+
+	case PlayRebelCard:
+		if len(p.Payload) == 0 {
+			return struct{}{}, nil
+		}
+		var empty struct{}
+		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+			return nil, fmt.Errorf("payload inválido para rebel: %w", err)
+		}
+		return empty, nil
+
 	default:
 		return nil, fmt.Errorf("tipo de jogada inválido: %s", p.Type)
 	}

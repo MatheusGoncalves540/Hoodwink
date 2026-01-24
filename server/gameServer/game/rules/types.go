@@ -14,15 +14,15 @@ type GameRules struct {
 
 // CardRules representa as regras das cartas no jogo configuradas no arquivo YAML
 type CardRules struct {
-	Price             *int  `yaml:"price,omitempty"`
-	FixPrice          *int  `yaml:"fixPrice,omitempty"`
-	TaxMinimum        *int  `yaml:"taxMinimum,omitempty"`
-	TaxMax            *int  `yaml:"taxMax,omitempty"`
-	AmountReceived    *int  `yaml:"amountReceived,omitempty"`
-	AmountWithdrawn   *int  `yaml:"amountWithdrawn,omitempty"`
-	InvestPrice       *int  `yaml:"investPrice,omitempty"`
-	InvestedMaxAmount *int  `yaml:"investedMaxAmount,omitempty"`
-	CanKillSelf       *bool `yaml:"canKillSelf,omitempty"`
+	Value               *int  `yaml:"value,omitempty"`       // Valores afetados pelas taxas (nem sempre são os preços das cartas)
+	FixedValue          *int  `yaml:"fixedValue,omitempty"`  // Valores fixos (não afetados por taxas)
+	TaxMinimum          *int  `yaml:"taxMinimum,omitempty"`  // Valores mínimos após aplicação de taxas
+	TaxMaximum          *int  `yaml:"taxMaximum,omitempty"`  // Valores máximos após aplicação de taxas
+	CanKillSelf         *bool `yaml:"canKillSelf,omitempty"` // Indica se a carta pode eliminar a si mesma
+	DoubledValueCard    *bool `yaml:"doubledValueCard,omitempty"`
+	MaxDoubled          *int  `yaml:"maxDoubled,omitempty"`
+	AffectedByTaxes     *bool `yaml:"affectedByTaxes,omitempty"`
+	RoundsUntilDecrease *int  `yaml:"roundsUntilDecrease,omitempty"`
 }
 
 // TimeoutsTypes representa os diferentes tipos de timeout configuráveis para cada sala

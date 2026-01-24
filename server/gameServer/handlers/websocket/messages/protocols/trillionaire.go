@@ -12,11 +12,6 @@ import (
 )
 
 func TrillionaireProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
-	cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
-	if err != nil {
-		return err
-	}
-
 	// calcula o tempo de expiração do evento
 	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction")
 	if err != nil {
@@ -24,7 +19,13 @@ func TrillionaireProtocol(ctx context.Context, rdb *redis.Client, registryRules 
 	}
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
-	trillionairePayload := structs.NewTrillionairePayload(*cardRules.AmountReceived)
+	// calcula as coins ganhas
+	earnedCoins, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type))
+	if err != nil {
+		return err
+	}
+
+	trillionairePayload := structs.NewTrillionairePayload(earnedCoins)
 
 	roomData.GameEvent = structs.NewGameEvent(playerPlay.PlayerId, structs.EventCardPlayedTrillionaire, expiresAt, trillionairePayload)
 

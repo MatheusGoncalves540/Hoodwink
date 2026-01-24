@@ -79,3 +79,23 @@ func NewTrillionairePayload(earnedCoins int) TrillionairePayload {
 		EarnedCoins: earnedCoins,
 	}
 }
+
+type PoliticalPayload struct {
+	TaxIncrease int `json:"taxIncrease,omitempty"`
+}
+
+func NewPoliticalPayload(taxIncrease int) PoliticalPayload {
+	return PoliticalPayload{
+		TaxIncrease: taxIncrease,
+	}
+}
+
+type RebelPayload struct {
+	TaxReduction int `json:"taxReduction,omitempty"`
+}
+
+func NewRebelPayload(taxReduction int) RebelPayload {
+	return RebelPayload{
+		TaxReduction: taxReduction,
+	}
+}

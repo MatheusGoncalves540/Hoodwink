@@ -28,8 +28,12 @@ const (
 	EventCardKilled             GameEventType = "CARD_KILLED"
 	EventContest                GameEventType = "CONTEST"
 	EventContestPenalty         GameEventType = "CONTEST_PENALTY"
+	EventIncrementTaxes         GameEventType = "INCREMENT_TAXES"
+	EventDecrementTaxes         GameEventType = "DECREMENT_TAXES"
 	EventCardPlayedAssassin     GameEventType = "CARD_PLAYED_ASSASSIN"
 	EventCardPlayedKamikaze     GameEventType = "CARD_PLAYED_KAMIKAZE"
 	EventCardPlayedTrillionaire GameEventType = "CARD_PLAYED_TRILLIONAIRE"
+	EventCardPlayedPolitical    GameEventType = "CARD_PLAYED_POLITICAL"
+	EventCardPlayedRebel        GameEventType = "CARD_PLAYED_REBEL"
 	EventEarnCoins              GameEventType = "EARN_COINS"
 )

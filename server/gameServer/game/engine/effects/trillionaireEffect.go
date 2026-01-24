@@ -12,12 +12,6 @@ import (
 )
 
 func TrillionaireEffect(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
-	cardRules, err := roomData.GetCardRules(RegistryRules, string(effect.Cause))
-	if err != nil {
-		utils.LogError(err)
-		return
-	}
-
 	generalRules, err := roomData.GetGeneralRules(RegistryRules)
 	if err != nil {
 		utils.LogError(err)
@@ -37,8 +31,14 @@ func TrillionaireEffect(ctx context.Context, rdb *redis.Client, RegistryRules *r
 		return
 	}
 
+	earnedCoins, err := roomData.GetCardValue(RegistryRules, structs.TypePlayerPlays(effect.Cause))
+	if err != nil {
+		utils.LogError(err)
+		return
+	}
+
 	// adiciona as moedas ao jogador e retorna breakLimit, que indica se o limite de moedas será ultrapassado
-	breakLimit := sourcePlayer.AddCoins(*cardRules.AmountReceived, *generalRules.MaxCoins)
+	breakLimit := sourcePlayer.AddCoins(earnedCoins, *generalRules.MaxCoins)
 
 	// cria o evento de ganho de moedas
 	roomData.GameEvent = structs.NewGameEvent(effect.SourcePlayer, structs.EventEarnCoins, expiresAt, effect.Payload)
