@@ -86,7 +86,7 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 			// Valida e decodifica a jogada do player
 			play, err := structs.ParsePlayerPlay(msg, playerId)
 			if err != nil {
-				utils.LogError(fmt.Sprintf("Evento inválido: %v", err))
+				utils.LogInvldPlyrReq(fmt.Sprintf("Evento inválido: %v", err), playerId)
 				conn.Close()
 				break
 			}
