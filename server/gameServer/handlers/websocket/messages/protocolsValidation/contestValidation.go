@@ -15,5 +15,20 @@ func ValidateContestProtocol(roomData *rooms.Room, playerPlay *structs.PlayerPla
 		return false
 	}
 
+	// Extrair o player que usou a carta sendo contestada
+	playerThatUseTheCard := roomData.GameEvent.PlayerID
+
+	// verifica se o player que usou a carta foi extraído corretamente
+	if playerThatUseTheCard == "" {
+		utils.LogInvldPlyrReq("PlayerID not found or invalid in GameEvent", playerPlay.PlayerId)
+		return false
+	}
+
+	// verifica se o jogador que está tentando contestar não é ele mesmo
+	if playerThatUseTheCard == playerPlay.PlayerId {
+		utils.LogInvldPlyrReq("Player tentou contestar um evento que dele próprio", playerPlay.PlayerId)
+		return false
+	}
+
 	return true
 }

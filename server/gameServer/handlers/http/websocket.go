@@ -74,7 +74,7 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 				break
 			}
 
-			utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", playerId, roomObj.ID))
+			// utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", playerId, roomObj.ID))
 
 			roomId, instanceId, registered, err := playerRedis.GetPlayerRegistrationInfo(ctx, rdb, playerId)
 			if err != nil || !registered || roomId == "" || instanceId == "" {
