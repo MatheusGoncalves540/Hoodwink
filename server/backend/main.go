@@ -11,14 +11,14 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink/routes"
 	"github.com/MatheusGoncalves540/Hoodwink/routes/handlers"
 	"github.com/MatheusGoncalves540/Hoodwink/services"
-	"github.com/MatheusGoncalves540/Hoodwink/utils"
 	"github.com/joho/godotenv"
 )
 
 func main() {
 	godotenv.Load(".env")
+	log.Printf("🌐 Ambiente definido como %s", os.Getenv("ENVIRONMENT"))
+
 	if os.Getenv("ENVIRONMENT") == "local" {
-		utils.LogDebug("⚠️ Ambiente definido como local")
 		config.CheckEnvVars(".env.example")
 	}
 
