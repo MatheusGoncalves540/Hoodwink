@@ -7,7 +7,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-func ValidateAssassinProtocol(roomData *rooms.Room, RegistryRules *rules.Registry, playerPlay *structs.PlayerPlay, payload structs.AssassinPayload) bool {
+func ValidateAssassinProtocol(roomData *rooms.Room, registryRules *rules.Registry, playerPlay *structs.PlayerPlay, payload structs.AssassinPayload) bool {
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		utils.LogError(err)
@@ -21,7 +21,7 @@ func ValidateAssassinProtocol(roomData *rooms.Room, RegistryRules *rules.Registr
 	}
 
 	// verifica se player tem moedas pra isso
-	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, RegistryRules, playerPlay.Type)
+	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, registryRules, playerPlay.Type)
 	if err != nil {
 		utils.LogInvldPlyrReq(err, playerPlay.PlayerId)
 		return false

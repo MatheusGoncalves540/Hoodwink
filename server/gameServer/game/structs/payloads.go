@@ -99,3 +99,19 @@ func NewRebelPayload(taxReduction int) RebelPayload {
 		TaxReduction: taxReduction,
 	}
 }
+
+type ClairvoyantPayload struct {
+	TargetPlayer     string  `json:"targetPlayer"`
+	TargetCardIndex  int     `json:"targetCardIndex"`
+	ShowToAllPlayers bool    `json:"showToAllPlayers"`
+	RevealedCard     *string `json:"revealedCard,omitempty"`
+}
+
+func NewClairvoyantPayload(targetPlayer string, targetCardIndex int, showToAllPlayers bool, revealedCard *string) ClairvoyantPayload {
+	return ClairvoyantPayload{
+		TargetPlayer:     targetPlayer,
+		TargetCardIndex:  targetCardIndex,
+		ShowToAllPlayers: showToAllPlayers,
+		RevealedCard:     revealedCard,
+	}
+}

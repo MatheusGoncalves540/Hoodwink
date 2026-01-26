@@ -11,15 +11,15 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func RebelEffect(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
-	cardRules, err := roomData.GetCardRules(RegistryRules, string(effect.Cause))
+func RebelEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+	cardRules, err := roomData.GetCardRules(registryRules, string(effect.Cause))
 	if err != nil {
 		utils.LogError(err)
 		return
 	}
 
 	// calcula o tempo de expiração do efeito
-	timeoutDuration, err := roomData.GetTimeoutDuration(RegistryRules, "DisplayMessage")
+	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayMessage")
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 	if err != nil {
 		utils.LogError(err)
@@ -27,7 +27,7 @@ func RebelEffect(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Re
 	}
 
 	// dobra o valor da carta específica
-	roomData.MarkCardValueAsDoubled(RegistryRules, structs.TypePlayerPlays(effect.Cause))
+	roomData.MarkCardValueAsDoubled(registryRules, structs.TypePlayerPlays(effect.Cause))
 
 	// decrementa a taxa da sala
 	roomData.DecrementTax(*cardRules.FixedValue)

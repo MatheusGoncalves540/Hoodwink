@@ -126,9 +126,25 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			utils.LogError(err)
 			return
 		}
+
+	case structs.PlayClairvoyantCard:
+		clairvoyantPayload, ok := playerPlay.Payload.(structs.ClairvoyantPayload)
+		if !ok {
+			utils.LogInvldPlyrReq("payload does not match ClairvoyantPayload structure", sourcePlayer.Id)
+			return
+		}
+
+		if !protocolsValidation.ValidateClairvoyantProtocol(roomData, registryRules, playerPlay, clairvoyantPayload) {
+			return
+		}
+		err := protocols.ClairvoyantProtocol(ctx, rdb, registryRules, roomData, playerPlay, clairvoyantPayload)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
 	}
 
 	// Salva e publica atualizações da sala
 	roomData.SaveRoom(ctx, rdb)
-	roomData.SendUpdatedRoomData(ctx, rdb)
+	roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
 }

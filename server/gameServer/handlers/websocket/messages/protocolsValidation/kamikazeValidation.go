@@ -7,8 +7,8 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-func ValidateKamikazeProtocol(roomData *rooms.Room, RegistryRules *rules.Registry, playerPlay *structs.PlayerPlay, payload *structs.KamikazePayload) bool {
-	cardRules, err := roomData.GetCardRules(RegistryRules, string(playerPlay.Type))
+func ValidateKamikazeProtocol(roomData *rooms.Room, registryRules *rules.Registry, playerPlay *structs.PlayerPlay, payload *structs.KamikazePayload) bool {
+	cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
 	if err != nil {
 		utils.LogError("Erro ao obter regras da carta Kamikaze: " + err.Error())
 		return false

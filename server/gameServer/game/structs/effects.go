@@ -53,4 +53,5 @@ const (
 	EffectTrillionaire EffectCause = "TRILLIONAIRE"
 	EffectPolitical    EffectCause = "POLITICAL"
 	EffectRebel        EffectCause = "REBEL"
+	EffectClairvoyant  EffectCause = "CLAIRVOYANT"
 )

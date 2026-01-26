@@ -80,9 +80,11 @@ Cards:
 Timeouts:
   DEFAULT: 
     displayMessage: 6
+    displayImportantMessage: 8
     waitingAction: 10
   SUDDEN_DEATH: 
     displayMessage: 3
+    displayImportantMessage: 4
     waitingAction: 5
 
 General:

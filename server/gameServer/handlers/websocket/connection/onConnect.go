@@ -23,5 +23,5 @@ func OnConnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, roo
 	}
 
 	utils.LogDebug("Cliente conectado ao WebSocket")
-	roomData.SendUpdatedRoomData(ctx, rdb)
+	roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
 }

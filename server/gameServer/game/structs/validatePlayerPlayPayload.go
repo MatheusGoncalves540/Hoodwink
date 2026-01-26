@@ -93,6 +93,19 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 		}
 		return empty, nil
 
+	case PlayClairvoyantCard:
+		var payload ClairvoyantPayload
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para clairvoyant: %w", err)
+		}
+		if payload.TargetPlayer == "" {
+			return nil, fmt.Errorf("targetPlayer é obrigatório e não pode ser vazio")
+		}
+		if payload.TargetCardIndex < 0 {
+			return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
+		}
+		return payload, nil
+
 	default:
 		return nil, fmt.Errorf("tipo de jogada inválido: %s", p.Type)
 	}

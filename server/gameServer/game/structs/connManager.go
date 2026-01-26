@@ -118,6 +118,27 @@ func (cm *ConnectionManager) Broadcast(roomId string, message []byte) {
 	}
 }
 
+// Envia uma mensagem apenas para jogadores específicos de uma sala
+func (cm *ConnectionManager) BroadcastSelective(roomId string, message []byte, playerIds []string) {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+
+	// Cria um map para busca eficiente dos playerIds
+	targetPlayers := make(map[string]bool, len(playerIds))
+	for _, playerId := range playerIds {
+		targetPlayers[playerId] = true
+	}
+
+	if players, ok := cm.connections[roomId]; ok {
+		for playerId, conn := range players {
+			// Envia apenas se o playerId estiver na lista de alvos
+			if targetPlayers[playerId] {
+				conn.WriteMessage(websocket.TextMessage, message)
+			}
+		}
+	}
+}
+
 func (cm *ConnectionManager) IsSubscribed(roomId string) bool {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()

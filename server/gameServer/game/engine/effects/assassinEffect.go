@@ -10,9 +10,9 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func AssassinEffect(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func AssassinEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	// resolve o efeito de matar carta
-	err := KillCard(ctx, rdb, RegistryRules, roomData, effect)
+	err := KillCard(ctx, rdb, registryRules, roomData, effect)
 	if err != nil {
 		utils.LogError(err)
 		return

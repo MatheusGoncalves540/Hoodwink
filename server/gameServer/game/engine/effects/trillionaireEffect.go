@@ -11,8 +11,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func TrillionaireEffect(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
-	generalRules, err := roomData.GetGeneralRules(RegistryRules)
+func TrillionaireEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+	generalRules, err := roomData.GetGeneralRules(registryRules)
 	if err != nil {
 		utils.LogError(err)
 		return
@@ -25,13 +25,13 @@ func TrillionaireEffect(ctx context.Context, rdb *redis.Client, RegistryRules *r
 	}
 
 	// calcula o tempo de expiração do efeito
-	timeoutDuration, err := roomData.GetTimeoutDuration(RegistryRules, "DisplayMessage")
+	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayMessage")
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 	if err != nil {
 		return
 	}
 
-	earnedCoins, err := roomData.GetCardValue(RegistryRules, structs.TypePlayerPlays(effect.Cause))
+	earnedCoins, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(effect.Cause))
 	if err != nil {
 		utils.LogError(err)
 		return
@@ -52,7 +52,7 @@ func TrillionaireEffect(ctx context.Context, rdb *redis.Client, RegistryRules *r
 			Payload:      greedPayload,
 		}
 
-		KillCard(ctx, rdb, RegistryRules, roomData, effect)
+		KillCard(ctx, rdb, registryRules, roomData, effect)
 	} else {
 		// cria o evento de ganho de moedas
 		roomData.GameEvent = structs.NewGameEvent(effect.SourcePlayer, structs.EventEarnCoins, expiresAt, effect.Payload)

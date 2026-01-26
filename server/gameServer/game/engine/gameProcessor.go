@@ -16,7 +16,7 @@ import (
 )
 
 // StartGameProcessor inicia o processador de eventos do jogo.
-func StartGameProcessor(rdb *redis.Client, RegistryRules *rules.Registry) {
+func StartGameProcessor(rdb *redis.Client, registryRules *rules.Registry) {
 	log.Println("🔄 Inicializando gameProcessorEngine...")
 
 	go func() {
@@ -30,13 +30,13 @@ func StartGameProcessor(rdb *redis.Client, RegistryRules *rules.Registry) {
 		defer ticker.Stop()
 
 		for range ticker.C {
-			processExpiredRoomsEvents(context.Background(), rdb, RegistryRules)
+			processExpiredRoomsEvents(context.Background(), rdb, registryRules)
 		}
 	}()
 }
 
 // processExpiredRoomsEvents verifica eventos em salas com timeout expirado e avança o estado do jogo.
-func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry) error {
+func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry) error {
 	now := time.Now().UnixMilli()
 
 	roomIDs, err := rdb.ZRangeByScore(ctx, "rooms:timeouts", &redis.ZRangeBy{
@@ -53,12 +53,12 @@ func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client, RegistryR
 	// utils.LogDebug("Salas com timeout expirado: " + strconv.Itoa(len(roomIDs)))
 
 	for _, roomID := range roomIDs {
-		processRoomWithLock(ctx, rdb, RegistryRules, roomID)
+		processRoomWithLock(ctx, rdb, registryRules, roomID)
 	}
 	return nil
 }
 
-func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *rules.Registry, roomID string) {
+func processRoomWithLock(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomID string) {
 	roomData, err := redisFuncs.LoadRoom(ctx, rdb, roomID)
 	if err != nil {
 		rdb.ZRem(ctx, "rooms:timeouts", roomID)
@@ -78,9 +78,7 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, RegistryRules *
 
 	// Resolve próximo efeito, se existir
 	if len(roomData.PendingEffects) > 0 {
-		resolveNextEffect(ctx, rdb, RegistryRules, roomData)
-		roomData.SaveRoom(ctx, rdb)
-		roomData.SendUpdatedRoomData(ctx, rdb)
+		resolveNextEffect(ctx, rdb, registryRules, roomData)
 		return
 	}
 
@@ -98,7 +96,7 @@ func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.
 		return err
 	}
 
-	if err := roomData.SendUpdatedRoomData(ctx, rdb); err != nil {
+	if err := roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{}); err != nil {
 		return err
 	}
 

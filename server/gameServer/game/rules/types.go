@@ -36,8 +36,9 @@ const (
 // Timeouts representa os diferentes tipos de timeout possiveis para cada tipo de estado de sala
 // como DEFAULT e SUDDEN_DEATH, cada um com seus próprios valores
 type Timeouts struct {
-	DisplayMessage *int `yaml:"displayMessage"`
-	WaitingAction  *int `yaml:"waitingAction"`
+	DisplayMessage          *int `yaml:"displayMessage"`
+	DisplayImportantMessage *int `yaml:"displayImportantMessage"`
+	WaitingAction           *int `yaml:"waitingAction"`
 }
 
 // Get retorna o valor do timeout pelo nome do campo dinamicamente
