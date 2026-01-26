@@ -54,7 +54,6 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 		effects.RebelEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectClairvoyant:
-		// Quando ClairvoyantEffect for implementado, ele retornará dados confidenciais e playerIds
 		confidencialRoomData, playersThatCanSee = effects.ClairvoyantEffect(ctx, rdb, registryRules, roomData, effect)
 	}
 
