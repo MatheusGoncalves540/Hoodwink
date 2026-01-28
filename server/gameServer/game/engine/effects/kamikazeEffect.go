@@ -12,7 +12,21 @@ import (
 
 func KamikazeEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	// resolve o efeito de matar carta
-	err := KillCard(ctx, rdb, registryRules, roomData, effect)
+	kamikazePayload, ok := effect.Payload.(structs.KamikazePayload)
+	if !ok {
+		utils.LogError("payload inválido para KamikazePayload")
+		return
+	}
+
+	killPayload := structs.NewKillCardPayload(string(effect.Cause), kamikazePayload.TargetPlayer, kamikazePayload.TargetCardIndex)
+
+	killEffect := structs.Effect{
+		Cause:        structs.EffectKamikaze,
+		SourcePlayer: effect.SourcePlayer,
+		Payload:      killPayload,
+	}
+
+	err := KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
 	if err != nil {
 		utils.LogError(err)
 		return

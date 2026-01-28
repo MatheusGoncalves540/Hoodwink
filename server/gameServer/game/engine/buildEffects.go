@@ -22,6 +22,28 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 	}
 
 	switch dto.Cause {
+	case structs.EffectCardKilled:
+		if len(dto.Payload) == 0 {
+			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
+		}
+		var payload structs.KillCardPayload
+		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
+		}
+		effect.Payload = payload
+		return effect, nil
+
+	case structs.EffectEarnCoins:
+		if len(dto.Payload) == 0 {
+			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
+		}
+		var payload structs.EarnCoinsPayload
+		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
+		}
+		effect.Payload = payload
+		return effect, nil
+
 	case structs.EffectContest:
 		if len(dto.Payload) == 0 {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)

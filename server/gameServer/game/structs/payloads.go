@@ -14,6 +14,20 @@ func NewKillCardPayload(cause string, targetPlayer *string, targetCardIndex *int
 	}
 }
 
+type EarnCoinsPayload struct {
+	Cause       string `json:"cause"`
+	EarnedCoins int    `json:"earnedCoins,omitempty"`
+	BreakLimit  *bool  `json:"breakLimit,omitempty"`
+}
+
+func NewEarnCoinsPayload(cause string, earnedCoins int, breakLimit *bool) EarnCoinsPayload {
+	return EarnCoinsPayload{
+		Cause:       cause,
+		EarnedCoins: earnedCoins,
+		BreakLimit:  breakLimit,
+	}
+}
+
 type ContestPayload struct {
 	ContestedPlayer string `json:"contestedPlayer"`
 	ContestedCard   string `json:"contestedCard"`
@@ -74,7 +88,7 @@ type TrillionairePayload struct {
 	EarnedCoins int `json:"earnedCoins,omitempty"`
 }
 
-func NewTrillionairePayload(earnedCoins int) TrillionairePayload {
+func NewTrillionairePayload(earnedCoins int, breakLimit *bool) TrillionairePayload {
 	return TrillionairePayload{
 		EarnedCoins: earnedCoins,
 	}

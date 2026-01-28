@@ -47,6 +47,7 @@ const (
 	EffectContestPenalty EffectCause = "CONTEST_PENALTY"
 	EffectGreed          EffectCause = "GREED"
 	EffectEarnCoins      EffectCause = "EARN_COINS"
+	EffectCardKilled     EffectCause = "CARD_KILLED"
 
 	EffectAssassin     EffectCause = "ASSASSIN"
 	EffectKamikaze     EffectCause = "KAMIKAZE"

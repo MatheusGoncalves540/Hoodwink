@@ -40,9 +40,9 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 
 		killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &effect.SourcePlayer, &indexChosen)
 
-		effect := structs.NewEffect(structs.EffectContestPenalty, contestedPlayer.Id, killPayload)
+		killEffect := structs.NewEffect(structs.EffectContestPenalty, contestedPlayer.Id, killPayload)
 
-		err := KillCard(ctx, rdb, registryRules, roomData, effect)
+		err := KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
 		if err != nil {
 			utils.LogError(err)
 			return
@@ -56,9 +56,9 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 
 		killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &contestedPlayer.Id, &indexChosen)
 
-		effect := structs.NewEffect(structs.EffectContestPenalty, effect.SourcePlayer, killPayload)
+		killEffect := structs.NewEffect(structs.EffectContestPenalty, effect.SourcePlayer, killPayload)
 
-		err := KillCard(ctx, rdb, registryRules, roomData, effect)
+		err := KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
 		if err != nil {
 			utils.LogError(err)
 			return

@@ -12,7 +12,21 @@ import (
 
 func AssassinEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	// resolve o efeito de matar carta
-	err := KillCard(ctx, rdb, registryRules, roomData, effect)
+	assassinPayload, ok := effect.Payload.(structs.AssassinPayload)
+	if !ok {
+		utils.LogError("payload inválido para AssassinPayload")
+		return
+	}
+
+	killPayload := structs.NewKillCardPayload(string(effect.Cause), assassinPayload.TargetPlayer, assassinPayload.TargetCardIndex)
+
+	killEffect := structs.Effect{
+		Cause:        structs.EffectAssassin,
+		SourcePlayer: effect.SourcePlayer,
+		Payload:      killPayload,
+	}
+
+	err := KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
 	if err != nil {
 		utils.LogError(err)
 		return

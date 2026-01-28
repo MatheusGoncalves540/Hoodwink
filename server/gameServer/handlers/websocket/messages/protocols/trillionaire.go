@@ -25,7 +25,7 @@ func TrillionaireProtocol(ctx context.Context, rdb *redis.Client, registryRules 
 		return err
 	}
 
-	trillionairePayload := structs.NewTrillionairePayload(earnedCoins)
+	trillionairePayload := structs.NewTrillionairePayload(earnedCoins, nil)
 
 	roomData.GameEvent = structs.NewGameEvent(playerPlay.PlayerId, structs.EventCardPlayedTrillionaire, expiresAt, trillionairePayload)
 

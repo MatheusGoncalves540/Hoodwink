@@ -32,6 +32,12 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 	)
 
 	switch effect.Cause {
+	case structs.EffectCardKilled:
+		effects.KillCard(ctx, rdb, registryRules, roomData, effect)
+
+	case structs.EffectEarnCoins:
+		effects.EarnCoins(ctx, rdb, registryRules, roomData, effect)
+
 	case structs.EffectContest:
 		effects.ContestEffect(ctx, rdb, registryRules, roomData, effect)
 
