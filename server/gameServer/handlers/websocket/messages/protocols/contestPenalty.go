@@ -2,6 +2,7 @@ package protocols
 
 import (
 	"context"
+	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
@@ -36,6 +37,15 @@ func ContestPenaltyProtocol(ctx context.Context, rdb *redis.Client, registryRule
 	}
 
 	effects.KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
+
+	// encerra a janela de input para evitar múltiplos cliques duplicados
+	roomData.GameEvent = nil
+
+	// agenda processamento imediato para consumir a fila de apresentação
+	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
+		Score:  float64(time.Now().UnixMilli()),
+		Member: roomData.ID,
+	})
 
 	return nil
 }

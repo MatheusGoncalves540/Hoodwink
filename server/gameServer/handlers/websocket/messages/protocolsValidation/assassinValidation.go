@@ -14,8 +14,7 @@ func ValidateAssassinProtocol(roomData *rooms.Room, registryRules *rules.Registr
 		return false
 	}
 
-	// Assassin só pode ser usado durante o evento de espera de primeira ação
-	if roomData.GameEvent.Type != structs.EventWaitingFirstAction {
+	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
 		utils.LogInvldPlyrReq("Assassin só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
 		return false
 	}

@@ -2,7 +2,6 @@ package effects
 
 import (
 	"context"
-	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
@@ -11,32 +10,24 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) (*rooms.Room, []string) {
+func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	clairvoyantPayload, ok := effect.Payload.(structs.ClairvoyantPayload)
 	if !ok {
 		utils.LogError("payload inválido para EffectClairvoyant")
-		return nil, nil
+		return
 	}
 
 	targetPlayer, err := roomData.GetPlayer(clairvoyantPayload.TargetPlayer)
 	if err != nil {
 		utils.LogError(err)
-		return nil, nil
-	}
-
-	// calcula o tempo de expiração do efeito
-	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayImportantMessage")
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
-	if err != nil {
-		utils.LogError(err)
-		return nil, nil
+		return
 	}
 
 	// pega a carta revelada alvo
 	revealedCard, err := targetPlayer.GetCardByIndex(clairvoyantPayload.TargetCardIndex)
 	if err != nil {
 		utils.LogError(err)
-		return nil, nil
+		return
 	}
 	revealedCardName := string(revealedCard.Name)
 
@@ -44,34 +35,27 @@ func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 		// adiciona o nome da carta revelada ao payload
 		clairvoyantPayload.RevealedCard = &revealedCardName
 
-		roomData.GameEvent = structs.NewGameEvent(effect.SourcePlayer, structs.EventRevealedCard, expiresAt, clairvoyantPayload)
+		if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventRevealedCard, clairvoyantPayload)); err != nil {
+			utils.LogError(err)
+			return
+		}
 
-		rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-			Score:  float64(expiresAt.UnixMilli()),
-			Member: roomData.ID,
-		})
-
-		return nil, nil
+		return
 	} else {
-		roomData.GameEvent = structs.NewGameEvent(effect.SourcePlayer, structs.EventRevealedCard, expiresAt, clairvoyantPayload)
-
-		confidencialRoomData := roomData.Clone()
-		playersThatCanSee := []string{}
-
-		confidencialRoomData.GameEvent.Payload = structs.ClairvoyantPayload{
+		presentationEvent := structs.NewPresentationEvent(effect.SourcePlayer, structs.EventRevealedCard, clairvoyantPayload)
+		presentationEvent.ConfidencialPayload = structs.ClairvoyantPayload{
 			TargetPlayer:     clairvoyantPayload.TargetPlayer,
 			TargetCardIndex:  clairvoyantPayload.TargetCardIndex,
 			ShowToAllPlayers: false,
 			RevealedCard:     &revealedCardName,
 		}
+		presentationEvent.ConfidencialPlayerIds = []string{effect.SourcePlayer}
 
-		playersThatCanSee = append(playersThatCanSee, effect.SourcePlayer)
+		if err := roomData.AppendPendingPresentationEvent(presentationEvent); err != nil {
+			utils.LogError(err)
+			return
+		}
 
-		rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-			Score:  float64(expiresAt.UnixMilli()),
-			Member: roomData.ID,
-		})
-
-		return confidencialRoomData, playersThatCanSee
+		return
 	}
 }

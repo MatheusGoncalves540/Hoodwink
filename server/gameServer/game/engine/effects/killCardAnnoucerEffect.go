@@ -2,7 +2,6 @@ package effects
 
 import (
 	"context"
-	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects/effectsValidations"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
@@ -32,27 +31,16 @@ func KillAnnouncerCard(ctx context.Context, rdb *redis.Client, registryRules *ru
 		return err
 	}
 
-	// calcula o tempo de expiração do efeito
-	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction") // TODO mudar tipo de timeout caso kamikaze esteja ativo na partida
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
-	if err != nil {
-		return err
-	}
-
 	newKillPayload := structs.NewKillCardPayload(string(effect.Cause), killCardPayload.TargetPlayer, killCardPayload.TargetCardIndex)
 
-	// cria o evento pendente de carta morta
-	roomData.GameEvent = structs.NewGameEvent(effect.SourcePlayer, structs.EventCardKilled, expiresAt, newKillPayload)
+	if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventCardKilled, newKillPayload)); err != nil {
+		return err
+	}
 
 	// registra o efeito de ganho de moedas
 	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectCardKilled, effect.SourcePlayer, newKillPayload)); err != nil {
 		return err
 	}
 
-	// registra o timeout do evento
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
 	return nil
 }

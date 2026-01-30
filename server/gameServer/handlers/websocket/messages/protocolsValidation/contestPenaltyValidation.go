@@ -8,7 +8,7 @@ import (
 
 func ValidateContestPenaltyProtocol(roomData *rooms.Room, playerPlay *structs.PlayerPlay, payload structs.ContestPenaltyPayload) (sourcePlayerId *string, targetPlayerId *string, valid bool) {
 	// Contest só pode ser usado durante um evento de penalidade de carta por contestação
-	if roomData.GameEvent.Type != structs.EventContestPenalty {
+	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventContestPenalty {
 		utils.LogInvldPlyrReq("Contest Penalty só pode ser usado durante um evento de penalidade de carta por contestação", playerPlay.PlayerId)
 		return nil, nil, false
 	}

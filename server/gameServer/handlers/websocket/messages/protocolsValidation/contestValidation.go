@@ -10,7 +10,7 @@ import (
 
 func ValidateContestProtocol(roomData *rooms.Room, playerPlay *structs.PlayerPlay) bool {
 	// Contest só pode ser usado durante um evento de carta
-	if !strings.Contains(string(roomData.GameEvent.Type), "CARD_PLAYED") {
+	if roomData.GameEvent == nil || !strings.Contains(string(roomData.GameEvent.Type), "CARD_PLAYED") {
 		utils.LogInvldPlyrReq("Contest só pode ser usado durante um evento de carta", playerPlay.PlayerId)
 		return false
 	}

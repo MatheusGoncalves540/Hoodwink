@@ -15,7 +15,7 @@ func ValidatePoliticalProtocol(roomData *rooms.Room, registryRules *rules.Regist
 	}
 
 	// Political só pode ser usado durante o evento de espera de primeira ação
-	if roomData.GameEvent.Type != structs.EventWaitingFirstAction {
+	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
 		utils.LogInvldPlyrReq("Political só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
 		return false
 	}

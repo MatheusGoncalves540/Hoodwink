@@ -2,7 +2,6 @@ package effects
 
 import (
 	"context"
-	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
@@ -18,24 +17,14 @@ func RebelEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Re
 		return
 	}
 
-	// calcula o tempo de expiração do efeito
-	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayMessage")
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
-	if err != nil {
-		utils.LogError(err)
-		return
-	}
-
 	// dobra o valor da carta específica
 	roomData.MarkCardValueAsDoubled(registryRules, structs.TypePlayerPlays(effect.Cause))
 
 	// decrementa a taxa da sala
 	roomData.DecrementTax(*cardRules.FixedValue)
 
-	// cria o evento pendente de carta morta
-	roomData.GameEvent = structs.NewGameEvent(effect.SourcePlayer, structs.EventDecrementTaxes, expiresAt, effect.Payload)
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
+	if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventDecrementTaxes, effect.Payload)); err != nil {
+		utils.LogError(err)
+		return
+	}
 }

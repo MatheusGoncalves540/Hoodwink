@@ -15,7 +15,7 @@ func ValidateRebelProtocol(roomData *rooms.Room, registryRules *rules.Registry, 
 	}
 
 	// Rebel só pode ser usado durante o evento de espera de primeira ação
-	if roomData.GameEvent.Type != structs.EventWaitingFirstAction {
+	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
 		utils.LogInvldPlyrReq("Rebel só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
 		return false
 	}

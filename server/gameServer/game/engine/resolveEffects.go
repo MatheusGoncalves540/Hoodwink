@@ -25,12 +25,6 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 		return
 	}
 
-	// Inicializa como nil e vazio - se não forem modificados, envia para todos
-	var (
-		confidencialRoomData *rooms.Room
-		playersThatCanSee    []string
-	)
-
 	switch effect.Cause {
 	case structs.EffectCardKilled:
 		effects.KillCard(ctx, rdb, registryRules, roomData, effect)
@@ -60,11 +54,9 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 		effects.RebelEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectClairvoyant:
-		confidencialRoomData, playersThatCanSee = effects.ClairvoyantEffect(ctx, rdb, registryRules, roomData, effect)
+		effects.ClairvoyantEffect(ctx, rdb, registryRules, roomData, effect)
 	}
 
 	roomData.SaveRoom(ctx, rdb)
-	// Se confidencialRoomData == nil OU playersThatCanSee está vazio, envia para todos
-	// Caso contrário, envia apenas para os jogadores em playersThatCanSee
-	roomData.SendUpdatedRoomData(ctx, rdb, confidencialRoomData, playersThatCanSee)
+	roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
 }

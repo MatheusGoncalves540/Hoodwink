@@ -2,7 +2,6 @@ package effects
 
 import (
 	"context"
-	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
@@ -24,29 +23,17 @@ func EarnCoinsAnnouncer(ctx context.Context, rdb *redis.Client, registryRules *r
 		return err
 	}
 
-	// calcula o tempo de expiração do efeito
-	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayMessage")
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
-	if err != nil {
-		return err
-	}
-
 	// cria o payload de ganho de moedas
 	earnCoinsPayload := structs.NewEarnCoinsPayload(string(effect.Cause), EarnCoinsPayload.EarnedCoins, nil)
 
-	// cria o evento de ganho de moedas
-	roomData.GameEvent = structs.NewGameEvent(effect.SourcePlayer, structs.EventEarnCoins, expiresAt, earnCoinsPayload)
+	if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventEarnCoins, earnCoinsPayload)); err != nil {
+		return err
+	}
 
 	// registra o efeito de ganho de moedas
 	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectEarnCoins, sourcePlayer.Id, earnCoinsPayload)); err != nil {
 		return err
 	}
-
-	// registra o timeout do evento
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
 
 	return nil
 }

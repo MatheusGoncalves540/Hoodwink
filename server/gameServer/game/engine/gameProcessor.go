@@ -76,16 +76,83 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, registryRules *
 		roomData.GameEvent = nil
 	}
 
+	if roomData.HasPendingPresentationEvent() {
+		createGameEventFromPresentationEvent(ctx, rdb, registryRules, roomData)
+		return
+	}
+
 	// Resolve próximo efeito, se existir
-	if len(roomData.PendingEffects) > 0 {
+	if roomData.HasPendingLogicEffect() {
 		resolveNextEffect(ctx, rdb, registryRules, roomData)
+		scheduleImmediateProcessing(ctx, rdb, roomData)
 		return
 	}
 
 	// Nada pendente → próximo turno
-	if roomData.GameEvent == nil && len(roomData.PendingEffects) == 0 {
+	if roomData.GameEvent == nil && !roomData.HasPendingLogicEffect() && !roomData.HasPendingPresentationEvent() {
 		NextTurn(roomData, rdb, ctx)
 	}
+}
+
+func createGameEventFromPresentationEvent(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room) {
+	presentationEvent, ok := roomData.PopNextPendingPresentationEvent()
+	if !ok {
+		return
+	}
+
+	timeoutField := presentationEvent.TimeoutField
+	if timeoutField == "" {
+		timeoutField = "DisplayMessage"
+	}
+
+	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, timeoutField)
+	if err != nil {
+		utils.LogError(err)
+		return
+	}
+
+	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
+	roomData.GameEvent = structs.NewGameEvent(presentationEvent.PlayerID, presentationEvent.Type, expiresAt, presentationEvent.Payload)
+
+	if err := roomData.SaveRoom(ctx, rdb); err != nil {
+		utils.LogError(err)
+		return
+	}
+
+	var (
+		confidencialRoomData *rooms.Room
+		playersThatCanSee    []string
+	)
+
+	if presentationEvent.ConfidencialPayload != nil && len(presentationEvent.ConfidencialPlayerIds) > 0 {
+		confidencialRoomData = roomData.Clone()
+		confidencialRoomData.GameEvent.Payload = presentationEvent.ConfidencialPayload
+		playersThatCanSee = append(playersThatCanSee, presentationEvent.ConfidencialPlayerIds...)
+	}
+
+	if err := roomData.SendUpdatedRoomData(ctx, rdb, confidencialRoomData, playersThatCanSee); err != nil {
+		utils.LogError(err)
+		return
+	}
+
+	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
+		Score:  float64(expiresAt.UnixMilli()),
+		Member: roomData.ID,
+	})
+}
+
+func scheduleImmediateProcessing(ctx context.Context, rdb *redis.Client, roomData *rooms.Room) {
+	if roomData.GameEvent != nil {
+		return
+	}
+	if !roomData.HasPendingPresentationEvent() && !roomData.HasPendingLogicEffect() {
+		return
+	}
+
+	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
+		Score:  float64(time.Now().UnixMilli()),
+		Member: roomData.ID,
+	})
 }
 
 func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.Room) error {

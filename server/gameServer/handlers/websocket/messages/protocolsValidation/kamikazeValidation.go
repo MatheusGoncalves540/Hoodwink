@@ -14,6 +14,11 @@ func ValidateKamikazeProtocol(roomData *rooms.Room, registryRules *rules.Registr
 		return false
 	}
 
+	if roomData.GameEvent == nil {
+		utils.LogInvldPlyrReq("Kamikaze só pode ser usado durante o evento de carta morta ou de primeira ação", playerPlay.PlayerId)
+		return false
+	}
+
 	// Se usado na primeira ação do jogo, marca que o jogador matou a propria carta
 	switch roomData.GameEvent.Type {
 	case structs.EventWaitingFirstAction:

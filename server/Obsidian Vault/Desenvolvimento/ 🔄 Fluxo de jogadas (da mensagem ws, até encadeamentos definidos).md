@@ -49,6 +49,9 @@ GameEvent:
 
 PendingEffects:
   [ ASSASSINO ]
+
+PendingPresentationEvents:
+        [ ]
 ```
 
 📺 Frontend mostra:
@@ -123,11 +126,18 @@ PendingEffects:
 [ GameProcessor Tick ]
         |
         v
-Se GameEvent == nil
-E PendingEffects != vazio
-        |
-        v
-Executar próximo efeito
+Se GameEvent != nil
+        return
+
+Se PendingPresentationEvents != vazio
+        criar GameEvent curto (apresentação)
+        return
+
+Se PendingEffects != vazio
+        Executar próximo efeito
+        return
+
+NextTurn()
 ```
 
 ---
@@ -139,7 +149,7 @@ Executar próximo efeito
         |
         v
 - Mata uma carta do Player 2
-- Broadcast: "Carta do Player 2 morreu"
+- Enfileira PresentationEvent: CARD_KILLED
 ```
 
 Efeito colateral:
@@ -153,7 +163,26 @@ Estado agora:
 ```makefile
 PendingEffects:
   [ PENALIDADE_CONTESTAÇÃO, CHECK_KAMIKAZE ]
+
+PendingPresentationEvents:
+        [ CARD_KILLED ]
 ```
+
+---
+
+## 🎬 5️⃣.1️⃣ Motor consome apresentação
+
+```yaml
+[ GameProcessor Tick ]
+                                |
+                                v
+PendingPresentationEvents != vazio
+        -> cria GameEvent de apresentação (timeout curto)
+```
+
+Frontend vê:
+
+> “Carta do Player 2 morreu”
 
 ---
 
@@ -232,8 +261,8 @@ Cada morte pode gerar novo `CHECK_KAMIKAZE`.
 ```yaml
 Enquanto:
   GameEvent == nil
-  AND
-  PendingEffects != vazio
+        AND PendingPresentationEvents == vazio
+        AND PendingEffects != vazio
 ```
 
 O motor continua.
@@ -259,6 +288,11 @@ Esperar input ou timeout
    ↓
 Remover GameEvent
    ↓
+Se houver PendingPresentationEvents:
+  Criar GameEvent curto (apresentação)
+  Esperar timeout
+  Remover GameEvent
+         ↓
 Executar PendingEffects
    ↓
 Gerou nova decisão?
@@ -271,5 +305,6 @@ Criar novo GameEvent
 # 🏁 Frase final (para fixar)
 
 > **GameEvent é a pergunta.  
+> PresentationEvents são as animações.  
 > PendingEffects é a resposta.  
 > O motor só responde quando ninguém precisa falar.**

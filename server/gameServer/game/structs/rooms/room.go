@@ -15,24 +15,25 @@ import (
 )
 
 type Room struct {
-	ID                string                                                `json:"id"`
-	Rules             structs.Rules                                         `json:"rules"`
-	TimeoutType       string                                                `json:"timeoutType"`
-	Name              string                                                `json:"name"`
-	Password          string                                                `json:"password" validate:"max=24"`
-	MaxPlayers        int                                                   `json:"maxPlayers"`
-	CustomMatch       bool                                                  `json:"customMatch"`
-	Turn              int                                                   `json:"turn"`
-	Tax               int                                                   `json:"tax"`
-	DoubledCardValues map[structs.TypePlayerPlays]structs.DoubledCardValues `json:"doubledCardValues"`
-	Players           map[string]*players.Player                            `json:"players"`
-	Deck              []string                                              `json:"deck"`
-	CurrentPlayer     string                                                `json:"currentPlayer"`
-	GameEvent         *structs.GameEvent                                    `json:"gameEvent"`
-	PendingEffects    []structs.EffectDTO                                   `json:"pendingEffects"`
-	GameOver          bool                                                  `json:"gameOver"`
-	StartTime         time.Time                                             `json:"startTime"`
-	Created           time.Time                                             `json:"created"`
+	ID                        string                                                `json:"id"`
+	Rules                     structs.Rules                                         `json:"rules"`
+	TimeoutType               string                                                `json:"timeoutType"`
+	Name                      string                                                `json:"name"`
+	Password                  string                                                `json:"password" validate:"max=24"`
+	MaxPlayers                int                                                   `json:"maxPlayers"`
+	CustomMatch               bool                                                  `json:"customMatch"`
+	Turn                      int                                                   `json:"turn"`
+	Tax                       int                                                   `json:"tax"`
+	DoubledCardValues         map[structs.TypePlayerPlays]structs.DoubledCardValues `json:"doubledCardValues"`
+	Players                   map[string]*players.Player                            `json:"players"`
+	Deck                      []string                                              `json:"deck"`
+	CurrentPlayer             string                                                `json:"currentPlayer"`
+	GameEvent                 *structs.GameEvent                                    `json:"gameEvent"`
+	PendingEffects            []structs.EffectDTO                                   `json:"pendingEffects"`
+	PendingPresentationEvents []structs.PresentationEventDTO                        `json:"pendingPresentationEvents"`
+	GameOver                  bool                                                  `json:"gameOver"`
+	StartTime                 time.Time                                             `json:"startTime"`
+	Created                   time.Time                                             `json:"created"`
 }
 
 type PublicRoomForUpdates struct {
@@ -423,6 +424,16 @@ func (r *Room) AppendPendingEffect(effect structs.Effect) error {
 	return nil
 }
 
+func (r *Room) AppendPendingPresentationEvent(event structs.PresentationEvent) error {
+	dto, err := event.ToDTO()
+	if err != nil {
+		return err
+	}
+
+	r.PendingPresentationEvents = append(r.PendingPresentationEvents, dto)
+	return nil
+}
+
 func (r *Room) PopLastPendingEffect() (structs.EffectDTO, bool) {
 	if len(r.PendingEffects) == 0 {
 		return structs.EffectDTO{}, false
@@ -432,6 +443,24 @@ func (r *Room) PopLastPendingEffect() (structs.EffectDTO, bool) {
 	effect := r.PendingEffects[lastIdx]
 	r.PendingEffects = r.PendingEffects[:lastIdx]
 	return effect, true
+}
+
+func (r *Room) PopNextPendingPresentationEvent() (structs.PresentationEventDTO, bool) {
+	if len(r.PendingPresentationEvents) == 0 {
+		return structs.PresentationEventDTO{}, false
+	}
+
+	first := r.PendingPresentationEvents[0]
+	r.PendingPresentationEvents = r.PendingPresentationEvents[1:]
+	return first, true
+}
+
+func (r *Room) HasPendingPresentationEvent() bool {
+	return len(r.PendingPresentationEvents) > 0
+}
+
+func (r *Room) HasPendingLogicEffect() bool {
+	return len(r.PendingEffects) > 0
 }
 
 // Verifica se jogador tem moedas suficientes para jogar a carta
