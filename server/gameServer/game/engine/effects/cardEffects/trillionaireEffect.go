@@ -1,8 +1,9 @@
-package effects
+package cardEffects
 
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
@@ -19,7 +20,7 @@ func TrillionaireEffect(ctx context.Context, rdb *redis.Client, registryRules *r
 
 	effect.Payload = structs.NewEarnCoinsPayload(string(effect.Cause), trillionairePayload.EarnedCoins, nil)
 
-	err := EarnCoinsAnnouncer(ctx, rdb, registryRules, roomData, effect)
+	err := effects.EarnCoinsAnnouncer(ctx, rdb, registryRules, roomData, effect)
 	if err != nil {
 		utils.LogError(err)
 		return

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects/cardEffects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
@@ -39,22 +40,22 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 		effects.ContestPenaltyEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectAssassin:
-		effects.AssassinEffect(ctx, rdb, registryRules, roomData, effect)
+		cardEffects.AssassinEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectKamikaze:
-		effects.KamikazeEffect(ctx, rdb, registryRules, roomData, effect)
+		cardEffects.KamikazeEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectTrillionaire:
-		effects.TrillionaireEffect(ctx, rdb, registryRules, roomData, effect)
+		cardEffects.TrillionaireEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectPolitical:
-		effects.PoliticalEffect(ctx, rdb, registryRules, roomData, effect)
+		cardEffects.PoliticalEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectRebel:
-		effects.RebelEffect(ctx, rdb, registryRules, roomData, effect)
+		cardEffects.RebelEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectClairvoyant:
-		effects.ClairvoyantEffect(ctx, rdb, registryRules, roomData, effect)
+		cardEffects.ClairvoyantEffect(ctx, rdb, registryRules, roomData, effect)
 	}
 
 	roomData.SaveRoom(ctx, rdb)

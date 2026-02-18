@@ -1,4 +1,4 @@
-package effects
+package cardEffects
 
 import (
 	"context"
