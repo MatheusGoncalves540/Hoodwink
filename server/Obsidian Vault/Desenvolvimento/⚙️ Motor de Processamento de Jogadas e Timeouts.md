@@ -97,7 +97,7 @@ Arquivo central:
 ## 📝 Definições necessárias para criar uma jogada
 
 1.  timeout - é o registro no redis com um timestamp (UTC) de quando aquela ação "vence".
-    -   ou seja, é processada automaticamente pelo motor, sem ação de playe
+    -   ou seja, é processada automaticamente pelo motor, sem ação de player
     -   exemplo:
         ```go
         expiresAt := time.Now().Add(7 * time.Second).UTC()
@@ -108,9 +108,10 @@ Arquivo central:
         ```
 
 2.  gameEvent - é o que está sendo mostrado na tela agora para os players.
-    -   Não é responsavel por executar nada
+    -   Não é responsável por executar lógica
     -   Não tem uma lista de gameEvent, é unico
     -   O gameEvent é removido assim que ele é processado
+    -   É o único ponto de input humano e o único mecanismo de pausa do motor lógico
     -   exemplo:
         ```go
         expiresAt := time.Now().Add(7 * time.Second).UTC()
@@ -142,8 +143,27 @@ Arquivo central:
         },
     )
     ```
-    -   Na maioria das vezes, os effects adicionam GameEvents e outros Effects quando são executados
-        -   Exemplo: Assassino quando mata alguem -> GameEvent mostrando para todos que ele matou a carta, e se possivel, abre janela para o atacado usar Kamikaze.
+    -   Na maioria das vezes, os effects adicionam PresentationEvents e outros Effects quando são executados
+        -   Exemplo: Assassino quando mata alguem -> PresentationEvent mostrando para todos que ele matou a carta, e se possivel, abre janela para o atacado usar Kamikaze.
+
+4.  pendingPresentationEvents - é a fila de eventos de apresentação (animações/announcers).
+    -   Sempre gera um GameEvent de timeout curto quando consumido pelo motor
+    -   Nunca altera estado lógico
+    -   É consumida em ordem (FIFO), um evento por vez
+    -   Exemplo:
+    ```go
+    roomData.PendingPresentationEvents = append(roomData.PendingPresentationEvents,
+        roomStructs.PresentationEvent{
+            PlayerID: "ID DO PLAYER QUE FEZ AÇÃO",
+            Type:     roomStructs.EventCardKilled,
+            Payload: roomStructs.KillCardPayload{
+                TargetPlayer:    payload.TargetPlayer,
+                TargetCardIndex: payload.TargetCardIndex,
+                Cause:           effect.Cause,
+            },
+        },
+    )
+    ```
 
 ---
 
@@ -188,7 +208,7 @@ Ele apenas:
     
 -   Valida essas ações
     
--   Atualiza o estado da sala (adicionando GameEvents ou effects)
+-   Atualiza o estado da sala (adicionando GameEvents, effects e/ou PresentationEvents)
 
 -   Cancela ou substitui timeouts existentes
     
@@ -224,6 +244,7 @@ Cada estado:
 -   Representa uma fase do jogo
     
 -   Possui exatamente um evento e efeitos pendentes
+-   Pode possuir uma fila de eventos de apresentação pendentes
     
 -   Possui exatamente um timeout ativo
     
@@ -252,7 +273,8 @@ Arquivo de referência:
 
 -   Toda sala **sempre** deve ter um estado válido
     
--   Todo estado **sempre** deve ter um timeout
+-   Todo estado **sempre** deve ter um timeout ativo quando houver GameEvent
+-   PresentationEvents sempre criam GameEvent com timeout curto
     
 -   Todo timeout vencido **deve** gerar o próximo passo
     
@@ -264,3 +286,41 @@ Arquivo de referência:
     
 
 Se qualquer uma dessas regras for quebrada, o jogo pode “travar silenciosamente”.
+
+---
+
+## 🔁 Ordem de execução do motor
+
+O motor segue exatamente esta ordem:
+
+```go
+if roomData.GameEvent != nil {
+    return
+}
+
+if roomData.HasPendingPresentationEvent() {
+    createGameEventFromPresentationEvent()
+    return
+}
+
+if roomData.HasPendingLogicEffect() {
+    resolveNextLogicEffect()
+    return
+}
+
+NextTurn()
+```
+
+Isso garante:
+
+-   Efeitos lógicos não executam enquanto houver GameEvent
+-   Apresentações sempre são consumidas antes da lógica
+-   A ordem visual no frontend fica determinística
+
+---
+
+## 🚫 Restrições operacionais
+
+-   Não criar timers fora do processor
+-   Não abrir janela de input dentro de efeitos finais/lógicos
+-   Não misturar efeito lógico com evento de apresentação na mesma etapa

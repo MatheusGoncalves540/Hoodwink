@@ -115,3 +115,40 @@
       "ticket": "<jwtDaSala>"
     }
     ```
+
+  ---
+
+  ## ⚙️ Modelo de processamento de jogadas (runtime)
+
+  Após a conexão WS, o game-server processa jogadas com três estruturas de estado na sala:
+
+  -   `GameEvent` → janela atual de input humano (única) e pausa do motor
+  -   `PendingEffects` → fila de efeitos lógicos (altera estado real)
+  -   `PendingPresentationEvents` → fila de eventos visuais/animações (não altera estado)
+
+  ### Ordem do processor
+
+  ```go
+  if roomData.GameEvent != nil {
+    return
+  }
+
+  if roomData.HasPendingPresentationEvent() {
+    createGameEventFromPresentationEvent()
+    return
+  }
+
+  if roomData.HasPendingLogicEffect() {
+    resolveNextLogicEffect()
+    return
+  }
+
+  NextTurn()
+  ```
+
+  ### Regras práticas
+
+  -   Protocolos WS continuam como único ponto de criação de janelas de decisão de jogador (ex.: contestação)
+  -   Efeitos lógicos não criam timeout diretamente
+  -   Eventos de apresentação sempre passam pela fila de apresentação e viram `GameEvent` curto no processor
+  -   O timeout distribuído continua em Redis (`rooms:timeouts`), sem timers em memória

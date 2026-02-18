@@ -1,5 +1,7 @@
 Este diagrama mostra **uma jogada real** com **Assassino**, **Contestação** e **Kamikaze**.
 
+> Modelo atual: `GameEvent` é a única janela de input/pausa; `PendingEffects` é a fila lógica; `PendingPresentationEvents` é a fila visual (animações/announcers).
+
 ---
 
 ## 🟢 1️⃣ Input do jogador (WebSocket)
@@ -139,6 +141,8 @@ Se PendingEffects != vazio
 
 NextTurn()
 ```
+
+⚠️ Importante: protocolos (ex.: contestação) continuam sendo os únicos responsáveis por abrir janelas de input humano via `GameEvent`.
 
 ---
 
