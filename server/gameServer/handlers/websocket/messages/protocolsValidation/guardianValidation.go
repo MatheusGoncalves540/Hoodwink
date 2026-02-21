@@ -71,10 +71,10 @@ func ValidateGuardianProtocol(roomData *rooms.Room, registryRules *rules.Registr
 		// verifica se o evento de carta morta foi causado por ContestPenalty ou Kamikaze, caso tenha sido, o jogador não pode usar Guardian
 		switch cardKilledCause {
 		case string(structs.EffectContestPenalty):
-			utils.LogInvldPlyrReq("Player tentou usar Guardian em um evento que não é de causa Guardian", playerPlay.PlayerId)
+			utils.LogInvldPlyrReq("Player tentou usar Guardian em um evento que não é bloqueado por Guardian", playerPlay.PlayerId)
 			return false
 		case string(structs.EffectKamikaze):
-			utils.LogInvldPlyrReq("Player tentou usar Guardian em um evento que não é de causa Guardian", playerPlay.PlayerId)
+			utils.LogInvldPlyrReq("Player tentou usar Guardian em um evento que não é bloqueado por Guardian", playerPlay.PlayerId)
 			return false
 		}
 
