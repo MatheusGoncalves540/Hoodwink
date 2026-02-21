@@ -464,8 +464,8 @@ func (r *Room) HasPendingLogicEffect() bool {
 }
 
 // Verifica se jogador tem moedas suficientes para jogar a carta
-func (r *Room) VerifyPlayerHasEnoughCoins(player *players.Player, registryRules *rules.Registry, card structs.TypePlayerPlays) error {
-	cardPrice, err := r.GetCardValue(registryRules, card)
+func (r *Room) VerifyPlayerHasEnoughCoins(player *players.Player, registryRules *rules.Registry, card structs.TypePlayerPlays, discount int) error {
+	cardPrice, err := r.GetCardValue(registryRules, card, discount)
 	if err != nil {
 		return err
 	}
@@ -530,7 +530,7 @@ func (r *Room) DecreaseDoubledCardValuesRounds() {
 // GetCardValue retorna o value atual da carta, considerando se está dobrado ou não, taxas e limites.
 //
 // Taxas são aplicadas depois dos valores dobrados (ambos apenas se aplicáveis)
-func (r *Room) GetCardValue(registryRules *rules.Registry, card structs.TypePlayerPlays) (int, error) {
+func (r *Room) GetCardValue(registryRules *rules.Registry, card structs.TypePlayerPlays, discount int) (int, error) {
 	cardRules, err := r.GetCardRules(registryRules, string(card))
 	if err != nil {
 		return 0, err
@@ -556,6 +556,12 @@ func (r *Room) GetCardValue(registryRules *rules.Registry, card structs.TypePlay
 			// caso contrário, aplica a taxa normalmente
 			value += r.Tax
 		}
+	}
+
+	// Aplica o desconto, se houver
+	value -= discount
+	if value < 0 {
+		value = 0
 	}
 
 	return value, nil

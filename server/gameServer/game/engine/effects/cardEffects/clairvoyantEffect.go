@@ -2,6 +2,7 @@ package cardEffects
 
 import (
 	"context"
+	"slices"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
@@ -20,6 +21,15 @@ func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 	targetPlayer, err := roomData.GetPlayer(clairvoyantPayload.TargetPlayer)
 	if err != nil {
 		utils.LogError(err)
+		return
+	}
+
+	// verifica se a carta já está protegida, se estiver, não pode ser revelada, apenas remove a proteção
+	if slices.Contains(targetPlayer.GetProtectedCardsIndexes(), clairvoyantPayload.TargetCardIndex) {
+		err = targetPlayer.UnprotectCard(clairvoyantPayload.TargetCardIndex)
+		if err != nil {
+			utils.LogError(err)
+		}
 		return
 	}
 

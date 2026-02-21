@@ -129,3 +129,17 @@ func NewClairvoyantPayload(targetPlayer string, targetCardIndex int, showToAllPl
 		RevealedCard:     revealedCard,
 	}
 }
+
+type GuardianPayload struct {
+	TargetPlayer    string `json:"targetPlayer"`
+	TargetCardIndex int    `json:"targetCardIndex"`
+	ProtectedFrom   string `json:"protectedFrom,omitempty"`
+}
+
+func NewGuardianPayload(targetPlayer string, targetCardIndex int, protectedFrom string) GuardianPayload {
+	return GuardianPayload{
+		TargetPlayer:    targetPlayer,
+		TargetCardIndex: targetCardIndex,
+		ProtectedFrom:   protectedFrom,
+	}
+}

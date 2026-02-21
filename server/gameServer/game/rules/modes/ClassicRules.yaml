@@ -11,12 +11,6 @@ Cards:
     canKillSelf: true
     affectedByTaxes: false
 
-  GUARDIAN:
-    value: 5
-    taxMaximum: 15
-    taxMinimum: 3
-    affectedByTaxes: true
-
   POLITICAL:
     fixedValue: 1
     value: 2
@@ -37,6 +31,19 @@ Cards:
     value: 3
     taxMinimum: 1
     taxMaximum: 20
+    affectedByTaxes: true
+
+  CLAIRVOYANT:
+    value: 4
+    taxMaximum: 12
+    taxMinimum: 2
+    affectedByTaxes: true
+
+  GUARDIAN:
+    value: 5
+    canDefendClairvoyant: true
+    taxMaximum: 15
+    taxMinimum: 3
     affectedByTaxes: true
 
   TRICKSTER:
@@ -62,12 +69,6 @@ Cards:
     value: 6
     taxMinimum: 3
     taxMaximum: 9
-    affectedByTaxes: true
-
-  CLAIRVOYANT:
-    value: 4
-    taxMaximum: 12
-    taxMinimum: 2
     affectedByTaxes: true
 
   INVESTOR:

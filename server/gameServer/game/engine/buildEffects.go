@@ -143,6 +143,17 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 		effect.Payload = payload
 		return effect, nil
 
+	case structs.EffectGuardian:
+		if len(dto.Payload) == 0 {
+			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
+		}
+		var payload structs.GuardianPayload
+		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
+		}
+		effect.Payload = payload
+		return effect, nil
+
 	default:
 		return structs.Effect{}, fmt.Errorf("efeito desconhecido: %s", dto.Cause)
 	}

@@ -142,6 +142,22 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			utils.LogError(err)
 			return
 		}
+
+	case structs.PlayGuardianCard:
+		guardianPayload, ok := playerPlay.Payload.(structs.GuardianPayload)
+		if !ok {
+			utils.LogInvldPlyrReq("payload does not match GuardianPayload structure", sourcePlayer.Id)
+			return
+		}
+
+		if !protocolsValidation.ValidateGuardianProtocol(roomData, registryRules, playerPlay, &guardianPayload) {
+			return
+		}
+		err := protocols.GuardianProtocol(ctx, rdb, registryRules, roomData, playerPlay, &guardianPayload)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
 	}
 
 	// Salva e publica atualizações da sala

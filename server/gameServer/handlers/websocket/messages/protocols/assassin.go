@@ -26,7 +26,7 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
 	// marca a remoção de coins
-	cardPrice, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type))
+	cardPrice, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), 0)
 	if err != nil {
 		return err
 	}

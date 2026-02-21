@@ -2,6 +2,7 @@ package effects
 
 import (
 	"context"
+	"slices"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
@@ -24,10 +25,21 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 		return err
 	}
 
-	// marca a targetCard do targetPlayer como morta
-	err = targetPlayer.KillCard(*killCardPayload.TargetCardIndex)
-	if err != nil {
-		return err
+	protectedCards := targetPlayer.GetProtectedCardsIndexes()
+	if slices.Contains(protectedCards, *killCardPayload.TargetCardIndex) {
+		// se a carta já estiver protegida, retira a proteção ao invés de matar a carta
+		err = targetPlayer.UnprotectCard(*killCardPayload.TargetCardIndex)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	} else {
+		// marca a targetCard do targetPlayer como morta
+		err = targetPlayer.KillCard(*killCardPayload.TargetCardIndex)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

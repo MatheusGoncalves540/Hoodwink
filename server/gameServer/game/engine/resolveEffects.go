@@ -56,6 +56,9 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 
 	case structs.EffectClairvoyant:
 		cardEffects.ClairvoyantEffect(ctx, rdb, registryRules, roomData, effect)
+
+	case structs.EffectGuardian:
+		cardEffects.GuardianEffect(ctx, rdb, registryRules, roomData, effect)
 	}
 
 	roomData.SaveRoom(ctx, rdb)

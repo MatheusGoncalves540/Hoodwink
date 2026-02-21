@@ -20,7 +20,7 @@ func TrillionaireProtocol(ctx context.Context, rdb *redis.Client, registryRules 
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
 	// calcula as coins ganhas
-	earnedCoins, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type))
+	earnedCoins, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), 0)
 	if err != nil {
 		return err
 	}

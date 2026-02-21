@@ -83,6 +83,17 @@ func (p *Player) ProtectCard(index int) error {
 	return nil
 }
 
+// GetProtectedCardsIndexes retorna os índices das cartas protegidas do jogador
+func (p *Player) GetProtectedCardsIndexes() []int {
+	protectedIndexes := []int{}
+	for i := range p.Cards {
+		if p.Cards[i].Protected {
+			protectedIndexes = append(protectedIndexes, p.Cards[i].Index)
+		}
+	}
+	return protectedIndexes
+}
+
 // UnprotectCard remove a proteção da carta pelo Card.Index
 func (p *Player) UnprotectCard(index int) error {
 	card, err := p.GetCardByIndex(index)

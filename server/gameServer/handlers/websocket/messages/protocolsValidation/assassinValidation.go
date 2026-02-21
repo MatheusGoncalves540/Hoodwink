@@ -20,7 +20,7 @@ func ValidateAssassinProtocol(roomData *rooms.Room, registryRules *rules.Registr
 	}
 
 	// verifica se player tem moedas pra isso
-	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, registryRules, playerPlay.Type)
+	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, registryRules, playerPlay.Type, 0)
 	if err != nil {
 		utils.LogInvldPlyrReq(err, playerPlay.PlayerId)
 		return false
