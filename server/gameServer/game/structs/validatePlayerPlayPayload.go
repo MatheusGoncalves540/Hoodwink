@@ -119,6 +119,16 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 		}
 		return payload, nil
 
+	case PlayTricksterCard:
+		var payload TricksterPayload
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para trickster: %w", err)
+		}
+		if payload.TargetPlayer == "" {
+			return nil, fmt.Errorf("targetPlayer é obrigatório e não pode ser vazio")
+		}
+		return payload, nil
+
 	default:
 		return nil, fmt.Errorf("tipo de jogada inválido: %s", p.Type)
 	}

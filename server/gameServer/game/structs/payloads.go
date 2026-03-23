@@ -14,6 +14,20 @@ func NewKillCardPayload(cause string, targetPlayer *string, targetCardIndex *int
 	}
 }
 
+type StealCoinsPayload struct {
+	Cause        string  `json:"cause"`
+	LostCoins    int     `json:"lostCoins,omitempty"`
+	TargetPlayer *string `json:"targetPlayer,omitempty"`
+}
+
+func NewStealCoinsPayload(cause string, lostCoins int, targetPlayer *string) StealCoinsPayload {
+	return StealCoinsPayload{
+		Cause:        cause,
+		LostCoins:    lostCoins,
+		TargetPlayer: targetPlayer,
+	}
+}
+
 type EarnCoinsPayload struct {
 	Cause       string `json:"cause"`
 	EarnedCoins int    `json:"earnedCoins,omitempty"`
@@ -141,5 +155,17 @@ func NewGuardianPayload(targetPlayer string, targetCardIndex int, protectedFrom 
 		TargetPlayer:    targetPlayer,
 		TargetCardIndex: targetCardIndex,
 		ProtectedFrom:   protectedFrom,
+	}
+}
+
+type TricksterPayload struct {
+	TargetPlayer string `json:"targetPlayer"`
+	StealedCoins int    `json:"stealedCoins,omitempty"`
+}
+
+func NewTricksterPayload(targetPlayer string, stealedCoins int) TricksterPayload {
+	return TricksterPayload{
+		TargetPlayer: targetPlayer,
+		StealedCoins: stealedCoins,
 	}
 }

@@ -64,18 +64,18 @@ Cards:
     taxMinimum: 3
     affectedByTaxes: true
 
-  SELFISH:
-    fixedValue: 1
-    value: 6
-    taxMinimum: 3
-    taxMaximum: 9
-    affectedByTaxes: true
-
   INVESTOR:
     fixedValue: 1
     value: 3
     taxMinimum: 2
     taxMaximum: 5
+    affectedByTaxes: true
+
+  SELFISH:
+    fixedValue: 1
+    value: 6
+    taxMinimum: 3
+    taxMaximum: 9
     affectedByTaxes: true
 
 Timeouts:

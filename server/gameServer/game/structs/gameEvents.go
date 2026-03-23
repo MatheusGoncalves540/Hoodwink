@@ -33,6 +33,7 @@ const (
 	EventIncrementTaxes         GameEventType = "INCREMENT_TAXES"
 	EventDecrementTaxes         GameEventType = "DECREMENT_TAXES"
 	EventEarnCoins              GameEventType = "EARN_COINS"
+	EventStealCoins             GameEventType = "STEAL_COINS"
 	EventRevealedCard           GameEventType = "REVEALED_CARD"
 	EventCardPlayedAssassin     GameEventType = "CARD_PLAYED_ASSASSIN"
 	EventCardPlayedKamikaze     GameEventType = "CARD_PLAYED_KAMIKAZE"
@@ -41,4 +42,5 @@ const (
 	EventCardPlayedRebel        GameEventType = "CARD_PLAYED_REBEL"
 	EventCardPlayedClairvoyant  GameEventType = "CARD_PLAYED_CLAIRVOYANT"
 	EventCardPlayedGuardian     GameEventType = "CARD_PLAYED_GUARDIAN"
+	EventCardPlayedTrickster    GameEventType = "CARD_PLAYED_TRICKSTER"
 )

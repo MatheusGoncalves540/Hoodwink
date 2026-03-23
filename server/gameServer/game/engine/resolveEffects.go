@@ -33,6 +33,9 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 	case structs.EffectEarnCoins:
 		effects.EarnCoins(ctx, rdb, registryRules, roomData, effect)
 
+	case structs.EffectStealCoins:
+		effects.StealCoins(ctx, rdb, registryRules, roomData, effect)
+
 	case structs.EffectContest:
 		effects.ContestEffect(ctx, rdb, registryRules, roomData, effect)
 
@@ -59,6 +62,9 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 
 	case structs.EffectGuardian:
 		cardEffects.GuardianEffect(ctx, rdb, registryRules, roomData, effect)
+
+	case structs.EffectTrickster:
+		cardEffects.TricksterEffect(ctx, rdb, registryRules, roomData, effect)
 	}
 
 	roomData.SaveRoom(ctx, rdb)

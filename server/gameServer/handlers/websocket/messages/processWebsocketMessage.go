@@ -158,6 +158,22 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			utils.LogError(err)
 			return
 		}
+
+	case structs.PlayTricksterCard:
+		tricksterPayload, ok := playerPlay.Payload.(structs.TricksterPayload)
+		if !ok {
+			utils.LogInvldPlyrReq("payload does not match TricksterPayload structure", sourcePlayer.Id)
+			return
+		}
+
+		if !protocolsValidation.ValidateTricksterProtocol(roomData, registryRules, playerPlay, &tricksterPayload) {
+			return
+		}
+		err := protocols.TricksterProtocol(ctx, rdb, registryRules, roomData, playerPlay, &tricksterPayload)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
 	}
 
 	// Salva e publica atualizações da sala

@@ -463,7 +463,7 @@ func (r *Room) HasPendingLogicEffect() bool {
 	return len(r.PendingEffects) > 0
 }
 
-// Verifica se jogador tem moedas suficientes para jogar a carta
+// Verifica se jogador tem moedas suficientes para interagir com a carta
 func (r *Room) VerifyPlayerHasEnoughCoins(player *players.Player, registryRules *rules.Registry, card structs.TypePlayerPlays, discount int) error {
 	cardPrice, err := r.GetCardValue(registryRules, card, discount)
 	if err != nil {
@@ -471,7 +471,7 @@ func (r *Room) VerifyPlayerHasEnoughCoins(player *players.Player, registryRules 
 	}
 
 	if player.Coins < cardPrice {
-		return fmt.Errorf("jogador %s não tem moedas suficientes para jogar a carta %s (tem %d, precisa de %d)", player.Id, card, player.Coins, cardPrice)
+		return fmt.Errorf("jogador %s não tem moedas suficientes para interagir com a carta %s (tem %d, precisa de %d)", player.Id, card, player.Coins, cardPrice)
 	}
 
 	return nil
