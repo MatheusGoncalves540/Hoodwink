@@ -26,7 +26,7 @@ type Room struct {
 	Tax                       int                                                   `json:"tax"`
 	DoubledCardValues         map[structs.TypePlayerPlays]structs.DoubledCardValues `json:"doubledCardValues"`
 	Players                   map[string]*players.Player                            `json:"players"`
-	Deck                      []string                                              `json:"deck"`
+	Deck                      []structs.CardName                                    `json:"deck"`
 	CurrentPlayer             string                                                `json:"currentPlayer"`
 	GameEvent                 *structs.GameEvent                                    `json:"gameEvent"`
 	PendingEffects            []structs.EffectDTO                                   `json:"pendingEffects"`
@@ -42,7 +42,7 @@ type PublicRoomForUpdates struct {
 	Tax               int                                                   `json:"tax"`
 	DoubledCardValues map[structs.TypePlayerPlays]structs.DoubledCardValues `json:"doubledCardValues"`
 	Players           map[string]players.PublicPlayerForUpdates             `json:"players"`
-	Deck              []string                                              `json:"deck"`
+	Deck              []structs.CardName                                    `json:"deck"`
 	CurrentPlayer     string                                                `json:"currentPlayer"`
 	GameEvent         *structs.GameEvent                                    `json:"gameEvent"`
 	PendingEffects    []structs.EffectDTO                                   `json:"pendingEffects"`
@@ -582,4 +582,26 @@ func (r *Room) Clone() *Room {
 	b, _ := json.Marshal(r)
 	_ = json.Unmarshal(b, &clone)
 	return &clone
+}
+
+// registra o timeout no redis
+func (r *Room) RegistryTimeout(rdb *redis.Client, ctx context.Context, expiresAt time.Time) {
+	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
+		Score:  float64(expiresAt.UnixMilli()),
+		Member: r.ID,
+	})
+}
+
+// ChangeCard troca a carta do index por uma nova carta (marca a carta como viva)
+func (r *Room) ChangeCard(player *players.Player, index int) error {
+	card, err := player.GetCardByIndex(index)
+	if err != nil {
+		return err
+	}
+
+	card.Name = r.Deck[0]
+	r.Deck = r.Deck[1:]
+
+	card.Dead = false
+	return nil
 }

@@ -39,9 +39,6 @@ func ContestProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 		return fmt.Errorf("falha ao registrar efeito de contestação: %w", err)
 	}
 
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
+	roomData.RegistryTimeout(rdb, ctx, expiresAt)
 	return nil
 }

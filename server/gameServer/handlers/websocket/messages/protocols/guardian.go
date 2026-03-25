@@ -60,10 +60,7 @@ func GuardianProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	}
 
 	// registra o timeout no redis
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
+	roomData.RegistryTimeout(rdb, ctx, expiresAt)
 
 	// cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
 	// if err != nil {

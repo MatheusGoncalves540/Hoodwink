@@ -135,10 +135,7 @@ func createGameEventFromPresentationEvent(ctx context.Context, rdb *redis.Client
 		return
 	}
 
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
+	roomData.RegistryTimeout(rdb, ctx, expiresAt)
 }
 
 func scheduleImmediateProcessing(ctx context.Context, rdb *redis.Client, roomData *rooms.Room) {
@@ -167,10 +164,7 @@ func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.
 		return err
 	}
 
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
+	roomData.RegistryTimeout(rdb, ctx, expiresAt)
 	return nil
 }
 

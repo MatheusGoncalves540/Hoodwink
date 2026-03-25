@@ -40,9 +40,6 @@ func ClairvoyantProtocol(ctx context.Context, rdb *redis.Client, registryRules *
 		return fmt.Errorf("falha ao registrar efeito clairvoyant: %w", err)
 	}
 
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
+	roomData.RegistryTimeout(rdb, ctx, expiresAt)
 	return nil
 }

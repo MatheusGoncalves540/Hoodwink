@@ -59,7 +59,10 @@ func (t *Timeouts) Get(field string) (int, error) {
 
 // Generals representa regras gerais do jogo configuradas no arquivo YAML
 type Generals struct {
-	InitialCoins *int `yaml:"initialCoins"`
-	MaxPlayers   *int `yaml:"maxPlayers"`
-	MaxCoins     *int `yaml:"maxCoins"`
+	InitialCoins    *int `yaml:"initialCoins"`
+	MaxPlayers      *int `yaml:"maxPlayers"`
+	MaxCoins        *int `yaml:"maxCoins"`
+	MaxTax          *int `yaml:"maxTax"`
+	MinTax          *int `yaml:"minTax"`
+	CopysOfEachCard *int `yaml:"copysOfEachCard"`
 }

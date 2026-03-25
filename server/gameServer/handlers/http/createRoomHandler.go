@@ -21,7 +21,7 @@ func (h *HTTPHandler) CreateCustomRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newRoomData, err := h.RoomService.CreateNewRoom(r, reqBody, true)
+	newRoomData, err := h.RoomService.CreateNewRoom(r, h.RulesRegistry, reqBody, true)
 	if err != nil {
 		utils.SendError(w, "Erro ao criar a sala", http.StatusInternalServerError)
 		return

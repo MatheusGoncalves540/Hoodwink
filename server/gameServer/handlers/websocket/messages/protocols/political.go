@@ -49,9 +49,6 @@ func PoliticalProtocol(ctx context.Context, rdb *redis.Client, registryRules *ru
 	}
 
 	// registra o timeout no redis
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
+	roomData.RegistryTimeout(rdb, ctx, expiresAt)
 	return nil
 }

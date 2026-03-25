@@ -73,6 +73,17 @@ func (p *Player) KillCard(index int) error {
 	return nil
 }
 
+// ReviveCard marca a carta como viva pelo Card.Index
+func (p *Player) ReviveCard(index int) error {
+	card, err := p.GetCardByIndex(index)
+	if err != nil {
+		return err
+	}
+
+	card.Dead = false
+	return nil
+}
+
 // ProtectCard marca a carta como protegida pelo Card.Index
 func (p *Player) ProtectCard(index int) error {
 	card, err := p.GetCardByIndex(index)

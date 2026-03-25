@@ -49,6 +49,8 @@ const (
 	EffectEarnCoins      EffectCause = "EARN_COINS"
 	EffectStealCoins     EffectCause = "STEAL_COINS"
 	EffectCardKilled     EffectCause = "CARD_KILLED"
+	EffectRevivedCard    EffectCause = "CARD_REVIVED"
+	EffectChangedCard    EffectCause = "CARD_CHANGED"
 
 	EffectAssassin     EffectCause = "ASSASSIN"
 	EffectKamikaze     EffectCause = "KAMIKAZE"
@@ -58,4 +60,5 @@ const (
 	EffectClairvoyant  EffectCause = "CLAIRVOYANT"
 	EffectGuardian     EffectCause = "GUARDIAN"
 	EffectTrickster    EffectCause = "TRICKSTER"
+	EffectGravedigger  EffectCause = "GRAVEDIGGER"
 )

@@ -31,7 +31,7 @@ func NewRoomService(redisClient *redis.Client) *RoomService {
 	}
 }
 
-func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures.CreateRoomRequest, customMatch bool) (*rooms.Room, error) {
+func (s *RoomService) CreateNewRoom(r *http.Request, registryRules *rules.Registry, roomData endpointStructures.CreateRoomRequest, customMatch bool) (*rooms.Room, error) {
 	RoomId := utils.GenerateNewId()
 	// TODO: desmockar tudo isso
 	room := &rooms.Room{
@@ -46,7 +46,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		Tax:                       0,
 		DoubledCardValues:         make(map[structs.TypePlayerPlays]structs.DoubledCardValues),
 		Players:                   make(map[string]*players.Player),
-		Deck:                      []string{},
+		Deck:                      make([]structs.CardName, 0),
 		CurrentPlayer:             "",
 		GameEvent:                 structs.NewGameEvent("", "", time.Time{}, nil),
 		PendingEffects:            []structs.EffectDTO{},
@@ -56,8 +56,14 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		Created:                   time.Now(),
 	}
 
-	// para cada carta, verifica se a carta tem valor que dobra
+	// obtém as regras gerais do jogo
+	generalRules, err := room.GetGeneralRules(registryRules)
+	if err != nil {
+		utils.LogError(err)
+		return nil, err
+	}
 
+	// para cada carta, verifica se a carta tem valor que dobra
 	room.DoubledCardValues = map[structs.TypePlayerPlays]structs.DoubledCardValues{
 		structs.PlayPoliticalCard: {
 			TimesValueDoubled:   0,
@@ -69,8 +75,16 @@ func (s *RoomService) CreateNewRoom(r *http.Request, roomData endpointStructures
 		},
 	}
 
+	// preenche o deck com as cartas, repetindo de acordo com o número de cópias definido nas regras
+	for copy := 0; copy < *generalRules.CopysOfEachCard; copy++ {
+		room.Deck = append(room.Deck, structs.AllCards...)
+	}
+
+	// embaralha o deck
+	utils.ShuffleSlice(room.Deck)
+
 	// Salva a sala com TTL inicial de 5 segundos
-	err := room.SaveRoomWithTTL(r.Context(), s.redisClient, time.Duration(s.roomTTL)*time.Second)
+	err = room.SaveRoomWithTTL(r.Context(), s.redisClient, time.Duration(s.roomTTL)*time.Second)
 	if err != nil {
 		return nil, err
 	}

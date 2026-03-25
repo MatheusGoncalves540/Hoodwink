@@ -67,3 +67,10 @@ func DecodeStrictJSON(data []byte, target any) error {
 
 	return nil
 }
+
+// ShuffleSlice embaralha um slice genérico
+func ShuffleSlice[T any](slice []T) {
+	rand.Shuffle(len(slice), func(i, j int) {
+		slice[i], slice[j] = slice[j], slice[i]
+	})
+}

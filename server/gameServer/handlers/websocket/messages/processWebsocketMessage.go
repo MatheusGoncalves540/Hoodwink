@@ -174,6 +174,22 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			utils.LogError(err)
 			return
 		}
+
+	case structs.PlayGravediggerCard:
+		gravediggerPayload, ok := playerPlay.Payload.(structs.GravediggerPayload)
+		if !ok {
+			utils.LogInvldPlyrReq("payload does not match GravediggerPayload structure", sourcePlayer.Id)
+			return
+		}
+
+		if !protocolsValidation.ValidateGravediggerProtocol(roomData, registryRules, playerPlay) {
+			return
+		}
+		err := protocols.GravediggerProtocol(ctx, rdb, registryRules, roomData, playerPlay, &gravediggerPayload)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
 	}
 
 	// Salva e publica atualizações da sala

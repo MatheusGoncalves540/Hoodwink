@@ -11,8 +11,8 @@ func SetupContext() *RoutesContext {
 	redisClient := redisFuncs.ConnectRedis()
 
 	services := services.SetupServices(redisClient)
-	handler := http.NewHandler(services)
 	rulesRegistry := rules.SetupRulesRegistry("game/rules/modes")
+	handler := http.NewHandler(services, rulesRegistry)
 	routesContext := &RoutesContext{
 		Rdb:           redisClient,
 		Services:      services,

@@ -39,9 +39,6 @@ func AssassinProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 		return fmt.Errorf("falha ao registrar efeito assassin: %w", err)
 	}
 
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(expiresAt.UnixMilli()),
-		Member: roomData.ID,
-	})
+	roomData.RegistryTimeout(rdb, ctx, expiresAt)
 	return nil
 }

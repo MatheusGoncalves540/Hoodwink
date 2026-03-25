@@ -70,6 +70,34 @@ func NewContestPenaltyPayload(contestedPlayer, contestedCard string, hasCard boo
 	}
 }
 
+type ReviveCardPayload struct {
+	Cause           string  `json:"cause"`
+	TargetPlayer    *string `json:"targetPlayer"`
+	TargetCardIndex *int    `json:"targetCardIndex"`
+}
+
+func NewReviveCardPayload(cause string, targetPlayer *string, targetCardIndex *int) ReviveCardPayload {
+	return ReviveCardPayload{
+		Cause:           cause,
+		TargetPlayer:    targetPlayer,
+		TargetCardIndex: targetCardIndex,
+	}
+}
+
+type ChangeCardPayload struct {
+	Cause           string  `json:"cause"`
+	TargetPlayer    *string `json:"targetPlayer"`
+	TargetCardIndex *int    `json:"targetCardIndex"`
+}
+
+func NewChangeCardPayload(cause string, targetPlayer *string, targetCardIndex *int) ChangeCardPayload {
+	return ChangeCardPayload{
+		Cause:           cause,
+		TargetPlayer:    targetPlayer,
+		TargetCardIndex: targetCardIndex,
+	}
+}
+
 type AssassinPayload struct {
 	TargetPlayer    *string `json:"targetPlayer"`
 	TargetCardIndex *int    `json:"targetCardIndex"`
@@ -167,5 +195,17 @@ func NewTricksterPayload(targetPlayer string, stealedCoins int) TricksterPayload
 	return TricksterPayload{
 		TargetPlayer: targetPlayer,
 		StealedCoins: stealedCoins,
+	}
+}
+
+type GravediggerPayload struct {
+	TargetPlayer    *string `json:"targetPlayer"`
+	TargetCardIndex *int    `json:"targetCardIndex"`
+}
+
+func NewGravediggerPayload(targetPlayer *string, targetCardIndex *int) GravediggerPayload {
+	return GravediggerPayload{
+		TargetPlayer:    targetPlayer,
+		TargetCardIndex: targetCardIndex,
 	}
 }
