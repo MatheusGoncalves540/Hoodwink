@@ -4,6 +4,8 @@ package middlewares
 import (
 	"net/http"
 	"os"
+
+	"github.com/MatheusGoncalves540/Hoodwink/utils"
 )
 
 func CORSMiddleware(next http.Handler) http.Handler {
@@ -22,7 +24,7 @@ func CORSMiddleware(next http.Handler) http.Handler {
 
 		// Responde a preflight diretamente
 		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
+			utils.SendError(w, "No Content", http.StatusNoContent)
 			return
 		}
 

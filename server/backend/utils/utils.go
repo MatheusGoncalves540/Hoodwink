@@ -20,10 +20,7 @@ func ValidateInfos(w http.ResponseWriter, toValidate any) bool {
 				fmt.Sprintf("Campo '%s' inválido: %s", err.Field(), err.Tag()))
 		}
 
-		SendJSON(w, http.StatusBadRequest, APIResponse{
-			Error:   errorMessages,
-			Message: "Erro de validação nos dados enviados",
-		})
+		SendError(w, "Erro de validação nos dados enviados:\n"+fmt.Sprintf("%v", errorMessages), http.StatusBadRequest)
 		return false
 	}
 

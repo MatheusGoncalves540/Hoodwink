@@ -28,5 +28,5 @@ func (h *Handler) GetUserInfoByIDHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	utils.SendJSON(w, http.StatusOK, user)
+	utils.SendSuccess(w, user, "")
 }

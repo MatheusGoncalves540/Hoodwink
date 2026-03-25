@@ -60,10 +60,7 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 				Provider: provider,
 				Temp:     true,
 			})
-			utils.SendJSON(w, http.StatusOK, utils.APIResponse{
-				Message: "need_additional_data",
-				Data:    map[string]string{"token": tempToken},
-			})
+			utils.SendSuccess(w, map[string]string{"token": tempToken}, "need_additional_data")
 			return
 		}
 		utils.SendError(w, "Erro ao salvar usuário", http.StatusInternalServerError)
@@ -81,10 +78,7 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 		utils.SendError(w, "Erro ao gerar token", http.StatusInternalServerError)
 		return
 	}
-	utils.SendJSON(w, http.StatusOK, utils.APIResponse{
-		Message: "logged_in",
-		Data:    map[string]string{"token": finalToken},
-	})
+	utils.SendSuccess(w, map[string]string{"token": finalToken}, "logged_in")
 }
 
 // Função para validação do id_token do Google
