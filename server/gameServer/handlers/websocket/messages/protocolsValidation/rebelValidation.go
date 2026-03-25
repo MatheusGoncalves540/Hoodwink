@@ -14,6 +14,12 @@ func ValidateRebelProtocol(roomData *rooms.Room, registryRules *rules.Registry, 
 		return false
 	}
 
+	generalRules, err := roomData.GetGeneralRules(registryRules)
+	if err != nil {
+		utils.LogError(err)
+		return false
+	}
+
 	// Rebel só pode ser usado durante o evento de espera de primeira ação
 	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
 		utils.LogInvldPlyrReq("Rebel só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
@@ -24,6 +30,12 @@ func ValidateRebelProtocol(roomData *rooms.Room, registryRules *rules.Registry, 
 	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, registryRules, playerPlay.Type, 0)
 	if err != nil {
 		utils.LogInvldPlyrReq(err, playerPlay.PlayerId)
+		return false
+	}
+
+	// verifica se a taxa mínima já foi atingida
+	if roomData.Tax <= *generalRules.MinTax {
+		utils.LogInvldPlyrReq("Taxa mínima atingida", playerPlay.PlayerId)
 		return false
 	}
 

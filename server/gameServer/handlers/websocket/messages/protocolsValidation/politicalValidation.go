@@ -14,6 +14,12 @@ func ValidatePoliticalProtocol(roomData *rooms.Room, registryRules *rules.Regist
 		return false
 	}
 
+	generalRules, err := roomData.GetGeneralRules(registryRules)
+	if err != nil {
+		utils.LogError(err)
+		return false
+	}
+
 	// Political só pode ser usado durante o evento de espera de primeira ação
 	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
 		utils.LogInvldPlyrReq("Political só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
@@ -24,6 +30,12 @@ func ValidatePoliticalProtocol(roomData *rooms.Room, registryRules *rules.Regist
 	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, registryRules, playerPlay.Type, 0)
 	if err != nil {
 		utils.LogInvldPlyrReq(err, playerPlay.PlayerId)
+		return false
+	}
+
+	// verifica se a taxa máxima já foi atingida
+	if roomData.Tax >= *generalRules.MaxTax {
+		utils.LogInvldPlyrReq("Taxa máxima atingida", playerPlay.PlayerId)
 		return false
 	}
 
