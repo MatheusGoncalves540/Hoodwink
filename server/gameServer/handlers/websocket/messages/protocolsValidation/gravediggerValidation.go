@@ -27,5 +27,18 @@ func ValidateGravediggerProtocol(roomData *rooms.Room, registryRules *rules.Regi
 		return false
 	}
 
+	// verifica se o jogador tem alguma carta morta na mão
+	hasDeadCard := false
+	for _, card := range sourcePlayer.Cards {
+		if card.Dead {
+			hasDeadCard = true
+			break
+		}
+	}
+	if !hasDeadCard {
+		utils.LogInvldPlyrReq("Gravedigger só pode ser usado se o jogador tiver uma carta morta na mão", playerPlay.PlayerId)
+		return false
+	}
+
 	return true
 }

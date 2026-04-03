@@ -7,6 +7,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
+// BuildEffect é responsável por construir uma instância de Effect a partir de um EffectDTO, validando o payload e garantindo que os dados estejam corretos antes de criar o efeito. Ele é usado para converter os dados brutos do Redis em uma estrutura segura e utilizável dentro do motor de jogo.
 func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 	// Converte dados crús do Redis em uma instância segura de Effect.
 	if dto.Cause == "" {

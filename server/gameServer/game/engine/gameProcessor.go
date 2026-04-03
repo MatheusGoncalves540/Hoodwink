@@ -138,6 +138,7 @@ func createGameEventFromPresentationEvent(ctx context.Context, rdb *redis.Client
 	roomData.RegistryTimeout(rdb, ctx, expiresAt)
 }
 
+// scheduleImmediateProcessing verifica se a sala tem um evento de apresentação ou efeito lógico pendente e registra um timeout imediato para processamento.
 func scheduleImmediateProcessing(ctx context.Context, rdb *redis.Client, roomData *rooms.Room) {
 	if roomData.GameEvent != nil {
 		return

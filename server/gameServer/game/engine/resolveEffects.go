@@ -13,6 +13,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// resolveNextEffect é responsável por resolver o próximo efeito lógico pendente na sala. Ele é chamado após a resolução de um evento de apresentação ou efeito lógico, garantindo que os efeitos sejam processados em sequência.
 func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room) {
 	effectDto, ok := roomData.PopLastPendingEffect()
 	if !ok {
