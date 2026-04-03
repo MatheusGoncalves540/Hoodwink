@@ -32,7 +32,7 @@ func ChangeCardAnnouncer(ctx context.Context, rdb *redis.Client, registryRules *
 		return err
 	}
 
-	// registra o efeito de ganho de moedas
+	// registra o efeito de troca de carta
 	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectChangedCard, effect.SourcePlayer, newChangePayload)); err != nil {
 		return err
 	}
