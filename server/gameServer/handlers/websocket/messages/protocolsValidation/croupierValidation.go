@@ -14,9 +14,9 @@ func ValidateCroupierProtocol(roomData *rooms.Room, registryRules *rules.Registr
 		return false
 	}
 
-	// Crupier só pode ser usado durante o evento de espera de primeira ação
+	// Croupier só pode ser usado durante o evento de espera de primeira ação
 	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
-		utils.LogInvldPlyrReq("Crupier só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
+		utils.LogInvldPlyrReq("Croupier só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
 		return false
 	}
 

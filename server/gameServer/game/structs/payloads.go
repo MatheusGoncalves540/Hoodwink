@@ -218,7 +218,7 @@ type CroupierPayload struct {
 	UseOnTwoCards   *bool   `json:"useOnTwoCards"`
 }
 
-func NewCrupierPayload(targetPlayer *string, targetCardIndex *int, useOnTwoCards *bool) CroupierPayload {
+func NewCroupierPayload(targetPlayer *string, targetCardIndex *int, useOnTwoCards *bool) CroupierPayload {
 	return CroupierPayload{
 		TargetPlayer:    targetPlayer,
 		TargetCardIndex: targetCardIndex,

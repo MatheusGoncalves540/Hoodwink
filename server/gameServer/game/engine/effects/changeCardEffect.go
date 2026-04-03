@@ -32,7 +32,7 @@ func ChangeCardEffect(ctx context.Context, rdb *redis.Client, registryRules *rul
 
 	if changeCardPayload.UseOnTwoCards != nil && *changeCardPayload.UseOnTwoCards {
 		// troca a segunda carta do targetPlayer
-		// TODO talvez seja melhor  fazer algo mais genérico para o caso de trocar mais de 2 cartas, mas por enquanto só tem o Crupier que troca 2 cartas
+		// TODO talvez seja melhor  fazer algo mais genérico para o caso de trocar mais de 2 cartas, mas por enquanto só tem o Croupier que troca 2 cartas
 		otherCardIndex := 1 - *changeCardPayload.TargetCardIndex
 
 		err = roomData.ChangeCard(targetPlayer, otherCardIndex)

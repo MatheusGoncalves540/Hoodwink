@@ -11,14 +11,14 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func CrupierEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
-	crupierPayload, ok := effect.Payload.(structs.CroupierPayload)
+func CroupierEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+	croupierPayload, ok := effect.Payload.(structs.CroupierPayload)
 	if !ok {
-		utils.LogError("payload inválido para CrupierPayload")
+		utils.LogError("payload inválido para CroupierPayload")
 		return
 	}
 
-	changeCardPayload := structs.NewChangeCardPayload(string(effect.Cause), crupierPayload.TargetPlayer, crupierPayload.TargetCardIndex, crupierPayload.UseOnTwoCards)
+	changeCardPayload := structs.NewChangeCardPayload(string(effect.Cause), croupierPayload.TargetPlayer, croupierPayload.TargetCardIndex, croupierPayload.UseOnTwoCards)
 
 	changeCardEffect := structs.Effect{
 		Cause:        structs.EffectChangedCard,
