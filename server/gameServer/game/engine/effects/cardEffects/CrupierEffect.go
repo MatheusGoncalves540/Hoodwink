@@ -12,7 +12,7 @@ import (
 )
 
 func CrupierEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
-	crupierPayload, ok := effect.Payload.(structs.CrupierPayload)
+	crupierPayload, ok := effect.Payload.(structs.CroupierPayload)
 	if !ok {
 		utils.LogError("payload inválido para CrupierPayload")
 		return

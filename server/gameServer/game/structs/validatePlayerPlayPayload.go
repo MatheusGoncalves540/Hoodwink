@@ -145,6 +145,25 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 		}
 		return payload, nil
 
+	case PlayCroupierCard:
+		var payload CroupierPayload
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para croupier: %w", err)
+		}
+		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
+			return nil, fmt.Errorf("targetPlayer é obrigatório e não pode ser vazio")
+		}
+		if payload.TargetCardIndex == nil {
+			return nil, fmt.Errorf("targetCardIndex é obrigatório")
+		}
+		if *payload.TargetCardIndex < 0 {
+			return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
+		}
+		if payload.UseOnTwoCards == nil {
+			return nil, fmt.Errorf("useOnTwoCards é obrigatório")
+		}
+		return payload, nil
+
 	default:
 		return nil, fmt.Errorf("tipo de jogada inválido: %s", p.Type)
 	}

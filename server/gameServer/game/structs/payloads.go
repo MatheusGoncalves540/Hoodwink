@@ -212,14 +212,14 @@ func NewGravediggerPayload(targetPlayer *string, targetCardIndex *int) Gravedigg
 	}
 }
 
-type CrupierPayload struct {
+type CroupierPayload struct {
 	TargetPlayer    *string `json:"targetPlayer"`
 	TargetCardIndex *int    `json:"targetCardIndex,omitempty"`
 	UseOnTwoCards   *bool   `json:"useOnTwoCards"`
 }
 
-func NewCrupierPayload(targetPlayer *string, targetCardIndex *int, useOnTwoCards *bool) CrupierPayload {
-	return CrupierPayload{
+func NewCrupierPayload(targetPlayer *string, targetCardIndex *int, useOnTwoCards *bool) CroupierPayload {
+	return CroupierPayload{
 		TargetPlayer:    targetPlayer,
 		TargetCardIndex: targetCardIndex,
 		UseOnTwoCards:   useOnTwoCards,

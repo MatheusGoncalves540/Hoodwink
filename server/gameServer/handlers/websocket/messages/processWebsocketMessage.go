@@ -190,6 +190,22 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			utils.LogError(err)
 			return
 		}
+
+	case structs.PlayCroupierCard:
+		croupierPayload, ok := playerPlay.Payload.(structs.CroupierPayload)
+		if !ok {
+			utils.LogInvldPlyrReq("payload does not match CroupierPayload structure", sourcePlayer.Id)
+			return
+		}
+
+		if !protocolsValidation.ValidateCroupierProtocol(roomData, registryRules, playerPlay) {
+			return
+		}
+		err := protocols.CroupierProtocol(ctx, rdb, registryRules, roomData, playerPlay, &croupierPayload)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
 	}
 
 	// Salva e publica atualizações da sala

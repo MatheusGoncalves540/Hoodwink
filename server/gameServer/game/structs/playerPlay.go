@@ -22,6 +22,7 @@ const (
 	PlayGuardianCard     TypePlayerPlays = "GUARDIAN"
 	PlayTricksterCard    TypePlayerPlays = "TRICKSTER"
 	PlayGravediggerCard  TypePlayerPlays = "GRAVEDIGGER"
+	PlayCroupierCard     TypePlayerPlays = "CROUPIER"
 )
 
 //--//--//--//--//--//--//--//--//--//

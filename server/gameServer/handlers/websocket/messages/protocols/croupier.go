@@ -11,7 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func CrupierProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, crupierPayload *structs.CrupierPayload) error {
+func CroupierProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, crupierPayload *structs.CroupierPayload) error {
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		return err
@@ -39,7 +39,7 @@ func CrupierProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 	roomData.GameEvent = structs.NewGameEvent(playerPlay.PlayerId, structs.EventCardPlayedCrupier, expiresAt, crupierPayload)
 
 	// registra o efeito pendente
-	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectCrupier, playerPlay.PlayerId, crupierPayload)); err != nil {
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectCroupier, playerPlay.PlayerId, crupierPayload)); err != nil {
 		return fmt.Errorf("falha ao registrar efeito crupier: %w", err)
 	}
 
