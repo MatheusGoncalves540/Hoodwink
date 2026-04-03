@@ -46,5 +46,5 @@ const (
 	EventCardPlayedGuardian     GameEventType = "CARD_PLAYED_GUARDIAN"
 	EventCardPlayedTrickster    GameEventType = "CARD_PLAYED_TRICKSTER"
 	EventCardPlayedGravedigger  GameEventType = "CARD_PLAYED_GRAVEDIGGER"
-	EventCardPlayedCrupier      GameEventType = "CARD_PLAYED_CRUPIER"
+	EventCardPlayedCroupier     GameEventType = "CARD_PLAYED_CROUPIER"
 )
