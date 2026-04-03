@@ -54,13 +54,13 @@ Cards:
 
   GRAVEDIGGER:
     value: 6
-    taxMaximum: 18
+    taxMaximum: 16
     taxMinimum: 3
     affectedByTaxes: true
 
   CROUPIER:
     value: 6
-    taxMaximum: 18
+    taxMaximum: 16
     taxMinimum: 3
     affectedByTaxes: true
 

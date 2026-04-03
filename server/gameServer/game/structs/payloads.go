@@ -88,13 +88,15 @@ type ChangeCardPayload struct {
 	Cause           string  `json:"cause"`
 	TargetPlayer    *string `json:"targetPlayer"`
 	TargetCardIndex *int    `json:"targetCardIndex"`
+	UseOnTwoCards   *bool   `json:"useOnTwoCards,omitempty"`
 }
 
-func NewChangeCardPayload(cause string, targetPlayer *string, targetCardIndex *int) ChangeCardPayload {
+func NewChangeCardPayload(cause string, targetPlayer *string, targetCardIndex *int, useOnTwoCards *bool) ChangeCardPayload {
 	return ChangeCardPayload{
 		Cause:           cause,
 		TargetPlayer:    targetPlayer,
 		TargetCardIndex: targetCardIndex,
+		UseOnTwoCards:   useOnTwoCards,
 	}
 }
 
@@ -207,5 +209,19 @@ func NewGravediggerPayload(targetPlayer *string, targetCardIndex *int) Gravedigg
 	return GravediggerPayload{
 		TargetPlayer:    targetPlayer,
 		TargetCardIndex: targetCardIndex,
+	}
+}
+
+type CrupierPayload struct {
+	TargetPlayer    *string `json:"targetPlayer"`
+	TargetCardIndex *int    `json:"targetCardIndex,omitempty"`
+	UseOnTwoCards   *bool   `json:"useOnTwoCards"`
+}
+
+func NewCrupierPayload(targetPlayer *string, targetCardIndex *int, useOnTwoCards *bool) CrupierPayload {
+	return CrupierPayload{
+		TargetPlayer:    targetPlayer,
+		TargetCardIndex: targetCardIndex,
+		UseOnTwoCards:   useOnTwoCards,
 	}
 }

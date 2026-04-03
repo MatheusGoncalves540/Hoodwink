@@ -18,7 +18,7 @@ func GravediggerEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 		return
 	}
 
-	changeCardPayload := structs.NewChangeCardPayload(string(effect.Cause), gravediggerPayload.TargetPlayer, gravediggerPayload.TargetCardIndex)
+	changeCardPayload := structs.NewChangeCardPayload(string(effect.Cause), gravediggerPayload.TargetPlayer, gravediggerPayload.TargetCardIndex, nil)
 
 	changeCardEffect := structs.Effect{
 		Cause:        structs.EffectChangedCard,

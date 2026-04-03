@@ -25,7 +25,7 @@ func ChangeCardAnnouncer(ctx context.Context, rdb *redis.Client, registryRules *
 	}
 
 	// cria o payload
-	newChangePayload := structs.NewChangeCardPayload(string(effect.Cause), &targetPlayer.Id, changeCardPayload.TargetCardIndex)
+	newChangePayload := structs.NewChangeCardPayload(string(effect.Cause), &targetPlayer.Id, changeCardPayload.TargetCardIndex, changeCardPayload.UseOnTwoCards)
 
 	// registra o evento de apresentação
 	if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventChangedCard, newChangePayload)); err != nil {

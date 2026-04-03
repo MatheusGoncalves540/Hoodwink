@@ -61,4 +61,5 @@ const (
 	EffectGuardian     EffectCause = "GUARDIAN"
 	EffectTrickster    EffectCause = "TRICKSTER"
 	EffectGravedigger  EffectCause = "GRAVEDIGGER"
+	EffectCrupier      EffectCause = "CRUPIER"
 )
