@@ -112,6 +112,20 @@ func NewInvestmentPayload(cause string, gracePeriod *int) InvestmentPayload {
 	}
 }
 
+type RichnessDeniedPayload struct {
+	Cause         string  `json:"cause"`
+	WhatWasDenied string  `json:"whatWasDenied,omitempty"`
+	TargetPlayer  *string `json:"targetPlayer,omitempty"`
+}
+
+func NewRichnessDeniedPayload(cause string, whatWasDenied string, targetPlayer *string) RichnessDeniedPayload {
+	return RichnessDeniedPayload{
+		Cause:         cause,
+		WhatWasDenied: whatWasDenied,
+		TargetPlayer:  targetPlayer,
+	}
+}
+
 type AssassinPayload struct {
 	TargetPlayer    *string `json:"targetPlayer"`
 	TargetCardIndex *int    `json:"targetCardIndex"`
@@ -245,5 +259,17 @@ type InvestorPayload struct {
 func NewInvestorPayload(gracePeriod *int) InvestorPayload {
 	return InvestorPayload{
 		GracePeriod: gracePeriod,
+	}
+}
+
+type SelfishPayload struct {
+	WhatWasDenied *string `json:"whatWasDenied"`
+	TargetPlayer  *string `json:"targetPlayer"`
+}
+
+func NewSelfishPayload(whatWasDenied *string, targetPlayer *string) SelfishPayload {
+	return SelfishPayload{
+		WhatWasDenied: whatWasDenied,
+		TargetPlayer:  targetPlayer,
 	}
 }

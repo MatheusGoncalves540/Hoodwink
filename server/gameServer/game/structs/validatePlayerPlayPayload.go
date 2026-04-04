@@ -171,6 +171,13 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 		}
 		return payload, nil
 
+	case PlaySelfishCard:
+		var payload SelfishPayload
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para selfish: %w", err)
+		}
+		return payload, nil
+
 	default:
 		return nil, fmt.Errorf("tipo de jogada inválido: %s", p.Type)
 	}

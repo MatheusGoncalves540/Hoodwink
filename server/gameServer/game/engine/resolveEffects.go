@@ -32,10 +32,10 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 		effects.KillCard(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectEarnCoins:
-		effects.EarnCoins(ctx, rdb, registryRules, roomData, effect)
+		effects.EarnCoinsEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectStealCoins:
-		effects.StealCoins(ctx, rdb, registryRules, roomData, effect)
+		effects.StealCoinsEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectContest:
 		effects.ContestEffect(ctx, rdb, registryRules, roomData, effect)
@@ -51,6 +51,9 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 
 	case structs.EffectInvestment:
 		effects.InvestmentEffect(ctx, rdb, registryRules, roomData, effect)
+
+	case structs.EffectRichnessDenied:
+		effects.RichnessDeniedEffect(ctx, rdb, registryRules, roomData, effect)
 
 	case structs.EffectAssassin:
 		cardEffects.AssassinEffect(ctx, rdb, registryRules, roomData, effect)
@@ -81,6 +84,9 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 
 	case structs.EffectInvestor:
 		cardEffects.InvestorEffect(ctx, rdb, registryRules, roomData, effect)
+
+	case structs.EffectSelfish:
+		cardEffects.SelfishEffect(ctx, rdb, registryRules, roomData, effect)
 	}
 
 	roomData.SaveRoom(ctx, rdb)

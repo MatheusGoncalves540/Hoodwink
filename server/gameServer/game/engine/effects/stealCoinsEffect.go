@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func StealCoins(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func StealCoinsEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	stealCoinsPayload, ok := effect.Payload.(structs.StealCoinsPayload)
 	if !ok {
 		utils.LogError("payload inválido para StealCoinsPayload")

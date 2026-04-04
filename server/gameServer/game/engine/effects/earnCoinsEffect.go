@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func EarnCoins(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func EarnCoinsEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	earnCoinsPayload, ok := effect.Payload.(structs.EarnCoinsPayload)
 	if !ok {
 		utils.LogError("payload inválido para EffectEarnCoins")

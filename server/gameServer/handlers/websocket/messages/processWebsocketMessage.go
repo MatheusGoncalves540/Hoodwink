@@ -216,6 +216,16 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 			utils.LogError(err)
 			return
 		}
+
+	case structs.PlaySelfishCard:
+		if !protocolsValidation.ValidateSelfishProtocol(roomData, registryRules, playerPlay) {
+			return
+		}
+		err := protocols.SelfishProtocol(ctx, rdb, registryRules, roomData, playerPlay)
+		if err != nil {
+			utils.LogError(err)
+			return
+		}
 	}
 
 	// Salva e publica atualizações da sala

@@ -52,6 +52,7 @@ const (
 	EffectRevivedCard    EffectCause = "CARD_REVIVED"
 	EffectChangedCard    EffectCause = "CARD_CHANGED"
 	EffectInvestment     EffectCause = "INVESTMENT"
+	EffectRichnessDenied EffectCause = "RICHNESS_DENIED"
 
 	EffectAssassin     EffectCause = "ASSASSIN"
 	EffectKamikaze     EffectCause = "KAMIKAZE"
@@ -64,4 +65,5 @@ const (
 	EffectGravedigger  EffectCause = "GRAVEDIGGER"
 	EffectCroupier     EffectCause = "CROUPIER"
 	EffectInvestor     EffectCause = "INVESTOR"
+	EffectSelfish      EffectCause = "SELFISH"
 )
