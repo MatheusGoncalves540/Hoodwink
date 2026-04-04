@@ -100,6 +100,18 @@ func NewChangeCardPayload(cause string, targetPlayer *string, targetCardIndex *i
 	}
 }
 
+type InvestmentPayload struct {
+	Cause       string `json:"cause"`
+	GracePeriod *int   `json:"gracePeriod,omitempty"`
+}
+
+func NewInvestmentPayload(cause string, gracePeriod *int) InvestmentPayload {
+	return InvestmentPayload{
+		Cause:       cause,
+		GracePeriod: gracePeriod,
+	}
+}
+
 type AssassinPayload struct {
 	TargetPlayer    *string `json:"targetPlayer"`
 	TargetCardIndex *int    `json:"targetCardIndex"`
@@ -223,5 +235,15 @@ func NewCroupierPayload(targetPlayer *string, targetCardIndex *int, useOnTwoCard
 		TargetPlayer:    targetPlayer,
 		TargetCardIndex: targetCardIndex,
 		UseOnTwoCards:   useOnTwoCards,
+	}
+}
+
+type InvestorPayload struct {
+	GracePeriod *int `json:"gracePeriod"`
+}
+
+func NewInvestorPayload(gracePeriod *int) InvestorPayload {
+	return InvestorPayload{
+		GracePeriod: gracePeriod,
 	}
 }

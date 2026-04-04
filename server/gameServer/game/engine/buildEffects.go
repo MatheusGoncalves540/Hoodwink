@@ -100,6 +100,17 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 		effect.Payload = payload
 		return effect, nil
 
+	case structs.EffectInvestment:
+		if len(dto.Payload) == 0 {
+			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
+		}
+		var payload structs.InvestmentPayload
+		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
+		}
+		effect.Payload = payload
+		return effect, nil
+
 	case structs.EffectAssassin:
 		if len(dto.Payload) == 0 {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
@@ -204,6 +215,17 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.CroupierPayload
+		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
+		}
+		effect.Payload = payload
+		return effect, nil
+
+	case structs.EffectInvestor:
+		if len(dto.Payload) == 0 {
+			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
+		}
+		var payload structs.InvestorPayload
 		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}

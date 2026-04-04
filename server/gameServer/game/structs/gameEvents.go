@@ -37,6 +37,7 @@ const (
 	EventRevealedCard           GameEventType = "REVEALED_CARD"
 	EventRevivedCard            GameEventType = "REVIVED_CARD"
 	EventChangedCard            GameEventType = "CHANGED_CARD"
+	EventInvestment             GameEventType = "INVESTMENT"
 	EventCardPlayedAssassin     GameEventType = "CARD_PLAYED_ASSASSIN"
 	EventCardPlayedKamikaze     GameEventType = "CARD_PLAYED_KAMIKAZE"
 	EventCardPlayedTrillionaire GameEventType = "CARD_PLAYED_TRILLIONAIRE"
@@ -47,4 +48,5 @@ const (
 	EventCardPlayedTrickster    GameEventType = "CARD_PLAYED_TRICKSTER"
 	EventCardPlayedGravedigger  GameEventType = "CARD_PLAYED_GRAVEDIGGER"
 	EventCardPlayedCroupier     GameEventType = "CARD_PLAYED_CROUPIER"
+	EventCardPlayedInvestor     GameEventType = "CARD_PLAYED_INVESTOR"
 )

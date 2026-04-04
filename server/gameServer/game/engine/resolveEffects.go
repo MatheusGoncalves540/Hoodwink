@@ -49,6 +49,9 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 	case structs.EffectChangedCard:
 		effects.ChangeCardEffect(ctx, rdb, registryRules, roomData, effect)
 
+	case structs.EffectInvestment:
+		effects.InvestmentEffect(ctx, rdb, registryRules, roomData, effect)
+
 	case structs.EffectAssassin:
 		cardEffects.AssassinEffect(ctx, rdb, registryRules, roomData, effect)
 
@@ -75,6 +78,9 @@ func resolveNextEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 
 	case structs.EffectGravedigger:
 		cardEffects.GravediggerEffect(ctx, rdb, registryRules, roomData, effect)
+
+	case structs.EffectInvestor:
+		cardEffects.InvestorEffect(ctx, rdb, registryRules, roomData, effect)
 	}
 
 	roomData.SaveRoom(ctx, rdb)

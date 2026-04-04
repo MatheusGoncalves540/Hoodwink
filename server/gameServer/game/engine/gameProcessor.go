@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
@@ -90,7 +91,7 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, registryRules *
 
 	// Nada pendente → próximo turno
 	if roomData.GameEvent == nil && !roomData.HasPendingLogicEffect() && !roomData.HasPendingPresentationEvent() {
-		NextTurn(roomData, rdb, ctx)
+		NextTurn(roomData, rdb, ctx, registryRules)
 	}
 }
 
@@ -169,8 +170,10 @@ func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.
 	return nil
 }
 
-func NextTurn(roomData *rooms.Room, rdb *redis.Client, ctx context.Context) error {
+func NextTurn(roomData *rooms.Room, rdb *redis.Client, ctx context.Context, registryRules *rules.Registry) error {
 	roomData.Turn++
+
+	effects.PayInvestments(ctx, rdb, registryRules, roomData)
 
 	// limpa evento anterior
 	roomData.GameEvent = nil

@@ -164,6 +164,13 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 		}
 		return payload, nil
 
+	case PlayInvestorCard:
+		var payload InvestorPayload
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para investor: %w", err)
+		}
+		return payload, nil
+
 	default:
 		return nil, fmt.Errorf("tipo de jogada inválido: %s", p.Type)
 	}

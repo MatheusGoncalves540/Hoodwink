@@ -5,17 +5,21 @@ import (
 )
 
 type Player struct {
-	Id    string         `json:"id"`
-	Name  string         `json:"name"`
-	Cards []structs.Card `json:"cards"`
-	Coins int            `json:"coins"`
-	Alive bool           `json:"alive"`
+	Id                    string         `json:"id"`
+	Name                  string         `json:"name"`
+	Cards                 []structs.Card `json:"cards"`
+	Coins                 int            `json:"coins"`
+	Investments           []int          `json:"investments"`
+	PendingInvestmentCoin bool           `json:"pendingInvestmentCoin"`
+	Alive                 bool           `json:"alive"`
 }
 
 type PublicPlayerForUpdates struct {
-	Id    string                         `json:"id"`
-	Name  string                         `json:"name"`
-	Cards []structs.PublicCardForUpdates `json:"cards"`
-	Coins int                            `json:"coins"`
-	Alive bool                           `json:"alive"`
+	Id                    string                         `json:"id"`
+	Name                  string                         `json:"name"`
+	Cards                 []structs.PublicCardForUpdates `json:"cards"`
+	Coins                 int                            `json:"coins"`
+	Investments           []int                          `json:"investments"`
+	PendingInvestmentCoin bool                           `json:"pendingInvestmentCoin"`
+	Alive                 bool                           `json:"alive"`
 }

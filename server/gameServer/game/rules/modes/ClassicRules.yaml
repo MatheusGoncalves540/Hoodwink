@@ -65,10 +65,10 @@ Cards:
     affectedByTaxes: true
 
   INVESTOR:
-    fixedValue: 1
-    value: 3
+    fixedValue: 3
+    value: 4
     taxMinimum: 2
-    taxMaximum: 5
+    taxMaximum: 6
     affectedByTaxes: true
 
   SELFISH:
@@ -79,7 +79,7 @@ Cards:
     affectedByTaxes: true
 
 Timeouts:
-  DEFAULT: 
+  DEFAULT:
     displayMessage: 6
     displayImportantMessage: 8
     waitingAction: 10
