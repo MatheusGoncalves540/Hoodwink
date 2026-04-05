@@ -45,7 +45,7 @@ func payPlayerInvestments(ctx context.Context, rdb *redis.Client, registryRules 
 
 	investmentsEffect := structs.NewEffect(structs.EffectInvestor, soucePlayer.Id, earnCoinsPayload)
 
-	err := EarnCoinsAnnouncer(ctx, rdb, registryRules, roomData, investmentsEffect)
+	err := EarnCoinsAnnouncer(ctx, rdb, roomData, investmentsEffect)
 	if err != nil {
 		utils.LogError(err)
 		return

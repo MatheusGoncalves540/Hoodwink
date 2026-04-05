@@ -39,15 +39,16 @@ func SelfishProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 
 	// marca a remoção de coins
 	switch roomData.GameEvent.Type {
+	case structs.EventEarnCoins, structs.EventStealCoins:
+		cardPrice := *cardRules.FixedValue
+		sourcePlayer.RemoveCoins(cardPrice)
+
 	case structs.EventChangedCard:
 		cardPrice, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), 0)
 		if err != nil {
 			return err
 		}
 
-		sourcePlayer.RemoveCoins(cardPrice)
-	case structs.EventEarnCoins:
-		cardPrice := *cardRules.FixedValue
 		sourcePlayer.RemoveCoins(cardPrice)
 
 	case structs.EventInvestment:
@@ -58,6 +59,7 @@ func SelfishProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 		}
 
 		sourcePlayer.RemoveCoins(cardPrice)
+
 	}
 
 	selfishPayload := structs.NewSelfishPayload(whatWasDenied, targetPlayer)

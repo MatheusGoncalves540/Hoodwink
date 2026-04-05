@@ -89,6 +89,7 @@ Timeouts:
     waitingAction: 5
 
 General:
+  randomTaxesChanges: 5
   copysOfEachCard: 2
   initialCoins: 3
   maxPlayers: 6

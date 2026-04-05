@@ -28,11 +28,14 @@ func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, reg
 	// decrementa os rounds restantes para redução dos valores dobrados
 	roomData.DecreaseDoubledCardValuesRounds()
 
-	// executa o que for necessario para caso seja o último turno da rodada
+	// Aleatoriamente aumenta ou diminui as taxas
+	roomData.RandomlyChangeTaxes(ctx, rdb, registryRules)
+
+	// executa o que for necessario para caso seja a ultima rodada do turno
 	if isLast {
-		LastTurn(ctx, rdb, roomData, registryRules)
+		LastRoundOfTurn(ctx, rdb, roomData, registryRules)
 	}
-	// inicia novo turno caso tenhamos voltado para o primeiro jogador da rodada
+	// inicia novo turno caso tenhamos voltado para o primeiro jogador do turno
 	if isNewTurn {
 		NewTurn(ctx, rdb, roomData, registryRules)
 	}
@@ -50,8 +53,8 @@ func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, reg
 	return nil
 }
 
-// Função chamada no final de um turno
-func LastTurn(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, registryRules *rules.Registry) {
+// Função chamada no final de uma rodada
+func LastRoundOfTurn(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, registryRules *rules.Registry) {
 	effects.PayInvestments(ctx, rdb, registryRules, roomData)
 }
 

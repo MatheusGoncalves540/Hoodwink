@@ -3,6 +3,7 @@ package effects
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
@@ -32,7 +33,7 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 	}
 
 	if contestPenaltyPayload.HasCard {
-		// mata uma carta aleatória do jogador que iniciou o contestamento
+		// mata uma carta aleatória do jogador que iniciou o contestamento e troca a carta revelada por uma nova carta do baralho
 
 		// Seleciona uma carta viva aleatória do jogador que iniciou o contestamento
 		possibleIndexes := sourcePlayer.GetAliveCardsIndexes()
@@ -43,6 +44,17 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 		killEffect := structs.NewEffect(structs.EffectContestPenalty, contestedPlayer.Id, killPayload)
 
 		err := KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
+		if err != nil {
+			utils.LogError(err)
+		}
+
+		// troca a carta revelada por uma nova carta do baralho
+		changeCardPayload := structs.NewChangeCardPayload(string(structs.EffectContestPenalty), &contestedPlayer.Id, contestPenaltyPayload.TargetCardIndex, nil)
+
+		changeCardEffect := structs.NewEffect(structs.EffectContestPenalty, contestedPlayer.Id, changeCardPayload)
+
+		// chama o ChangeCardAnnouncer para trocar a carta do jogador alvo
+		err = effects.ChangeCardAnnouncer(ctx, rdb, registryRules, roomData, changeCardEffect)
 		if err != nil {
 			utils.LogError(err)
 			return
