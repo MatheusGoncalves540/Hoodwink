@@ -100,7 +100,7 @@ Arquivo central:
     -   ou seja, é processada automaticamente pelo motor, sem ação de player
     -   exemplo:
         ```go
-        expiresAt := time.Now().Add(7 * time.Second).UTC()
+        expiresAt := time.Now().UTC().Add(7 * time.Second).UTC()
         rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
             Score:  float64(expiresAt.UnixMilli()),
             Member: roomId,
@@ -114,7 +114,7 @@ Arquivo central:
     -   É o único ponto de input humano e o único mecanismo de pausa do motor lógico
     -   exemplo:
         ```go
-        expiresAt := time.Now().Add(7 * time.Second).UTC()
+        expiresAt := time.Now().UTC().Add(7 * time.Second).UTC()
         roomData.GameEvent = &roomStructs.GameEvent{
             PlayerID:  "ID DO PLAYER QUE FEZ AÇÃO",
             Type:      roomStructs."QUAL AÇÃO FEITA",

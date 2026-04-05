@@ -22,6 +22,11 @@ func ValidateKamikazeProtocol(roomData *rooms.Room, registryRules *rules.Registr
 	// Se usado na primeira ação do jogo, marca que o jogador matou a propria carta
 	switch roomData.GameEvent.Type {
 	case structs.EventWaitingFirstAction:
+		if roomData.CurrentPlayer != playerPlay.PlayerId {
+			utils.LogInvldPlyrReq("Player tentou usar suícidio do Kamikaze fora do seu turno", playerPlay.PlayerId)
+			return false
+		}
+
 		if cardRules.CanKillSelf == nil || !*cardRules.CanKillSelf {
 			utils.LogInvldPlyrReq("Player tentou usar kamikaze para matar a própria carta na primeira ação, mas a carta não permite isso", playerPlay.PlayerId)
 			return false

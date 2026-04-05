@@ -26,6 +26,7 @@ func NewGameEvent(playerID string, eventType GameEventType, expiresAt time.Time,
 
 // Eventos = INPUT / JANELAS
 const (
+	EventWaitingStart           GameEventType = "WAITING_START"
 	EventWaitingFirstAction     GameEventType = "WAITING_FIRST_ACTION"
 	EventCardKilled             GameEventType = "CARD_KILLED"
 	EventContest                GameEventType = "CONTEST"

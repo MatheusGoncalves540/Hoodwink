@@ -42,10 +42,7 @@ func ContestPenaltyProtocol(ctx context.Context, rdb *redis.Client, registryRule
 	roomData.GameEvent = nil
 
 	// agenda processamento imediato para consumir a fila de apresentação
-	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(time.Now().UnixMilli()),
-		Member: roomData.ID,
-	})
+	roomData.RegistryTimeout(rdb, ctx, time.Now().UTC())
 
 	return nil
 }

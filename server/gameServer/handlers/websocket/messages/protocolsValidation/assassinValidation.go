@@ -19,6 +19,11 @@ func ValidateAssassinProtocol(roomData *rooms.Room, registryRules *rules.Registr
 		return false
 	}
 
+	if roomData.CurrentPlayer != playerPlay.PlayerId {
+		utils.LogInvldPlyrReq("Player tentou usar Assassin fora do seu turno", playerPlay.PlayerId)
+		return false
+	}
+
 	// verifica se player tem moedas pra isso
 	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, registryRules, playerPlay.Type, 0)
 	if err != nil {

@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
@@ -38,7 +37,7 @@ func StartGameProcessor(rdb *redis.Client, registryRules *rules.Registry) {
 
 // processExpiredRoomsEvents verifica eventos em salas com timeout expirado e avança o estado do jogo.
 func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry) error {
-	now := time.Now().UnixMilli()
+	now := time.Now().UTC().UnixMilli()
 
 	roomIDs, err := rdb.ZRangeByScore(ctx, "rooms:timeouts", &redis.ZRangeBy{
 		Min:    "0",
@@ -91,7 +90,7 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, registryRules *
 
 	// Nada pendente → próximo turno
 	if roomData.GameEvent == nil && !roomData.HasPendingLogicEffect() && !roomData.HasPendingPresentationEvent() {
-		NextTurn(roomData, rdb, ctx, registryRules)
+		NextRound(ctx, rdb, roomData, registryRules)
 	}
 }
 
@@ -149,45 +148,7 @@ func scheduleImmediateProcessing(ctx context.Context, rdb *redis.Client, roomDat
 	}
 
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
-		Score:  float64(time.Now().UnixMilli()),
+		Score:  float64(time.Now().UTC().UnixMilli()),
 		Member: roomData.ID,
 	})
-}
-
-func WaitingFirstAction(ctx context.Context, rdb *redis.Client, roomData *rooms.Room) error {
-	expiresAt := time.Now().Add(15 * time.Second).UTC()
-	roomData.GameEvent = structs.NewGameEvent("", structs.EventWaitingFirstAction, expiresAt, nil)
-
-	if err := roomData.SaveRoom(ctx, rdb); err != nil {
-		return err
-	}
-
-	if err := roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{}); err != nil {
-		return err
-	}
-
-	roomData.RegistryTimeout(rdb, ctx, expiresAt)
-	return nil
-}
-
-func NextTurn(roomData *rooms.Room, rdb *redis.Client, ctx context.Context, registryRules *rules.Registry) error {
-	roomData.Turn++
-
-	effects.PayInvestments(ctx, rdb, registryRules, roomData)
-
-	// limpa evento anterior
-	roomData.GameEvent = nil
-
-	// decrementa os rounds restantes para redução dos valores dobrados
-	roomData.DecreaseDoubledCardValuesRounds()
-
-	if err := roomData.SaveRoom(ctx, rdb); err != nil {
-		return err
-	}
-
-	// inicia novo turno
-	if err := WaitingFirstAction(ctx, rdb, roomData); err != nil {
-		return err
-	}
-	return nil
 }

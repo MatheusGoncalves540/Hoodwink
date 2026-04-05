@@ -15,5 +15,7 @@ func ProcessDebugCommand(ctx context.Context, rdb *redis.Client, roomData *rooms
 		commands.CommandSendBroadcast(ctx, rdb, roomData, playerPlay.Payload)
 	case "COMMAND_PRINT_ROOM":
 		commands.CommandPrintRoom(ctx, rdb, roomData)
+	case "COMMAND_START_GAME":
+		commands.CommandStartGame(ctx, rdb, roomData)
 	}
 }

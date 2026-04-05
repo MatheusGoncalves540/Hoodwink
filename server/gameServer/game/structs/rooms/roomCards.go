@@ -171,3 +171,16 @@ func (r *Room) ChangeCard(player *players.Player, index int) error {
 	card.Dead = false
 	return nil
 }
+
+// ChangeAllCards troca todas as cartas de todos os jogadores por novas cartas
+func (r *Room) ChangeAllCards() error {
+	for _, player := range r.Players {
+		for index := range player.Cards {
+			err := r.ChangeCard(player, index)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

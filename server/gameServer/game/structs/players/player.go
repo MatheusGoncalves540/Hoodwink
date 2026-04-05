@@ -7,6 +7,7 @@ import (
 type Player struct {
 	Id                    string         `json:"id"`
 	Name                  string         `json:"name"`
+	MoveTime              int            `json:"moveTime"`
 	Cards                 []structs.Card `json:"cards"`
 	Coins                 int            `json:"coins"`
 	Investments           []int          `json:"investments"`
@@ -17,6 +18,7 @@ type Player struct {
 type PublicPlayerForUpdates struct {
 	Id                    string                         `json:"id"`
 	Name                  string                         `json:"name"`
+	MoveTime              int                            `json:"moveTime"`
 	Cards                 []structs.PublicCardForUpdates `json:"cards"`
 	Coins                 int                            `json:"coins"`
 	Investments           []int                          `json:"investments"`

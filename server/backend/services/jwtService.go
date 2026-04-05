@@ -30,7 +30,7 @@ func NewJWTService() *JWTService {
 }
 
 func (j *JWTService) GenerateJWT(data structures.UserClaims) (string, error) {
-	exp := time.Now().Add(j.expiration).Unix()
+	exp := time.Now().UTC().Add(j.expiration).Unix()
 	claims := jwt.MapClaims{
 		"id":       data.Id,
 		"username": data.Username,

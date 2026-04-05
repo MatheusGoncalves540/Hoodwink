@@ -20,6 +20,11 @@ func ValidateInvestorProtocol(roomData *rooms.Room, registryRules *rules.Registr
 		return false
 	}
 
+	if roomData.CurrentPlayer != playerPlay.PlayerId {
+		utils.LogInvldPlyrReq("Player tentou usar Investor fora do seu turno", playerPlay.PlayerId)
+		return false
+	}
+
 	// Verifica se o jogador tem o máximo de investimentos ativos
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {

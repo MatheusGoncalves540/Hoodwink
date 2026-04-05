@@ -42,7 +42,7 @@ func (j *JWTService) GenerateToken(player *endpointStructures.ClaimsBackend, roo
 		Username: player.Username,
 		RoomId:   roomId,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expInt))),
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Hour * time.Duration(expInt))),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

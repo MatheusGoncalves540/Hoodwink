@@ -14,9 +14,14 @@ func ValidateClairvoyantProtocol(roomData *rooms.Room, registryRules *rules.Regi
 		return false
 	}
 
-	// Rebel só pode ser usado durante o evento de espera de primeira ação
+	// Clairvoyant só pode ser usado durante o evento de espera de primeira ação
 	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
-		utils.LogInvldPlyrReq("Rebel só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
+		utils.LogInvldPlyrReq("Clairvoyant só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
+		return false
+	}
+
+	if roomData.CurrentPlayer != playerPlay.PlayerId {
+		utils.LogInvldPlyrReq("Player tentou usar Clairvoyant fora do seu turno", playerPlay.PlayerId)
 		return false
 	}
 

@@ -24,7 +24,7 @@ type APIResponse struct {
 // Middleware para log, recovery e trace ID
 func RequestMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
+		start := time.Now().UTC()
 		reqID, err := uuid.NewV7()
 		if err != nil {
 			utils.LogError(err.Error())

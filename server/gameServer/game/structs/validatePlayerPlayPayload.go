@@ -2,11 +2,17 @@ package structs
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
+	// Normaliza o tipo para facilitar a validação (ex: "COMMAND_SOMETHING" será tratado como "COMMAND")
+	if strings.HasPrefix(string(p.Type), string(Command)) {
+		return struct{}{}, nil
+	}
+
 	switch p.Type {
 	case PlayContest:
 		if len(p.Payload) == 0 {

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
@@ -31,16 +30,16 @@ func NewRoomService(redisClient *redis.Client) *RoomService {
 	}
 }
 
-func (s *RoomService) CreateNewRoom(r *http.Request, registryRules *rules.Registry, roomData endpointStructures.CreateRoomRequest, customMatch bool) (*rooms.Room, error) {
+func (s *RoomService) CreateNewRoom(r *http.Request, registryRules *rules.Registry, createRoomRequest endpointStructures.CreateRoomRequest, customMatch bool) (*rooms.Room, error) {
 	RoomId := utils.GenerateNewId()
 	// TODO: desmockar tudo isso
-	room := &rooms.Room{
+	roomData := &rooms.Room{
 		ID:                        RoomId,
 		Rules:                     structs.ClassicRules,
 		TimeoutType:               string(rules.TimeoutsTypeDefault),
-		Name:                      roomData.RoomName,
-		Password:                  roomData.Password,
-		MaxPlayers:                roomData.MaxPlayers,
+		Name:                      createRoomRequest.RoomName,
+		Password:                  createRoomRequest.Password,
+		MaxPlayers:                createRoomRequest.MaxPlayers,
 		CustomMatch:               customMatch,
 		Turn:                      1,
 		Tax:                       0,
@@ -53,18 +52,18 @@ func (s *RoomService) CreateNewRoom(r *http.Request, registryRules *rules.Regist
 		PendingPresentationEvents: []structs.PresentationEventDTO{},
 		GameOver:                  false,
 		StartTime:                 time.Time{},
-		Created:                   time.Now(),
+		Created:                   time.Now().UTC(),
 	}
 
 	// obtém as regras gerais do jogo
-	generalRules, err := room.GetGeneralRules(registryRules)
+	generalRules, err := roomData.GetGeneralRules(registryRules)
 	if err != nil {
 		utils.LogError(err)
 		return nil, err
 	}
 
 	// para cada carta, verifica se a carta tem valor que dobra
-	room.DoubledCardValues = map[structs.TypePlayerPlays]structs.DoubledCardValues{
+	roomData.DoubledCardValues = map[structs.TypePlayerPlays]structs.DoubledCardValues{
 		structs.PlayPoliticalCard: {
 			TimesValueDoubled:   0,
 			RoundsUntilDecrease: 0,
@@ -77,22 +76,22 @@ func (s *RoomService) CreateNewRoom(r *http.Request, registryRules *rules.Regist
 
 	// preenche o deck com as cartas, repetindo de acordo com o número de cópias definido nas regras
 	for copy := 0; copy < *generalRules.CopysOfEachCard; copy++ {
-		room.Deck = append(room.Deck, structs.AllCards...)
+		roomData.Deck = append(roomData.Deck, structs.AllCards...)
 	}
 
 	// embaralha o deck
-	utils.ShuffleSlice(room.Deck)
+	utils.ShuffleSlice(roomData.Deck)
+
+	// define o evento inicial da sala como "esperando início"
+	roomData.GameEvent = structs.NewGameEvent("", structs.EventWaitingStart, time.Time{}, nil)
 
 	// Salva a sala com TTL inicial de 5 segundos
-	err = room.SaveRoomWithTTL(r.Context(), s.redisClient, time.Duration(s.roomTTL)*time.Second)
+	err = roomData.SaveRoomWithTTL(r.Context(), s.redisClient, time.Duration(s.roomTTL)*time.Second)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO transformar isso em "waiting game start"
-	engine.WaitingFirstAction(r.Context(), s.redisClient, room)
-
-	return room, nil
+	return roomData, nil
 }
 
 func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, backendService *BackendService, roomId string, playerId string) (bool, error) {

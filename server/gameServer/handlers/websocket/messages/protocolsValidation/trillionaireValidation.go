@@ -14,5 +14,10 @@ func ValidateTrillionaireProtocol(roomData *rooms.Room, registryRules *rules.Reg
 		return false
 	}
 
+	if roomData.CurrentPlayer != playerPlay.PlayerId {
+		utils.LogInvldPlyrReq("Player tentou usar Trillionaire fora do seu turno", playerPlay.PlayerId)
+		return false
+	}
+
 	return true
 }

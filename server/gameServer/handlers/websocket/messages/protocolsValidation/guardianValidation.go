@@ -28,6 +28,11 @@ func ValidateGuardianProtocol(roomData *rooms.Room, registryRules *rules.Registr
 	// Se usado na primeira ação do jogo, marca que o jogador matou a propria carta
 	switch roomData.GameEvent.Type {
 	case structs.EventWaitingFirstAction:
+		if roomData.CurrentPlayer != playerPlay.PlayerId {
+			utils.LogInvldPlyrReq("Player tentou usar Guardian fora do seu turno", playerPlay.PlayerId)
+			return false
+		}
+
 		// verifica se o jogador forneceu um índice válido da carta aliada
 		targetAllyCard, err := sourcePlayer.GetCardByIndex(payload.TargetCardIndex)
 		if err != nil {
