@@ -28,7 +28,7 @@ func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, reg
 	// decrementa os rounds restantes para redução dos valores dobrados
 	roomData.DecreaseDoubledCardValuesRounds()
 
-	// inicia novo turno caso tenhamos voltado para o primeiro jogador da rodada
+	// executa o que for necessario para caso seja o último turno da rodada
 	if isLast {
 		LastTurn(ctx, rdb, roomData, registryRules)
 	}
@@ -38,7 +38,7 @@ func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, reg
 	}
 
 	// inicia o efeito de espera pela primeira ação do próximo jogador
-	if err := effects.WaitingFirstActionEffect(ctx, rdb, roomData, currentPlayer); err != nil {
+	if err := effects.WaitingFirstActionEffect(ctx, rdb, roomData, nextPlayer); err != nil {
 		return err
 	}
 

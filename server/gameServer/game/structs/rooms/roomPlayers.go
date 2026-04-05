@@ -179,3 +179,14 @@ func (r *Room) SelectRandomAliveAndConnectedPlayer(ctx context.Context, rdb *red
 
 	return selected
 }
+
+// VerifyIfPlayerDead verifica se um jogador está morto e atualiza seu status na sala, caso esteja morto
+func (r *Room) VerifyIfPlayerDead(player *players.Player) {
+	for _, card := range player.Cards {
+		// caso todas as cartas do jogador estejam mortas, o jogador é considerado morto
+		if card.Dead == false {
+			return
+		}
+	}
+	player.Alive = false
+}

@@ -40,6 +40,9 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 		if err != nil {
 			return err
 		}
+
+		// atualiza estado de morte do jogador caso a carta morta seja a última viva do jogador
+		roomData.VerifyIfPlayerDead(targetPlayer)
 	}
 
 	return nil

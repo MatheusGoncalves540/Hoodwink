@@ -32,7 +32,7 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 		return
 	}
 	if !sourcePlayer.Alive {
-		utils.LogInvldPlyrReq("player %s está morto e não pode jogar", playerPlay.PlayerId)
+		utils.LogInvldPlyrReq("player "+playerPlay.PlayerId+" está morto e não pode jogar", playerPlay.PlayerId)
 		return
 	}
 
