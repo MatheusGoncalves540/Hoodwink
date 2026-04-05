@@ -30,7 +30,7 @@ Cards:
   TRILLIONAIRE:
     value: 3
     taxMinimum: 1
-    taxMaximum: 20
+    taxMaximum: 13
     affectedByTaxes: true
 
   CLAIRVOYANT:

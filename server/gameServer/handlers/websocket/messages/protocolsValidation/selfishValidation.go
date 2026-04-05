@@ -46,6 +46,23 @@ func ValidateSelfishProtocol(roomData *rooms.Room, registryRules *rules.Registry
 			utils.LogInvldPlyrReq("Valor do roubo deve ser maior que 1 para usar Selfish", playerPlay.PlayerId)
 			return false
 		}
+
+		if sourcePlayer.Coins < *cardRules.FixedValue {
+			utils.LogInvldPlyrReq("Moedas insuficientes para usar Selfish cancelando roubo", playerPlay.PlayerId)
+			return false
+		}
+	case structs.EventInvestment:
+		// disconto de 5, pra contar só o fix de 1 e as taxas
+		cardPrice, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), 5)
+		if err != nil {
+			utils.LogError(err)
+			return false
+		}
+
+		if sourcePlayer.Coins < cardPrice {
+			utils.LogInvldPlyrReq("Moedas insuficientes para usar Selfish cancelando investimento", playerPlay.PlayerId)
+			return false
+		}
 	default:
 		// verifica se player tem moedas pra isso (calcula o custo com base no valor FIXO definido nas regras da carta)
 		if sourcePlayer.Coins < *cardRules.FixedValue {
