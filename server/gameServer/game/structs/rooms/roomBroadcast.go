@@ -77,6 +77,7 @@ func (r *Room) PublishRoomUpdate(ctx context.Context, rdb *redis.Client, toAll b
 		GameOver:          r.GameOver,
 		StartTime:         r.StartTime,
 		DoubledCardValues: r.DoubledCardValues,
+		Chat:              r.Chat,
 	}
 
 	// Prepara os dados públicos dos jogadores

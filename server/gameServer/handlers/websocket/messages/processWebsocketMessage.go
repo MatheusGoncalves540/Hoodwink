@@ -36,199 +36,215 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 		return
 	}
 
-	// processa o protocolo específico
-	switch playerPlay.Type {
-	case structs.PlayContest:
-		if !protocolsValidation.ValidateContestProtocol(roomData, playerPlay) {
-			return
-		}
-		err := protocols.ContestProtocol(ctx, rdb, registryRules, roomData, playerPlay)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+	var playHandlers = map[structs.TypePlayerPlays]func() bool{
+		structs.PlayContest: func() bool {
+			if !protocolsValidation.ValidateContestProtocol(roomData, playerPlay) {
+				return false
+			}
+			if err := protocols.ContestProtocol(ctx, rdb, registryRules, roomData, playerPlay); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayContestPenalty:
-		contestPenaltyPayload, ok := playerPlay.Payload.(structs.ContestPenaltyPayload)
-		if !ok {
-			utils.LogInvldPlyrReq("payload does not match ContestPenaltyPayload structure", sourcePlayer.Id)
-			return
-		}
+		structs.PlayContestPenalty: func() bool {
+			contestPenaltyPayload, ok := playerPlay.Payload.(structs.ContestPenaltyPayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match ContestPenaltyPayload structure", sourcePlayer.Id)
+				return false
+			}
 
-		sourcePlayerId, targetPlayerId, valid := protocolsValidation.ValidateContestPenaltyProtocol(roomData, playerPlay, contestPenaltyPayload)
-		if !valid {
-			return
-		}
-		err := protocols.ContestPenaltyProtocol(ctx, rdb, registryRules, roomData, contestPenaltyPayload, *sourcePlayerId, *targetPlayerId)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+			sourcePlayerId, targetPlayerId, valid := protocolsValidation.ValidateContestPenaltyProtocol(roomData, playerPlay, contestPenaltyPayload)
+			if !valid {
+				return false
+			}
+			if err := protocols.ContestPenaltyProtocol(ctx, rdb, registryRules, roomData, contestPenaltyPayload, *sourcePlayerId, *targetPlayerId); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayAssassinCard:
-		assassinPayload, ok := playerPlay.Payload.(structs.AssassinPayload)
-		if !ok {
-			utils.LogInvldPlyrReq("payload does not match AssassinPayload structure", sourcePlayer.Id)
-			return
-		}
+		structs.PlayAssassinCard: func() bool {
+			assassinPayload, ok := playerPlay.Payload.(structs.AssassinPayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match AssassinPayload structure", sourcePlayer.Id)
+				return false
+			}
 
-		if !protocolsValidation.ValidateAssassinProtocol(roomData, registryRules, playerPlay, assassinPayload) {
-			return
-		}
-		err := protocols.AssassinProtocol(ctx, rdb, registryRules, roomData, playerPlay, assassinPayload)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+			if !protocolsValidation.ValidateAssassinProtocol(roomData, registryRules, playerPlay, assassinPayload) {
+				return false
+			}
+			if err := protocols.AssassinProtocol(ctx, rdb, registryRules, roomData, playerPlay, assassinPayload); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayKamikazeCard:
-		kamikazePayload, ok := playerPlay.Payload.(structs.KamikazePayload)
-		if !ok {
-			utils.LogInvldPlyrReq("payload does not match KamikazePayload structure", sourcePlayer.Id)
-			return
-		}
+		structs.PlayKamikazeCard: func() bool {
+			kamikazePayload, ok := playerPlay.Payload.(structs.KamikazePayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match KamikazePayload structure", sourcePlayer.Id)
+				return false
+			}
 
-		if !protocolsValidation.ValidateKamikazeProtocol(roomData, registryRules, playerPlay, &kamikazePayload) {
-			return
-		}
-		err := protocols.KamikazeProtocol(ctx, rdb, registryRules, roomData, playerPlay, &kamikazePayload)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+			if !protocolsValidation.ValidateKamikazeProtocol(roomData, registryRules, playerPlay, &kamikazePayload) {
+				return false
+			}
+			if err := protocols.KamikazeProtocol(ctx, rdb, registryRules, roomData, playerPlay, &kamikazePayload); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayTrillionaireCard:
-		if !protocolsValidation.ValidateTrillionaireProtocol(roomData, registryRules, playerPlay) {
-			return
-		}
-		err := protocols.TrillionaireProtocol(ctx, rdb, registryRules, roomData, playerPlay)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+		structs.PlayTrillionaireCard: func() bool {
+			if !protocolsValidation.ValidateTrillionaireProtocol(roomData, registryRules, playerPlay) {
+				return false
+			}
+			if err := protocols.TrillionaireProtocol(ctx, rdb, registryRules, roomData, playerPlay); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayPoliticalCard:
-		if !protocolsValidation.ValidatePoliticalProtocol(roomData, registryRules, playerPlay) {
-			return
-		}
-		err := protocols.PoliticalProtocol(ctx, rdb, registryRules, roomData, playerPlay)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+		structs.PlayPoliticalCard: func() bool {
+			if !protocolsValidation.ValidatePoliticalProtocol(roomData, registryRules, playerPlay) {
+				return false
+			}
+			if err := protocols.PoliticalProtocol(ctx, rdb, registryRules, roomData, playerPlay); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayRebelCard:
-		if !protocolsValidation.ValidateRebelProtocol(roomData, registryRules, playerPlay) {
-			return
-		}
-		err := protocols.RebelProtocol(ctx, rdb, registryRules, roomData, playerPlay)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+		structs.PlayRebelCard: func() bool {
+			if !protocolsValidation.ValidateRebelProtocol(roomData, registryRules, playerPlay) {
+				return false
+			}
+			if err := protocols.RebelProtocol(ctx, rdb, registryRules, roomData, playerPlay); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayClairvoyantCard:
-		clairvoyantPayload, ok := playerPlay.Payload.(structs.ClairvoyantPayload)
-		if !ok {
-			utils.LogInvldPlyrReq("payload does not match ClairvoyantPayload structure", sourcePlayer.Id)
-			return
-		}
+		structs.PlayClairvoyantCard: func() bool {
+			clairvoyantPayload, ok := playerPlay.Payload.(structs.ClairvoyantPayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match ClairvoyantPayload structure", sourcePlayer.Id)
+				return false
+			}
 
-		if !protocolsValidation.ValidateClairvoyantProtocol(roomData, registryRules, playerPlay, clairvoyantPayload) {
-			return
-		}
-		err := protocols.ClairvoyantProtocol(ctx, rdb, registryRules, roomData, playerPlay, clairvoyantPayload)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+			if !protocolsValidation.ValidateClairvoyantProtocol(roomData, registryRules, playerPlay, clairvoyantPayload) {
+				return false
+			}
+			if err := protocols.ClairvoyantProtocol(ctx, rdb, registryRules, roomData, playerPlay, clairvoyantPayload); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayGuardianCard:
-		guardianPayload, ok := playerPlay.Payload.(structs.GuardianPayload)
-		if !ok {
-			utils.LogInvldPlyrReq("payload does not match GuardianPayload structure", sourcePlayer.Id)
-			return
-		}
+		structs.PlayGuardianCard: func() bool {
+			guardianPayload, ok := playerPlay.Payload.(structs.GuardianPayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match GuardianPayload structure", sourcePlayer.Id)
+				return false
+			}
 
-		if !protocolsValidation.ValidateGuardianProtocol(roomData, registryRules, playerPlay, &guardianPayload) {
-			return
-		}
-		err := protocols.GuardianProtocol(ctx, rdb, registryRules, roomData, playerPlay, &guardianPayload)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+			if !protocolsValidation.ValidateGuardianProtocol(roomData, registryRules, playerPlay, &guardianPayload) {
+				return false
+			}
+			if err := protocols.GuardianProtocol(ctx, rdb, registryRules, roomData, playerPlay, &guardianPayload); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayTricksterCard:
-		tricksterPayload, ok := playerPlay.Payload.(structs.TricksterPayload)
-		if !ok {
-			utils.LogInvldPlyrReq("payload does not match TricksterPayload structure", sourcePlayer.Id)
-			return
-		}
+		structs.PlayTricksterCard: func() bool {
+			tricksterPayload, ok := playerPlay.Payload.(structs.TricksterPayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match TricksterPayload structure", sourcePlayer.Id)
+				return false
+			}
 
-		if !protocolsValidation.ValidateTricksterProtocol(roomData, registryRules, playerPlay, &tricksterPayload) {
-			return
-		}
-		err := protocols.TricksterProtocol(ctx, rdb, registryRules, roomData, playerPlay, &tricksterPayload)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+			if !protocolsValidation.ValidateTricksterProtocol(roomData, registryRules, playerPlay, &tricksterPayload) {
+				return false
+			}
+			if err := protocols.TricksterProtocol(ctx, rdb, registryRules, roomData, playerPlay, &tricksterPayload); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayGravediggerCard:
-		gravediggerPayload, ok := playerPlay.Payload.(structs.GravediggerPayload)
-		if !ok {
-			utils.LogInvldPlyrReq("payload does not match GravediggerPayload structure", sourcePlayer.Id)
-			return
-		}
+		structs.PlayGravediggerCard: func() bool {
+			gravediggerPayload, ok := playerPlay.Payload.(structs.GravediggerPayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match GravediggerPayload structure", sourcePlayer.Id)
+				return false
+			}
 
-		if !protocolsValidation.ValidateGravediggerProtocol(roomData, registryRules, playerPlay) {
-			return
-		}
-		err := protocols.GravediggerProtocol(ctx, rdb, registryRules, roomData, playerPlay, &gravediggerPayload)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+			if !protocolsValidation.ValidateGravediggerProtocol(roomData, registryRules, playerPlay) {
+				return false
+			}
+			if err := protocols.GravediggerProtocol(ctx, rdb, registryRules, roomData, playerPlay, &gravediggerPayload); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayCroupierCard:
-		croupierPayload, ok := playerPlay.Payload.(structs.CroupierPayload)
-		if !ok {
-			utils.LogInvldPlyrReq("payload does not match CroupierPayload structure", sourcePlayer.Id)
-			return
-		}
+		structs.PlayCroupierCard: func() bool {
+			croupierPayload, ok := playerPlay.Payload.(structs.CroupierPayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match CroupierPayload structure", sourcePlayer.Id)
+				return false
+			}
 
-		if !protocolsValidation.ValidateCroupierProtocol(roomData, registryRules, playerPlay) {
-			return
-		}
-		err := protocols.CroupierProtocol(ctx, rdb, registryRules, roomData, playerPlay, &croupierPayload)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+			if !protocolsValidation.ValidateCroupierProtocol(roomData, registryRules, playerPlay) {
+				return false
+			}
+			if err := protocols.CroupierProtocol(ctx, rdb, registryRules, roomData, playerPlay, &croupierPayload); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlayInvestorCard:
-		if !protocolsValidation.ValidateInvestorProtocol(roomData, registryRules, playerPlay) {
-			return
-		}
-		err := protocols.InvestorProtocol(ctx, rdb, registryRules, roomData, playerPlay)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+		structs.PlayInvestorCard: func() bool {
+			if !protocolsValidation.ValidateInvestorProtocol(roomData, registryRules, playerPlay) {
+				return false
+			}
+			if err := protocols.InvestorProtocol(ctx, rdb, registryRules, roomData, playerPlay); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 
-	case structs.PlaySelfishCard:
-		if !protocolsValidation.ValidateSelfishProtocol(roomData, registryRules, playerPlay) {
-			return
-		}
-		err := protocols.SelfishProtocol(ctx, rdb, registryRules, roomData, playerPlay)
-		if err != nil {
-			utils.LogError(err)
-			return
-		}
+		structs.PlaySelfishCard: func() bool {
+			if !protocolsValidation.ValidateSelfishProtocol(roomData, registryRules, playerPlay) {
+				return false
+			}
+			if err := protocols.SelfishProtocol(ctx, rdb, registryRules, roomData, playerPlay); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
 	}
 
-	// Salva e publica atualizações da sala
-	roomData.SaveRoom(ctx, rdb)
-	roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
+	if handler, ok := playHandlers[playerPlay.Type]; ok {
+		if handler() {
+			roomData.SaveRoom(ctx, rdb)
+			roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
+		}
+	}
 }

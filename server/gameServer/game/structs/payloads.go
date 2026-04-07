@@ -1,5 +1,15 @@
 package structs
 
+type ChatMessagePayload struct {
+	Msg string `json:"msg"`
+}
+
+func NewChatMessagePayload(msg string) ChatMessagePayload {
+	return ChatMessagePayload{
+		Msg: msg,
+	}
+}
+
 type KillCardPayload struct {
 	Cause           string  `json:"cause"`
 	TargetPlayer    *string `json:"targetPlayer"`

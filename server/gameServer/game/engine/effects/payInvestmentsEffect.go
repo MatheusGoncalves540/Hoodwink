@@ -13,7 +13,6 @@ import (
 
 // PayInvestments paga os investimentos do jogador e gera as moedas correspondentes
 // Chamado no início de cada novo turno. Essa função paga todos os investimentos de todos os players de uma vez
-// TODO chamar essa função no início de cada novo turno (não rodada, mas sim novo turno, ou seja, depois de todos os players jogarem)
 func PayInvestments(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room) {
 	for _, player := range roomData.Players {
 		if player.HasActiveInvestment() {

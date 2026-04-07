@@ -18,5 +18,5 @@ func OnMessage(ctx context.Context, rdb *redis.Client, registryRules *rules.Regi
 	// Process WebSocket message - player play
 	messages.ProcessPlay(ctx, rdb, roomData, playerPlay, registryRules)
 	// TODO Process WebSocket chat message
-	// messages.ProcessChatMessage(playerPlay, ctx, rdb, roomId)
+	messages.ProcessChatMessage(ctx, rdb, roomData, playerPlay)
 }

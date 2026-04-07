@@ -61,7 +61,7 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 		defer playerRedis.UnregisterPlayerFromRoom(ctxConn, rdb, playerId)
 
 		// Chamadas de hook
-		connection.OnConnect(conn, ctxConn, rdb, roomId, playerId, username)
+		connection.OnConnect(conn, ctxConn, rdb, rulesRegistry, roomId, playerId, username)
 		defer connection.OnDisconnect(conn, ctxConn, rdb, roomId, playerId)
 
 		// Loop de leitura das mensagens do cliente
@@ -75,7 +75,6 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 			}
 
 			// utils.LogDebug(fmt.Sprintf("Mensagem detectada do player %s na sala %s", playerId, roomObj.ID))
-
 			roomId, instanceId, registered, err := playerRedis.GetPlayerRegistrationInfo(ctx, rdb, playerId)
 			if err != nil || !registered || roomId == "" || instanceId == "" {
 				utils.LogError("Conexão perdida ou não registrada")

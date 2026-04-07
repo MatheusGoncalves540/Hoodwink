@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand/v2"
+	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
@@ -92,4 +95,20 @@ func (r *PublicRoomForUpdates) Clone() *PublicRoomForUpdates {
 	b, _ := json.Marshal(r)
 	_ = json.Unmarshal(b, &clone)
 	return &clone
+}
+
+// AppendChatMessage adiciona uma mensagem ao chat da sala, mantendo apenas as últimas 30 mensagens para evitar crescimento ilimitado
+func (r *Room) AppendChatMessage(player *players.Player, message string) error {
+	r.Chat = append(r.Chat, structs.ChatMessage{
+		PlayerName: player.Name,
+		Timestamp:  time.Now().UTC(),
+		Message:    message,
+	})
+
+	// Limita o chat para as últimas 30 mensagens
+	if len(r.Chat) > 30 {
+		r.Chat = r.Chat[len(r.Chat)-30:]
+	}
+
+	return nil
 }

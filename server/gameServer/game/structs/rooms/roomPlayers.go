@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"math/rand/v2"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -21,11 +23,17 @@ func (r *Room) GetPlayer(playerId string) (*players.Player, error) {
 }
 
 // AddPlayerInRoom adiciona um jogador à sala caso ele ainda não exista na estrutura da sala
-func (r *Room) AddPlayerInRoom(ctx context.Context, rdb *redis.Client, playerId string, username string) error {
+func (r *Room) AddPlayerInRoom(ctx context.Context, rdb *redis.Client, rulesRegistry *rules.Registry, playerId string, username string) error {
 	// Verifica se o jogador já existe
 	player, err := r.GetPlayer(playerId)
 	if err == nil && player != nil {
 		// Jogador já existe, nada a fazer
+		return nil
+	}
+
+	generalRules, err := r.GetGeneralRules(rulesRegistry)
+	if err != nil {
+		utils.LogError(err)
 		return nil
 	}
 
@@ -37,8 +45,8 @@ func (r *Room) AddPlayerInRoom(ctx context.Context, rdb *redis.Client, playerId 
 		Cards: []structs.Card{
 			{Name: structs.CardKamikaze, Index: 0, Protected: false, Dead: false},
 			{Name: structs.CardKamikaze, Index: 1, Protected: false, Dead: false},
-		}, // TODO remover valor fixo de teste
-		Coins: 10, // Valor inicial padrão do jogo
+		},
+		Coins: *generalRules.InitialCoins,
 		Alive: true,
 	}
 

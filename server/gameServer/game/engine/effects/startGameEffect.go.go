@@ -35,10 +35,5 @@ func StartGameEffect(ctx context.Context, rdb *redis.Client, roomData *rooms.Roo
 		return err
 	}
 
-	// salva a sala com as atualizações de jogador atual e evento de espera pela primeira ação
-	if err := roomData.SaveRoom(ctx, rdb); err != nil {
-		return err
-	}
-
 	return nil
 }

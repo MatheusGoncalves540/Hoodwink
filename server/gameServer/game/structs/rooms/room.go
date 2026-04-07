@@ -27,10 +27,12 @@ type Room struct {
 	GameOver                  bool                                                  `json:"gameOver"`
 	StartTime                 time.Time                                             `json:"startTime"`
 	Created                   time.Time                                             `json:"created"`
+	Chat                      []structs.ChatMessage                                 `json:"chat"`
 }
 
 type PublicRoomForUpdates struct {
 	ID                string                                                `json:"id"`
+	Name              string                                                `json:"name"`
 	Turn              int                                                   `json:"turn"`
 	Tax               int                                                   `json:"tax"`
 	DoubledCardValues map[structs.TypePlayerPlays]structs.DoubledCardValues `json:"doubledCardValues"`
@@ -41,4 +43,5 @@ type PublicRoomForUpdates struct {
 	PendingEffects    []structs.EffectDTO                                   `json:"pendingEffects"`
 	GameOver          bool                                                  `json:"gameOver"`
 	StartTime         time.Time                                             `json:"startTime"`
+	Chat              []structs.ChatMessage                                 `json:"chat"`
 }

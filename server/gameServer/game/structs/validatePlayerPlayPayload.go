@@ -14,6 +14,17 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 	}
 
 	switch p.Type {
+	case PlayChatMessage:
+		var payload ChatMessagePayload
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para chat message: %w", err)
+		}
+		if payload.Msg == "" {
+			return nil, fmt.Errorf("campo 'msg' é obrigatório e não pode ser vazio")
+		}
+
+		return payload, nil
+
 	case PlayContest:
 		if len(p.Payload) == 0 {
 			return struct{}{}, nil
