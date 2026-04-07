@@ -34,6 +34,18 @@ func (r *Room) RandomlyChangeTaxes(ctx context.Context, rdb *redis.Client, regis
 	if randPercentage <= *generalRules.RandomTaxesChanges {
 		// Taxas serão alteradas
 
+		if generalRules.MaxTax != nil && r.Tax >= *generalRules.MaxTax {
+			// Se as taxas já estão no máximo, só podem diminuir
+			r.DecrementTax(1)
+			utils.LogDebug("Taxas diminuídas para" + fmt.Sprint(r.Tax))
+			return nil
+		} else if generalRules.MinTax != nil && r.Tax <= *generalRules.MinTax {
+			// Se as taxas já estão no mínimo, só podem aumentar
+			r.IncrementTax(1)
+			utils.LogDebug("Taxas aumentadas para" + fmt.Sprint(r.Tax))
+			return nil
+		}
+
 		// Decide aleatoriamente se as taxas aumentam ou diminuem
 		//TODO se pá é interessante fazer um anuncer para isso, ou pelo menos logar
 		if rand.IntN(2) == 0 {
