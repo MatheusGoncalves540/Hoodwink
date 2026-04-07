@@ -87,15 +87,12 @@ func (r *Room) PublishRoomUpdate(ctx context.Context, rdb *redis.Client, toAll b
 
 	// Cria a mensagem de broadcast
 	var broadcastMsg *structs.BroadcastMessage
-	if toAll {
-		broadcastMsg = structs.NewBroadcastMessage(roomDataPublic)
-	} else {
+	if !toAll {
 		broadcastMsg = structs.NewSelectiveBroadcastMessage(roomDataPublic, playerIds)
-	}
-
-	// Publica a mensagem
-	if pubMsg, err := broadcastMsg.ToJSON(); err == nil {
-		rdb.Publish(ctx, "room:"+r.ID+":broadcast", pubMsg).Err()
+		// Publica a mensagem
+		if pubMsg, err := broadcastMsg.ToJSON(); err == nil {
+			return rdb.Publish(ctx, "room:"+r.ID+":broadcast", pubMsg).Err()
+		}
 	}
 
 	// Sempre que for enviar um broadcast, mesmo que seja para todos, envia também a versão privada para cada player individualmente
