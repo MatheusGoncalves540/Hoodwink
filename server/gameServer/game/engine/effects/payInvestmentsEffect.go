@@ -17,14 +17,14 @@ import (
 func PayInvestments(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room) {
 	for _, player := range roomData.Players {
 		if player.HasActiveInvestment() {
-			payPlayerInvestments(ctx, rdb, registryRules, roomData, player)
-			player.CountdownInvestment(1)
+			payPlayerInvestments(ctx, rdb, roomData, player)
+			countdownInvestment(ctx, rdb, registryRules, roomData, player, 1)
 		}
 	}
 }
 
 // payPlayerInvestments paga os investimentos de um jogador específico e gera as moedas correspondentes
-func payPlayerInvestments(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, soucePlayer *players.Player) {
+func payPlayerInvestments(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, soucePlayer *players.Player) {
 	// Calcula as moedas a serem ganhas com base no número de investimentos ativos
 	earnedCoins := len(soucePlayer.Investments) / 2
 
@@ -49,5 +49,46 @@ func payPlayerInvestments(ctx context.Context, rdb *redis.Client, registryRules 
 	if err != nil {
 		utils.LogError(err)
 		return
+	}
+}
+
+// countdownInvestment decrementa os investimentos do jogador, removendo os que chegam a zero (chamar a cada rodada para atualizar os investimentos)
+func countdownInvestment(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, player *players.Player, amount int) {
+	generalRules, err := roomData.GetGeneralRules(registryRules)
+	if err != nil {
+		utils.LogError(err)
+		return
+	}
+
+	// Loop para percorrer os investimentos do jogador
+	for i := 0; i < len(player.Investments); i++ {
+		// Decrementa o investimento pelo valor do amount
+		player.Investments[i] -= amount
+		// Verifica se o investimento expirou
+		if player.Investments[i] <= 0 {
+			// Remove o investimento expirado
+			player.Investments = append(player.Investments[:i], player.Investments[i+1:]...)
+			// Decrementa o índice para verificar o próximo investimento corretamente
+			i--
+
+			// Gera as moedas correspondentes ao investimento expirado
+			// adiciona as moedas ao jogador e retorna breakLimit, que indica se o limite de moedas será ultrapassado
+			breakLimit := player.AddCoins(1, *generalRules.MaxCoins)
+
+			if breakLimit {
+				// se o limite de moedas for ultrapassado, mata a carta viva de menor índice
+				aliveIndexes := player.GetAliveCardsIndexes()
+
+				greedPayload := structs.NewKillCardPayload(string(structs.EffectGreed), &player.Id, &aliveIndexes[0])
+
+				killEffect := structs.Effect{
+					Cause:        structs.EffectGreed,
+					SourcePlayer: player.Id,
+					Payload:      greedPayload,
+				}
+
+				KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
+			}
+		}
 	}
 }

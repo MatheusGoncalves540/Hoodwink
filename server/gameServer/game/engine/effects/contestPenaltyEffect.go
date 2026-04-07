@@ -3,7 +3,6 @@ package effects
 import (
 	"context"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
@@ -54,7 +53,7 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 		changeCardEffect := structs.NewEffect(structs.EffectContestPenalty, contestedPlayer.Id, changeCardPayload)
 
 		// chama o ChangeCardAnnouncer para trocar a carta do jogador alvo
-		err = effects.ChangeCardAnnouncer(ctx, rdb, registryRules, roomData, changeCardEffect)
+		err = ChangeCardAnnouncer(ctx, rdb, registryRules, roomData, changeCardEffect)
 		if err != nil {
 			utils.LogError(err)
 			return

@@ -73,3 +73,11 @@ func (r *Room) Clone() *Room {
 	_ = json.Unmarshal(b, &clone)
 	return &clone
 }
+
+// Clone cria uma cópia profunda da sala (usando serialização JSON)
+func (r *PublicRoomForUpdates) Clone() *PublicRoomForUpdates {
+	var clone PublicRoomForUpdates
+	b, _ := json.Marshal(r)
+	_ = json.Unmarshal(b, &clone)
+	return &clone
+}

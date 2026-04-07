@@ -35,7 +35,7 @@ type PublicRoomForUpdates struct {
 	Tax               int                                                   `json:"tax"`
 	DoubledCardValues map[structs.TypePlayerPlays]structs.DoubledCardValues `json:"doubledCardValues"`
 	Players           map[string]players.PublicPlayerForUpdates             `json:"players"`
-	Deck              []structs.CardName                                    `json:"deck"`
+	Deck              int                                                   `json:"deck"`
 	CurrentPlayer     string                                                `json:"currentPlayer"`
 	GameEvent         *structs.GameEvent                                    `json:"gameEvent"`
 	PendingEffects    []structs.EffectDTO                                   `json:"pendingEffects"`

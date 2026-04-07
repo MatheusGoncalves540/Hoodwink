@@ -1,6 +1,8 @@
 package structs
 
-import "math/rand/v2"
+import (
+	"math/rand/v2"
+)
 
 type CardName string
 
@@ -18,9 +20,10 @@ type DoubledCardValues struct {
 }
 
 type PublicCardForUpdates struct {
-	Index     int  `json:"index"`
-	Protected bool `json:"protected"`
-	Dead      bool `json:"dead"`
+	Name      *CardName `json:"name,omitempty"`
+	Index     int       `json:"index"`
+	Protected bool      `json:"protected"`
+	Dead      bool      `json:"dead"`
 }
 
 const (

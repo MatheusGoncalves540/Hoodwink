@@ -70,7 +70,7 @@ func (r *Room) PublishRoomUpdate(ctx context.Context, rdb *redis.Client, toAll b
 		Turn:              r.Turn,
 		Tax:               r.Tax,
 		Players:           make(map[string]players.PublicPlayerForUpdates, len(r.Players)),
-		Deck:              r.Deck,
+		Deck:              len(r.Deck),
 		CurrentPlayer:     r.CurrentPlayer,
 		GameEvent:         r.GameEvent,
 		PendingEffects:    r.PendingEffects,
@@ -95,8 +95,23 @@ func (r *Room) PublishRoomUpdate(ctx context.Context, rdb *redis.Client, toAll b
 
 	// Publica a mensagem
 	if pubMsg, err := broadcastMsg.ToJSON(); err == nil {
-		return rdb.Publish(ctx, "room:"+r.ID+":broadcast", pubMsg).Err()
+		rdb.Publish(ctx, "room:"+r.ID+":broadcast", pubMsg).Err()
 	}
+
+	// Sempre que for enviar um broadcast, mesmo que seja para todos, envia também a versão privada para cada player individualmente
+	// para garantir que cada player receba os dados confidenciais que só ele pode ver (como as cartas da mão)
+	for _, player := range r.Players {
+		roomDataPrivate := roomDataPublic.Clone()
+		roomDataPrivate.Players[player.Id] = player.GetPrivatePlayerForPublicUpdates()
+
+		privatePlayersInfo := structs.NewSelectiveBroadcastMessage(roomDataPrivate, []string{player.Id})
+
+		// Publica a mensagem
+		if pubMsg, err := privatePlayersInfo.ToJSON(); err == nil {
+			rdb.Publish(ctx, "room:"+r.ID+":broadcast", pubMsg).Err()
+		}
+	}
+
 	return nil
 }
 
