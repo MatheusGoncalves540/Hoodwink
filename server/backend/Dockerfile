@@ -1,3 +1,7 @@
+# podman run -d --name hoodwink-backend --restart=always -p 8088:8088 --env-file .env hoodwink-backend
+
+#############
+
 # Multi-stage build for lightweight and secure image
 # Build stage
 FROM docker.io/library/golang:1.24.4-alpine AS builder

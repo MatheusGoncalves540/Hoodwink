@@ -1,3 +1,7 @@
+# podman run -d --name hoodwink-gameserver --restart=always -p 4444:4444 --env-file .env hoodwink-gameserver
+
+#############
+
 # Multi-stage build for lightweight and secure image
 # Build stage
 FROM docker.io/library/golang:1.24.4-alpine AS builder
