@@ -19,7 +19,7 @@ func SetupRoutes(routesContext *ctx.RoutesContext) http.Handler {
 		r.Get("/", routesContext.Handler.WebSocketHandler(routesContext.Rdb, routesContext.RulesRegistry))
 	})
 
-	// Rotas protegidas com JWT
+	// Rotas protegidas com JWT do backend
 	routes.Group(func(r chi.Router) {
 		r.Use(func(next http.Handler) http.Handler {
 			return middlewares.JWTBackendMiddleware(next, routesContext.Handler)
@@ -29,6 +29,7 @@ func SetupRoutes(routesContext *ctx.RoutesContext) http.Handler {
 
 		r.Post("/getTicket/{RoomId}", routesContext.Handler.GetTicket(routesContext.Rdb))
 	})
+
 	// Rotas protegidas com ApiKey
 	routes.Group(func(r chi.Router) {
 		// r.Use(func(next http.Handler) http.Handler {
