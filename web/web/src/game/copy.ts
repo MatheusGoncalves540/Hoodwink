@@ -193,8 +193,9 @@ export const copy = {
 
   // fim de jogo
   outOfScene: "Fora de cena",
-  outOfSceneText: "Suas duas cartas caíram. A peça segue sem você; dá para assistir daqui.",
-  deadCardsLabel: "Suas duas cartas, mortas",
+  outOfSceneRegion: "Você, fora de cena",
+  outOfSceneAt: (round: number) => `Suas cartas caíram na rodada ${round}. Você ainda vê a mesa e pode conversar.`,
+  deadCardsLabel: (names: string[]) => `Suas duas cartas, mortas: ${names.join(" e ")}`,
   openChat: "Abrir a conversa",
   leaveRoom: "Sair da sala",
   deckOver: "O baralho acabou.",
@@ -206,7 +207,8 @@ export const copy = {
   exitOrder: "Ordem de saída",
   place: (n: number) => `${n}º`,
   newRoom: "Criar outra sala",
-  backToEntrance: "Voltar à entrada",
+  backToEntrance: "☜ Voltar à entrada",
+  afterShow: "Depois do espetáculo",
 
   // entrada e sala
   createRoom: "Criar sala",

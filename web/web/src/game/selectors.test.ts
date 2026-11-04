@@ -175,6 +175,7 @@ describe("outras telas", () => {
   it("fim: vencedor e ordem de saída do último ao primeiro", () => {
     expect(selectFinale(view("Fim"))).toEqual({
       winnerName: "Carla",
+      winnerIsMe: false,
       round: 17,
       coins: 14,
       fala: "",

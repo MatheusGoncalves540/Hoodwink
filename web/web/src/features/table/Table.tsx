@@ -15,6 +15,7 @@ import { selectDecision, selectFootlights, selectSeats, selectStage, selectYou }
 import { contest, contestPenalty, play, type Target } from "../../net/actions";
 import { send } from "../../net/GameSocket";
 import { useGameStore } from "../../store/gameStore";
+import { useSessionStore } from "../../store/sessionStore";
 import { useUiStore } from "../../store/uiStore";
 import { cx } from "../../ui/cx";
 import { ChatSheet } from "../sheets/ChatSheet";
@@ -22,6 +23,7 @@ import { DesktopRail } from "../sheets/DesktopRail";
 import { RoomMenu } from "../sheets/RoomMenu";
 import { SeatSheet } from "../sheets/SeatSheet";
 import { YouSheet } from "../sheets/YouSheet";
+import { OutOfScene } from "../endgame/OutOfScene";
 import { ActionBoard } from "../turn/ActionBoard";
 import { ContestPick } from "../turn/ContestPick";
 import { DeclaredCard } from "../turn/DeclaredCard";
@@ -215,6 +217,17 @@ export function TableScene() {
     }
   };
 
+  const leaveRoom = () => {
+    useGameStore.getState().reset();
+    useSessionStore.getState().reset();
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("sala");
+    url.searchParams.delete("cena");
+    url.searchParams.delete("fixture");
+    window.history.replaceState(null, "", url);
+  };
+
   const onBlock = () => {
     if (decision.kind !== "react" || !decision.block) return;
     if (decision.block.role === "GUARDIAN") {
@@ -242,7 +255,8 @@ export function TableScene() {
       <ContestPick view={view} decision={decision} layout={layout} onPick={(index) => send(contestPenalty(index))} />
     ) : undefined;
 
-  const panel = reactPanel ?? pickPanel;
+  const outPanel = decision.kind === "outOfScene" ? <OutOfScene view={view} layout={layout} onChat={onChat} onLeave={leaveRoom} /> : undefined;
+  const panel = reactPanel ?? pickPanel ?? outPanel;
   const board = decision.kind === "myTurn" && !targeting ? <ActionBoard view={view} layout={layout} onPick={pickRole} /> : undefined;
   const targetBar = targeting ? <TargetBar role={targeting.role} onBack={() => setTargeting(null)} /> : undefined;
 
