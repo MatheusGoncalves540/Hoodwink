@@ -72,3 +72,29 @@
 .noDots {
   visibility: hidden;
 }
+
+/* Desktop: 132×140 / 108×120; nomes 22/18 px e moedas 34/28 px (inline na Seat.tsx) */
+.desk {
+  padding: 16px 10px 8px;
+  gap: 11px;
+  border-radius: 66px 66px 4px 4px;
+}
+.desk.small {
+  padding: 13px 6px 6px;
+  gap: 8px;
+  border-radius: 54px 54px 4px 4px;
+}
+.desk .name {
+  font-size: 22px;
+}
+.desk.small .name {
+  font-size: 18px;
+}
+.desk.out .name {
+  font-family: var(--hw-font-texto);
+  font-size: 18px;
+  font-style: italic;
+}
+.desk.small.out .name {
+  font-size: 15px;
+}

@@ -43,3 +43,34 @@
   line-height: 1.2;
   max-width: 150px;
 }
+
+/* Desktop: linha de 196 px ao lado do trilho, cartas 104×144 */
+.desk.bar {
+  right: 420px;
+  height: 196px;
+  flex-direction: row;
+  align-items: center;
+  gap: 44px;
+  padding: 14px 40px 18px;
+}
+.desk .top {
+  flex: none;
+  gap: 14px;
+}
+.desk .cards {
+  gap: 14px;
+}
+.desk .card {
+  margin: 0;
+}
+.desk .money {
+  margin-left: 18px;
+}
+.desk .meta {
+  font-size: 16px;
+  max-width: 240px;
+}
+.desk > div:last-child {
+  flex: 1;
+  min-width: 0;
+}

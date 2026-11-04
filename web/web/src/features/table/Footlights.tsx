@@ -1,3 +1,4 @@
+import type { Layout } from "../../app/useLayout";
 import { copy, signed } from "../../game/copy";
 import { CLASSIC_RULES } from "../../game/rules.classic";
 import type { selectFootlights } from "../../game/selectors";
@@ -5,14 +6,14 @@ import { cx } from "../../ui/cx";
 import s from "./Footlights.module.css";
 
 /** Ribalta: baralho, taxa e efeitos ativos (com pips de rodadas restantes). */
-export function Footlights({ vm }: { vm: ReturnType<typeof selectFootlights> }) {
+export function Footlights({ vm, layout }: { vm: ReturnType<typeof selectFootlights>; layout: Layout }) {
   const seconds = CLASSIC_RULES.waitingAction.suddenDeath;
   const deckName = vm.suddenDeath ? copy.deckEmpty : copy.deck;
   const deckValue = vm.suddenDeath ? `${seconds} s` : String(vm.deck);
   const deckLabel = vm.suddenDeath ? copy.deckEmptyLabel(seconds) : copy.deckLabel(vm.deck);
 
   return (
-    <section aria-label={copy.footlights} className={s.footlights}>
+    <section aria-label={copy.footlights} className={cx(s.footlights, layout === "desktop" && s.desk)}>
       <div role="group" aria-label={copy.tableGroup} className={cx(s.group, s.tableGroup)}>
         <div aria-label={deckLabel} className={cx("m-item", s.item, vm.suddenDeath && s.alert)}>
           <span className={cx("hw-rotulo", s.label)}>{deckName}</span>

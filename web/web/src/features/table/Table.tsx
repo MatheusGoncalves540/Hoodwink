@@ -1,7 +1,7 @@
 /**
  * Mesa (telas 3, 7 e 13): cabeçalho, camarotes, cone, palco, ribalta e faixa "Você".
  * A view é pura (testável em Node); TableScene liga ao gameStore/uiStore.
- * Slots para as camadas de T18–T24: stageOverlay, bottomPanel, sheet e scenery.
+ * Slots para as camadas de T18–T24: stageOverlay, bottomPanel, sheet, scenery e rail.
  */
 import type { ReactNode } from "react";
 import { useLayout } from "../../app/useLayout";
@@ -29,6 +29,8 @@ export type TableSlots = {
   sheet?: ReactNode;
   /** Aviso/cortina de morte súbita atrás de tudo (T24). */
   scenery?: ReactNode;
+  /** Conteúdo do trilho de 420 px no desktop (T20). */
+  rail?: ReactNode;
 };
 
 type Props = {
@@ -57,16 +59,18 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, slots = {} }: 
     <main className={cx(s.screen, desktop && s.desk)}>
       {slots.scenery && <div className={s.scenery}>{slots.scenery}</div>}
 
+      <Header turn={room?.turn ?? 0} tax={room?.tax ?? 0} unread={unread} layout={layout} onMenu={onMenu} onChat={onChat} />
+
       <div ref={ref} className={s.tableArea}>
-        <Spotlight box={activeBox} width={width} />
+        <Spotlight box={activeBox} width={width} top={desktop ? 64 : 0} />
         <SeatRing seats={seats} layoutSeats={layoutSeats} layout={layout} onSeat={onSeat} />
-        <Header turn={room?.turn ?? 0} tax={room?.tax ?? 0} unread={unread} onMenu={onMenu} onChat={onChat} />
-        <Stage vm={stage} />
-        <Footlights vm={footlights} />
+        <Stage vm={stage} layout={layout} />
+        <Footlights vm={footlights} layout={layout} />
         {slots.bottomPanel && <div className={s.bottomPanel}>{slots.bottomPanel}</div>}
       </div>
 
-      {!slots.bottomPanel && <YouBar vm={you} suddenDeath={footlights.suddenDeath} />}
+      {!slots.bottomPanel && <YouBar vm={you} suddenDeath={footlights.suddenDeath} layout={layout} />}
+      {desktop && <aside className={s.rail}>{slots.rail}</aside>}
       {slots.stageOverlay && <div className={s.stageOverlay}>{slots.stageOverlay}</div>}
       {slots.sheet}
     </main>

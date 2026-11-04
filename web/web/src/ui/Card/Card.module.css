@@ -155,3 +155,8 @@ button.card {
   border-color: var(--hw-filete);
   background: linear-gradient(to top right, transparent 44%, var(--hw-alerta) 44% 56%, transparent 56%), var(--hw-filete);
 }
+
+/* Mesa6Desk.dc.html → cartas da faixa Você em 104×144 */
+.d { width: 104px; height: 144px; }
+.d .name { font-size: 15px; }
+.d .bottom { font-size: 14px; }
