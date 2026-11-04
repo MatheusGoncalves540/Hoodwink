@@ -15,15 +15,33 @@ export const createInput = (username: string): NewRoomInput => ({
   maxPlayers: DEFAULT_MAX_PLAYERS,
 });
 
-/** O JWT do backend tem { id, username } (backend/structures/jwt.go). Sem token, sem nome. */
-export function usernameFromToken(token: string): string {
+/** Código do convite na URL (`?sala=K7Q2`), no formato que o servidor emite: hexa minúsculo de 4 a 12. */
+export function roomCodeFromSearch(search: string): string | null {
+  const code = new URLSearchParams(search).get("sala")?.trim().toLowerCase() ?? "";
+  return /^[0-9a-f]{4,12}$/.test(code) ? code : null;
+}
+
+/** Payload do JWT sem validar a assinatura (quem valida é o servidor). */
+function tokenClaims(token: string): Record<string, unknown> {
   try {
     const payload = token.split(".")[1];
-    const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as { username?: unknown };
-    return typeof claims.username === "string" ? claims.username : "";
+    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as Record<string, unknown>;
   } catch {
-    return "";
+    return {};
   }
+}
+
+/** O JWT do backend tem { id, username } (backend/structures/jwt.go). Sem token, sem nome. */
+export function usernameFromToken(token: string): string {
+  const username = tokenClaims(token).username;
+  return typeof username === "string" ? username : "";
+}
+
+/** Id do jogador no jogo: o ticket tem { playerId, roomId } (ClaimsHoodwink); o JWT do backend tem { id }. */
+export function playerIdFromToken(token: string): string {
+  const { playerId, id } = tokenClaims(token);
+  const value = playerId ?? id;
+  return typeof value === "string" ? value : "";
 }
 
 type SessionState = {

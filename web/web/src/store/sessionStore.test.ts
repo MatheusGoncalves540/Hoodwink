@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createInput, DEFAULT_MAX_PLAYERS, useSessionStore, usernameFromToken } from "./sessionStore";
+import {
+  createInput,
+  DEFAULT_MAX_PLAYERS,
+  playerIdFromToken,
+  roomCodeFromSearch,
+  useSessionStore,
+  usernameFromToken,
+} from "./sessionStore";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 const s = () => useSessionStore.getState();
@@ -38,9 +45,25 @@ describe("sessionStore", () => {
     });
   });
 
+  it("lê o código do convite na URL no formato hexa do servidor", () => {
+    expect(roomCodeFromSearch("?sala=1A2B3C")).toBe("1a2b3c");
+    expect(roomCodeFromSearch("?cena=table&sala=%20a1b2%20")).toBe("a1b2");
+    expect(roomCodeFromSearch("?sala=zzzz")).toBeNull();
+    expect(roomCodeFromSearch("?sala=abc")).toBeNull();
+    expect(roomCodeFromSearch("")).toBeNull();
+  });
+
   it("lê o username do JWT e sobrevive a token inválido", () => {
     const token = `h.${btoa(JSON.stringify({ id: "me", username: "Matheus" }))}.s`;
     expect(usernameFromToken(token)).toBe("Matheus");
     expect(usernameFromToken("nada")).toBe("");
+  });
+
+  it("lê o playerId do ticket (ou do JWT do backend, no login)", () => {
+    const ticket = `h.${btoa(JSON.stringify({ playerId: "eu", roomId: "a1b2" }))}.s`;
+    const login = `h.${btoa(JSON.stringify({ id: "eu", username: "Matheus" }))}.s`;
+    expect(playerIdFromToken(ticket)).toBe("eu");
+    expect(playerIdFromToken(login)).toBe("eu");
+    expect(playerIdFromToken("nada")).toBe("");
   });
 });
