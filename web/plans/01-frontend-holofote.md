@@ -9,6 +9,9 @@ Premissas e decisões:
 - Sem `typescript`/`tsc` no projeto e o prompt 01 proíbe dependências além do `vitest`: o gate é `npm run build` + `npm test`.
 - Testes: Vitest ao lado do código, Node puro. Teste de fumaça de tela com `react-dom/server` (`renderToStaticMarkup`), sem jsdom nem Testing Library.
 - Fidelidade visual: conferência por amostragem no Chrome (DevTools MCP) nas telas-chave; a comparação exaustiva das 88 capturas é do revisor humano (prompt 10).
+- `data-theme`/`data-motion` vão no `<html>` (não num div): as gavetas do Radix são portadas para o `body` e precisam herdar o tema.
+- `main.css` legado deixa de ser importado (regras globais de `button` brigam com os tokens); o login legado segue funcional como fallback do `App` até a T14/T25.
+- Divisão de trabalho (pedido do usuário): este agente faz o visual (T2, T10–T24); outro agente faz a lógica (T9 e não-visual). Commits só com caminhos explícitos.
 - Itens não desenhados (fluxo de alvo, mensagens de erro, "Como se joga", confirmação de "Sair de cena") seguem `05-protocolo.md`/docs, marcados como inferidos no relatório.
 Pré-requisitos: Node 26 + npm (`npm ci` em `web/`); servidor local em `D:\GitHub\Hoodwink-server\gameServer` (Go 1.26) só para T25; referência de UI: `design-handoff/referencias/capturas/*.png` e `pranchas/*.dc.html`.
 
@@ -16,7 +19,7 @@ Pré-requisitos: Node 26 + npm (`npm ci` em `web/`); servidor local em `D:\GitHu
 
 ### Fase 1: fundação e dados (prompts 01 e 03)
 - [x] T1 [Frontend] copiar estilos e assets, `styles/index.css`, `index.html` (pt-BR, preconnect) e `main.tsx` importando os estilos · arquivos: `web/src/styles/*`, `web/public/assets/*`, `web/index.html`, `web/src/main.tsx` · depende: — · verificar: `npm run build` passa e `tokens.css` só difere do handoff no caminho de `--hw-verso`
-- [ ] T2 [Frontend] casca: `App.tsx` com `?cena=&fixture=`, `useLayout`, `useTheme`, `useMotionPref` e a página `?cena=amostras` · arquivos: `web/src/app/*`, `web/src/main.tsx` · depende: T1 · verificar: `npm run build`; `?cena=amostras` mostra tokens e fontes e troca de tema no navegador
+- [x] T2 [Frontend] casca: `App.tsx` com `?cena=&fixture=`, `useLayout`, `useTheme`, `useMotionPref` e a página `?cena=amostras` · arquivos: `web/src/app/*`, `web/src/main.tsx` · depende: T1 · verificar: `npm run build`; `?cena=amostras` mostra tokens e fontes e troca de tema no navegador
 - [x] T3 [Backend] `game/protocol.ts` com schemas Zod (chaves do Go → camelCase) e testes; adiciona `vitest` e scripts `test`/`test:watch` · arquivos: `web/src/game/protocol.ts`, `web/src/game/protocol.test.ts`, `web/package.json` · depende: — · verificar: `npm test`
 - [x] T4 [Backend] `game/roles.ts`, `game/rules.classic.ts` e `game/pricing.ts` com testes de taxa −1..+2, dobras e limites · arquivos: `web/src/game/roles.ts`, `web/src/game/rules.classic.ts`, `web/src/game/pricing.ts`, `web/src/game/pricing.test.ts` · depende: T3 · verificar: `npm test`
 - [x] T5 [Backend] `game/seats.ts` (tabela mobile e parábola desktop) com testes de contagem, sobreposição e limites · arquivos: `web/src/game/seats.ts`, `web/src/game/seats.test.ts` · depende: — · verificar: `npm test`
