@@ -81,7 +81,7 @@ export function Lobby() {
 
   return (
     <main className={cx(s.screen, layout === "desktop" && s.desk)}>
-      <section aria-label="Cartaz" className={cx("m-hang", s.cartaz)}>
+      <section aria-label={copy.cartazRegion} className={cx("m-hang", s.cartaz)}>
         <div className={s.profileRow}>
           <Profile signedIn={!!jwtToken} name={username} onLogin={openLogin} />
         </div>
@@ -111,7 +111,7 @@ export function Lobby() {
         </p>
       </section>
 
-      <section aria-label="Jogar" className={cx("m-rise", s.actions)}>
+      <section aria-label={copy.playRegion} className={cx("m-rise", s.actions)}>
         <Ticket size="l" disabled={busy} onClick={onCreate}>
           {copy.createRoom}
         </Ticket>

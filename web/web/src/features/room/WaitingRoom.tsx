@@ -51,7 +51,7 @@ export function WaitingRoom({ view, onLeave, onStart }: Props) {
       <Invite code={vm.code} layout={layout} className={s.inviteSlot} />
       <Cast vm={vm} layout={layout} className={s.castSlot} />
 
-      <section aria-label="Começar" className={s.start}>
+      <section aria-label={copy.startRegion} className={s.start}>
         <Ticket
           size="l"
           disabled={!canStart}

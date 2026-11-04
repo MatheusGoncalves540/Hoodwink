@@ -27,8 +27,14 @@
 }
 .out {
   color: var(--hw-sobre-veludo);
-  background: repeating-linear-gradient(90deg, #5A1820 0, #7A2430 6px, #5A1820 12px);
-  border: 1.5px solid #5A1820;
+  /* listras do veludo: --hw-veludo fica igual nos dois temas */
+  background: repeating-linear-gradient(
+    90deg,
+    var(--hw-veludo) 0,
+    color-mix(in srgb, var(--hw-veludo) 88%, var(--hw-sobre-veludo)) 6px,
+    var(--hw-veludo) 12px
+  );
+  border: 1.5px solid var(--hw-veludo);
 }
 .name {
   max-width: 100%;

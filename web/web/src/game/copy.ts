@@ -215,6 +215,11 @@ export const copy = {
   afterShow: "Depois do espetáculo",
 
   // entrada e sala
+  cartazRegion: "Cartaz",
+  playRegion: "Jogar",
+  castRegion: "Elenco",
+  inviteRegion: "Convite",
+  startRegion: "Começar",
   createRoom: "Criar sala",
   roomCodePlaceholder: "Código da sala",
   profile: (name: string) => `Perfil de ${name}`,

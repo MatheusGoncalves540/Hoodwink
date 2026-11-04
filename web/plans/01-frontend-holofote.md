@@ -54,14 +54,14 @@ Pré-requisitos: Node 26 + npm (`npm ci` em `web/`); servidor local em `D:\GitHu
 - [x] T26 [Frontend] remover legado (`componentsJSX/ButtonPanel`, `CommandPanel`, `ChatViewer`, `roomViewer`, `inGame/main.tsx`) mantendo `Auth/` e `authStore.ts` · arquivos: `web/src/componentsJSX/*`, `web/src/inGame/main.tsx` · depende: T25 · verificar: `npm run build` e nenhuma importação restante (`grep -r componentsJSX web/src`)
 
 ### Fase 6: revisão (prompt 10)
-- [ ] T27 [QA] varredura: cores fora dos tokens, `transition`/`animation` fora de `transform`/`opacity`, texto fora de `copy.ts`, preço fixo; corrigir os de 1 linha e registrar o resto em `plans/01-revisao.md` · arquivos: `web/src/**`, `plans/01-revisao.md` · depende: T26 · verificar: greps do prompt 10 sem ocorrências não justificadas
+- [x] T27 [QA] varredura: cores fora dos tokens, `transition`/`animation` fora de `transform`/`opacity`, texto fora de `copy.ts`, preço fixo; corrigir os de 1 linha e registrar o resto em `plans/01-revisao.md` · arquivos: `web/src/**`, `plans/01-revisao.md` · depende: T26 · verificar: greps do prompt 10 sem ocorrências não justificadas
 
 ## Aceite final
-- [ ] `npm run build` passa em `web/`
-- [ ] `npm test` passa (game/, store/, net/ e fumaça de cada tela)
-- [ ] `?cena=…&fixture=…` abre cada uma das 21 telas de jogo em 390×844 e 1440×900, nos dois temas, sem erro no console
-- [ ] Movimento reduzido (`prefers-reduced-motion` e menu) desliga cortina e fogo da morte súbita
-- [ ] Nenhuma importação de `componentsJSX/ButtonPanel|CommandPanel|ChatViewer|roomViewer` ou `inGame/main` em `web/src`
+- [x] `npm run build` passa em `web/`
+- [x] `npm test` passa (game/, store/, net/ e fumaça de cada tela)
+- [x] `?cena=…&fixture=…` abre cada uma das 21 telas de jogo em 390×844 e 1440×900, nos dois temas, sem erro no console
+- [x] Movimento reduzido (`prefers-reduced-motion` e menu) desliga cortina e fogo da morte súbita
+- [x] Nenhuma importação de `componentsJSX/ButtonPanel|CommandPanel|ChatViewer|roomViewer` ou `inGame/main` em `web/src`
 
 ## Riscos
 - Servidor local não sobe ou protocolo difere dos docs → T25 marca [!] e o adaptador fica em `net/`, com pedido ao servidor no relatório

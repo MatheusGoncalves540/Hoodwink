@@ -69,6 +69,9 @@ describe("reação e contestação", () => {
     expect(out).toContain("Ana escolhe qual carta sua cai");
     expect(out).toContain("Guardiã");
     expect(out).toContain("se for esta, cai só a proteção");
+    // a carta protegida mostra o estado do servidor, não “na mão”
+    expect(out).toContain(">protegida<");
+    expect(out).toContain(">na mão<");
     expect(out).toContain("Depois, a sorte escolhe.");
   });
 });
