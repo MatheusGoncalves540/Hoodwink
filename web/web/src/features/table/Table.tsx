@@ -1,13 +1,18 @@
 /**
  * Mesa (telas 3, 7 e 13): cabeçalho, camarotes, cone, palco, ribalta e faixa "Você".
  * A view é pura (testável em Node); TableScene liga ao gameStore/uiStore.
- * Slots para as camadas de T18–T24: stageOverlay, bottomPanel, sheet, scenery e rail.
+ * Slots para as camadas de T21–T24: stageOverlay, bottomPanel, sheet, scenery, rail e screenOverlay.
  */
 import { useRef, type ReactNode } from "react";
 import { useLayout } from "../../app/useLayout";
+import { copy } from "../../game/copy";
+import type { RoleId } from "../../game/protocol";
+import { ROLES } from "../../game/roles";
 import { desktopSeats, mobileSeats } from "../../game/seats";
 import type { GameView } from "../../game/selectors";
-import { selectFootlights, selectSeats, selectStage, selectYou } from "../../game/selectors";
+import { selectDecision, selectFootlights, selectSeats, selectStage, selectYou } from "../../game/selectors";
+import { play, type Target } from "../../net/actions";
+import { send } from "../../net/GameSocket";
 import { useGameStore } from "../../store/gameStore";
 import { useUiStore } from "../../store/uiStore";
 import { cx } from "../../ui/cx";
@@ -16,6 +21,8 @@ import { DesktopRail } from "../sheets/DesktopRail";
 import { RoomMenu } from "../sheets/RoomMenu";
 import { SeatSheet } from "../sheets/SeatSheet";
 import { YouSheet } from "../sheets/YouSheet";
+import { ActionBoard } from "../turn/ActionBoard";
+import { TargetBar } from "../turn/TargetBar";
 import { Footlights } from "./Footlights";
 import { Header } from "./Header";
 import { SeatRing } from "./SeatRing";
@@ -28,7 +35,7 @@ import s from "./Table.module.css";
 export type TableSlots = {
   /** Painel de reação sobre o palco (T22). */
   stageOverlay?: ReactNode;
-  /** Ações/contestação no pé, no lugar da faixa "Você" (T21/T22). */
+  /** Ações/contestação no pé, no lugar da faixa "Você" (T21/T22/T23). */
   bottomPanel?: ReactNode;
   /** Gaveta/menu/conversa abertos (T18/T19). */
   sheet?: ReactNode;
@@ -36,6 +43,8 @@ export type TableSlots = {
   scenery?: ReactNode;
   /** Conteúdo do trilho de 420 px no desktop (T20). */
   rail?: ReactNode;
+  /** Cobre a tela inteira, inclusive cabeçalho e trilho (ações, aviso de morte súbita). */
+  screenOverlay?: ReactNode;
 };
 
 type Props = {
@@ -44,10 +53,11 @@ type Props = {
   onSeat?(id: string): void;
   onMenu?(): void;
   onChat?(): void;
+  targeting?: boolean;
   slots?: TableSlots;
 };
 
-export function Table({ view, unread = 0, onSeat, onMenu, onChat, slots = {} }: Props) {
+export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, slots = {} }: Props) {
   const layout = useLayout();
   const desktop = layout === "desktop";
   const [ref, width] = useStageWidth(desktop ? 1020 : 390);
@@ -68,7 +78,7 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, slots = {} }: 
 
       <div ref={ref} className={s.tableArea}>
         <Spotlight box={activeBox} width={width} top={desktop ? 64 : 0} />
-        <SeatRing seats={seats} layoutSeats={layoutSeats} layout={layout} onSeat={onSeat} />
+        <SeatRing seats={seats} layoutSeats={layoutSeats} layout={layout} onSeat={onSeat} targeting={targeting} />
         <Stage vm={stage} layout={layout} />
         <Footlights vm={footlights} layout={layout} />
         {slots.bottomPanel && <div className={s.bottomPanel}>{slots.bottomPanel}</div>}
@@ -78,11 +88,12 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, slots = {} }: 
       {desktop && <aside className={s.rail}>{slots.rail}</aside>}
       {slots.stageOverlay && <div className={s.stageOverlay}>{slots.stageOverlay}</div>}
       {slots.sheet}
+      {slots.screenOverlay && <div className={s.screenOverlay}>{slots.screenOverlay}</div>}
     </main>
   );
 }
 
-/** Liga a mesa ao estado real: gavetas pelo uiStore, trilho no desktop e conversa com o contador. */
+/** Liga a mesa ao estado real: gavetas pelo uiStore, trilho no desktop, ações e fluxo de alvo. */
 export function TableScene() {
   const me = useGameStore((st) => st.me);
   const room = useGameStore((st) => st.room);
@@ -91,20 +102,96 @@ export function TableScene() {
   const open = useUiStore((st) => st.open);
   const openSheet = useUiStore((st) => st.openSheet);
   const close = useUiStore((st) => st.close);
+  const targeting = useUiStore((st) => st.targeting);
+  const setTargeting = useUiStore((st) => st.setTargeting);
   const layout = useLayout();
   const chatInputRef = useRef<HTMLInputElement>(null);
   const view = { me, room, log };
+  const decision = selectDecision(view);
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
+
+  const sendPlay = (role: RoleId, target?: Target) => {
+    try {
+      send(play(role, me ?? "", target));
+    } catch (e) {
+      console.error(e);
+    }
+    setTargeting(null);
+  };
+
+  const pickRole = (role: RoleId) => {
+    const def = ROLES[role];
+    if (def.target === "own") {
+      setTargeting({ role });
+      open("you");
+      return;
+    }
+    if (def.target === "other") {
+      setTargeting({ role });
+      return;
+    }
+    sendPlay(role);
+  };
+
+  const closeSheet = () => {
+    close();
+    setTargeting(null);
+  };
+
+  const onSeat = (seatId: string) => {
+    if (targeting) {
+      const needsCard = targeting.role === "ASSASSIN" || targeting.role === "KAMIKAZE" || targeting.role === "CLAIRVOYANT";
+      if (!needsCard) {
+        sendPlay(targeting.role, { playerId: seatId });
+        return;
+      }
+    }
+    open({ seat: seatId });
+  };
+
+  const pickSeatCard = (index: number) => {
+    if (!targeting || typeof openSheet !== "object" || !openSheet) return;
+    sendPlay(targeting.role, { playerId: openSheet.seat, cardIndex: index });
+    close();
+  };
+
+  const pickOwnCard = (index: number) => {
+    if (!targeting) return;
+    sendPlay(targeting.role, { cardIndex: index });
+    close();
+  };
+
+  const ownCardDisabled = (index: number) => {
+    const card = me ? room?.players[me]?.cards.find((c) => c.index === index) : undefined;
+    if (!card) return true;
+    if (targeting?.role === "GRAVEDIGGER") return !card.dead;
+    if (targeting?.role === "GUARDIAN") return card.dead || card.protected;
+    return card.dead;
+  };
 
   const sheet =
     openSheet === "you" ? (
-      <YouSheet view={view} mode={layout} onClose={close} />
+      <YouSheet
+        view={view}
+        mode={layout}
+        onClose={closeSheet}
+        backLabel={targeting ? copy.backToActions : undefined}
+        onPickCard={targeting && ROLES[targeting.role].target === "own" ? pickOwnCard : undefined}
+        cardDisabled={targeting ? ownCardDisabled : undefined}
+      />
     ) : openSheet === "menu" ? (
-      <RoomMenu view={view} mode={layout} onClose={close} />
+      <RoomMenu view={view} mode={layout} onClose={closeSheet} />
     ) : openSheet === "chat" ? (
-      <ChatSheet view={view} mode={layout} onClose={close} />
+      <ChatSheet view={view} mode={layout} onClose={closeSheet} />
     ) : openSheet && typeof openSheet === "object" ? (
-      <SeatSheet view={view} seatId={openSheet.seat} mode={layout} onClose={close} />
+      <SeatSheet
+        view={view}
+        seatId={openSheet.seat}
+        mode={layout}
+        onClose={closeSheet}
+        backLabel={targeting ? copy.backToActions : undefined}
+        onPickCard={targeting && ROLES[targeting.role].target === "other" ? pickSeatCard : undefined}
+      />
     ) : undefined;
 
   const onChat = () => {
@@ -119,14 +206,24 @@ export function TableScene() {
     }
   };
 
+  const board = decision.kind === "myTurn" && !targeting ? <ActionBoard view={view} layout={layout} onPick={pickRole} /> : undefined;
+  const targetBar = targeting ? <TargetBar role={targeting.role} onBack={() => setTargeting(null)} /> : undefined;
+
   return (
     <Table
       view={view}
       unread={unread}
+      targeting={!!targeting}
       onMenu={() => open("menu")}
       onChat={onChat}
-      onSeat={(seat) => open({ seat })}
-      slots={{ sheet, rail: <DesktopRail view={view} chatInputRef={chatInputRef} /> }}
+      onSeat={onSeat}
+      slots={{
+        sheet,
+     
+        rail: <DesktopRail view={view} chatInputRef={chatInputRef} />,
+        screenOverlay: board,
+        bottomPanel: targetBar,
+      }}
     />
   );
 }

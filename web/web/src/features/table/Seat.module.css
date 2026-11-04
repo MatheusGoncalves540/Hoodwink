@@ -98,3 +98,12 @@
 .desk.small.out .name {
   font-size: 15px;
 }
+
+/* Fluxo de alvo inferido (05-protocolo.md): anel de ouro nos elegíveis, 40% nos demais. */
+.targetable {
+  border: 2px solid var(--hw-ouro);
+  box-shadow: 0 0 0 3px var(--hw-plateia), 0 0 0 5px var(--hw-ouro);
+}
+.dimmed {
+  opacity: 0.4;
+}

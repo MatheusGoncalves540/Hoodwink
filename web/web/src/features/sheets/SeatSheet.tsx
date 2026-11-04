@@ -12,20 +12,23 @@ type Props = {
   seatId: string;
   mode: "mobile" | "desktop";
   onClose(): void;
+  /** Fluxo de alvo: cada carta viva vira botão. */
+  onPickCard?(index: number): void;
+  backLabel?: string;
 };
 
 /** Camarote aberto (telas 4 e 14). */
-export function SeatSheet({ view, seatId, mode, onClose }: Props) {
+export function SeatSheet({ view, seatId, mode, onClose, onPickCard, backLabel }: Props) {
   const vm = selectSeatSheet(view, seatId);
   if (!vm) return null;
   return (
-    <Sheet open onClose={onClose} label={copy.seatSheet(vm.name)} mode={mode}>
-      <SeatSheetBody vm={vm} />
+    <Sheet open onClose={onClose} label={copy.seatSheet(vm.name)} mode={mode} backLabel={backLabel}>
+      <SeatSheetBody vm={vm} onPickCard={onPickCard} />
     </Sheet>
   );
 }
 
-export function SeatSheetBody({ vm }: { vm: SeatSheetVM }) {
+export function SeatSheetBody({ vm, onPickCard }: { vm: SeatSheetVM; onPickCard?(index: number): void }) {
   return (
     <>
       <div className={s.header}>
@@ -34,9 +37,23 @@ export function SeatSheetBody({ vm }: { vm: SeatSheetVM }) {
       </div>
 
       <div className={s.cards}>
-        {vm.cards.map((c, i) => (
-          <SheetCard key={i} state={c.state} role={c.role} />
-        ))}
+        {vm.cards.map((c, i) => {
+          if (!onPickCard) return <SheetCard key={i} state={c.state} role={c.role} />;
+          const disabled = c.state === "dead";
+          const state = copy.cardState[c.state === "back" ? "hidden" : c.state];
+          return (
+            <button
+              key={i}
+              type="button"
+              className={s.pick}
+              aria-label={copy.pickCard(vm.name, state)}
+              aria-disabled={disabled || undefined}
+              onClick={disabled ? undefined : () => onPickCard(c.index)}
+            >
+              <SheetCard state={c.state} role={c.role} />
+            </button>
+          );
+        })}
       </div>
 
       <Label>{copy.tableSaw}</Label>

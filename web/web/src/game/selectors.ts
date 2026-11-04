@@ -281,7 +281,7 @@ export type SeatSheetVM = {
   name: string;
   coins: number;
   alive: boolean;
-  cards: MiniCard[];
+  cards: (MiniCard & { index: number })[];
   investments: number[];
   log: { key: string; turn: number; text: string }[];
 };
@@ -295,7 +295,7 @@ export function selectSeatSheet(v: GameView, id: string): SeatSheetVM | null {
     name: p.name,
     coins: p.coins,
     alive: p.alive,
-    cards: p.cards.map(miniCard),
+    cards: p.cards.map((c) => ({ ...miniCard(c), index: c.index })),
     investments: p.investments,
     log: selectLog(v, id),
   };
