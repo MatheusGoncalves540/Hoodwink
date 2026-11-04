@@ -55,3 +55,24 @@ describe("gameStore", () => {
     expect(s().room).toEqual(base);
   });
 });
+
+describe("gameStore (fila de apresentação)", () => {
+  it("apresenta os eventos na ordem em que chegaram e não repete o que já está na frente", () => {
+    const base = fixture("Mesa6", NOW).room!;
+    const declared = event(base, "CARD_PLAYED_REBEL", "ana", NOW + 1);
+    const contested = event(declared, "CONTEST", "bruno", NOW + 2);
+
+    s().applyRoom(declared, NOW);
+    s().applyRoom(contested, NOW);
+    expect(s().presentation.map((e) => e.type)).toEqual(["CARD_PLAYED_REBEL", "CONTEST"]);
+
+    s().shift();
+    expect(s().presentation.map((e) => e.type)).toEqual(["CONTEST"]);
+
+    // Reconexão com o mesmo evento da frente: não reenfileira nem duplica o diário.
+    s().applyRoom(contested, NOW + 10);
+    expect(s().presentation.map((e) => e.type)).toEqual(["CONTEST"]);
+    expect(s().log).toHaveLength(1);
+    expect(s().log[0].pred).toContain("foi contestado");
+  });
+});

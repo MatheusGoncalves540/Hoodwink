@@ -2,7 +2,7 @@
 
 Status: **em andamento**. A varredura automática está feita; a revisão tela a tela depende das telas da T21–T24, que ainda não existem. Reexecutar os itens marcados como pendentes quando elas entrarem.
 
-Método: greps do prompt 10 em `web/src`, leitura dos CSS Modules e conferência das telas já prontas contra `design-handoff/referencias/capturas/`. Gates rodados neste estado: `npm test` (88 testes, 15 arquivos) e `npm run build` verdes. Sem Playwright (opcional no prompt).
+Método: greps do prompt 10 em `web/src`, leitura dos CSS Modules e conferência das telas já prontas contra `design-handoff/referencias/capturas/`. Gates rodados neste estado: `npm test` (89 testes, 15 arquivos) e `npm run build` verdes. Sem Playwright (opcional no prompt).
 
 ## 1. Cores fora dos tokens
 
