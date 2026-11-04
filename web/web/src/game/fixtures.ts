@@ -238,7 +238,7 @@ export function fixture(name: FixtureName, now: number): Fixture {
     }
     case "MorteSubita":
     case "MesaSubita":
-      return { ...base, room: table(now, { n: 4, active: "ana", deck: 0, event: { type: "WAITING_FIRST_ACTION", left: 4 } }) };
+      return { ...base, room: table(now, { n: 4, active: "ana", deck: 0, turn: 19, event: { type: "WAITING_FIRST_ACTION", left: 4 } }) };
     case "Fim": {
       const dead = (p: PublicPlayer) => ({ ...p, alive: false });
       const roster = ROSTER.slice(0, 5).map((p) => (p.id === "carla" ? { ...p, coins: 14 } : dead(p)));

@@ -52,3 +52,12 @@
 .desk .round {
   font-size: 14px;
 }
+
+/* MesaSubita: "Rodada 19, morte súbita" em itálico, sem caixa-alta. */
+.suddenHeader {
+  font-size: 16px;
+  font-style: italic;
+}
+.sudden {
+  color: var(--hw-lampada);
+}

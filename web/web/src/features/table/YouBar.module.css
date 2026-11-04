@@ -74,3 +74,7 @@
   flex: 1;
   min-width: 0;
 }
+
+.sudden {
+  border-top-color: var(--hw-alerta);
+}

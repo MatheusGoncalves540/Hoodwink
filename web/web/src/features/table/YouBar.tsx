@@ -1,5 +1,6 @@
 import type { Layout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
+import { CLASSIC_RULES } from "../../game/rules.classic";
 import type { selectYou } from "../../game/selectors";
 import { CardBack, CardDead, CardFace } from "../../ui/Card/Card";
 import { Coin } from "../../ui/Coin/Coin";
@@ -11,10 +12,11 @@ import s from "./YouBar.module.css";
 export function YouBar({ vm, suddenDeath, layout }: { vm: ReturnType<typeof selectYou>; suddenDeath: boolean; layout: Layout }) {
   const timer = vm.timer;
   const turn = timer ? copy.turnOf(timer.ownerName) : null;
+  const seconds = CLASSIC_RULES.waitingAction.suddenDeath;
   const cardSize = layout === "desktop" ? "d" : "s";
 
   return (
-    <section aria-label={copy.youRegion} className={cx(s.bar, layout === "desktop" && s.desk)}>
+    <section aria-label={copy.youRegion} className={cx(s.bar, layout === "desktop" && s.desk, suddenDeath && s.sudden)}>
       <div className={s.top}>
         <div className={s.cards}>
           {vm.cards.map((c, i) =>
@@ -58,7 +60,7 @@ export function YouBar({ vm, suddenDeath, layout }: { vm: ReturnType<typeof sele
             <span>
               {turn.before}
               <b>{turn.name}</b>
-              {turn.after}
+              {suddenDeath ? copy.suddenTurnAfter(seconds) : turn.after}
             </span>
           }
         />

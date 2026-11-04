@@ -1,0 +1,71 @@
+.alert {
+  position: absolute;
+  inset: 0;
+  color: var(--hw-tinta);
+  z-index: 6;
+}
+.text {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  top: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.deckOver {
+  margin: 0;
+  font-size: 18px;
+  font-style: italic;
+}
+.title {
+  margin: 0;
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 72px;
+  line-height: 0.95;
+  color: var(--hw-lampada);
+  text-shadow: 0 0 28px rgba(185, 138, 46, 0.6);
+}
+.each {
+  margin: 6px 0 0;
+  font-size: 19px;
+  line-height: 1.35;
+}
+.resume {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 40px;
+  margin: 0;
+  text-align: center;
+  font-size: 15px;
+  font-style: italic;
+}
+.curtain {
+  position: absolute;
+  inset: 0;
+}
+.desk .text {
+  top: 200px;
+}
+.desk .title {
+  font-size: 132px;
+}
+.desk .deckOver {
+  font-size: 24px;
+}
+.desk .each {
+  font-size: 24px;
+}
+.desk .resume {
+  font-size: 18px;
+}
+.deskHolofote {
+  clip-path: polygon(48% 0, 52% 0, 74% 74%, 26% 74%);
+  background:
+    radial-gradient(ellipse 24% 6% at 50% 74%, rgba(255, 246, 220, 0.3), transparent 70%),
+    linear-gradient(rgba(255, 246, 220, 0.42), rgba(255, 246, 220, 0.14) 45%, transparent 74%);
+}

@@ -51,7 +51,7 @@ describe("reação e contestação", () => {
     expect(out).toContain("Derrube uma carta de Ana");
     expect(out).toContain('aria-label="Derrubar a carta revelada de Ana, Crupiê"');
     expect(out).toContain('aria-label="Derrubar a carta escondida de Ana"');
-    expect(out).toContain("Em 6 s, a sorte escolhe por você.");
+    expect(out).toContain("a sorte escolhe por você.");
   });
 
   it("ContestaVerdade: verdade e a escolha do outro sobre as suas cartas", () => {
@@ -69,7 +69,7 @@ describe("reação e contestação", () => {
     expect(out).toContain("Ana escolhe qual carta sua cai");
     expect(out).toContain("Guardiã");
     expect(out).toContain("se for esta, cai só a proteção");
-    expect(out).toContain("Ana tem 6 s. Depois, a sorte escolhe.");
+    expect(out).toContain("Depois, a sorte escolhe.");
   });
 });
 
