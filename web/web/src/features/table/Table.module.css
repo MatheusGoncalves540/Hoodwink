@@ -1,0 +1,42 @@
+/* Mesa6.dc.html: o palco é absoluto dentro do aparelho; a faixa Você fica no pé. */
+.screen {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+  height: 100dvh;
+  margin: 0 auto;
+  background: var(--hw-plateia);
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+  overflow: hidden;
+}
+.desk {
+  max-width: none;
+}
+.tableArea {
+  position: absolute;
+  inset: 0;
+}
+.scenery {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.stageOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.stageOverlay > * {
+  pointer-events: auto;
+}
+.bottomPanel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+}

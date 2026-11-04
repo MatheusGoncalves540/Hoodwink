@@ -1,0 +1,71 @@
+/* Mesa6.dc.html → ribalta em top 540 px; Mesa6Desk → 596 px (T17) */
+.footlights {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 540px;
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  z-index: 1;
+}
+.tableGroup {
+  --m-base: 0.35s;
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.effectsGroup {
+  --m-base: 0.45s;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+}
+.item {
+  height: 54px;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border: 1.5px solid var(--hw-tinta);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.1;
+  flex-shrink: 0;
+}
+.effect {
+  border-style: dashed;
+  gap: 3px;
+}
+.label {
+  font-size: 10px;
+}
+.value {
+  font-family: var(--hw-font-display);
+  font-size: 20px;
+}
+.effectHead {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.pips {
+  display: flex;
+  gap: 4px;
+}
+.pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hw-luz);
+}
+.sep {
+  width: 1px;
+  background: color-mix(in srgb, var(--hw-tinta) 40%, transparent);
+}
+.alert {
+  background: var(--hw-alerta);
+  color: var(--hw-plateia);
+  border-color: var(--hw-alerta);
+}
