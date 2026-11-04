@@ -98,6 +98,12 @@
   padding: var(--hw-space-4) var(--hw-space-3) var(--hw-space-3);
   background: var(--hw-luz);
 }
+.am-grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 6px;
+}
 .am-carimbo {
   position: relative;
   width: 132px;

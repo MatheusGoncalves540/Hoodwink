@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { CardFace, CardMini } from "../ui/Card/Card";
 import { Coin } from "../ui/Coin/Coin";
 import { CountdownDots } from "../ui/CountdownDots/CountdownDots";
 import { Timer } from "../ui/Timer/Timer";
@@ -51,6 +52,24 @@ describe("primitivos de ui/ (fumaça em Node)", () => {
   it("pontos da contestação: 6 cheios de 10, o sexto pisca", () => {
     const out = html(<CountdownDots seconds={6} total={10} />);
     expect(out.match(/<span class="[^"]*"/g)?.map((c) => c.includes("m-tick"))).toEqual([false, false, false, false, false, true, false, false, false, false]);
+  });
+
+  it("carta Cortina: faixa de baixo primeiro, carimbo no meio, nome por último (column-reverse)", () => {
+    const out = html(<CardFace size="s" role="ASSASSIN" bottom="protegida" stamp="revelada" protected />);
+    const order = [...out.matchAll(/(protegida|data-carimbo|Assassino)/g)].map((m) => m[1]);
+    expect(order).toEqual(["protegida", "data-carimbo", "Assassino"]);
+    expect(out).toMatch(/^<div class="hw-carta [^"]*protected/);
+  });
+
+  it("carta sem custo desenha o losango no lugar da moeda", () => {
+    const kamikaze = html(<CardFace size="xl" role="KAMIKAZE" cost={null} />);
+    expect(kamikaze).toMatch(/class="[^"]*diamond[^"]*"/);
+    expect(kamikaze).not.toMatch(/class="hw-num/);
+    expect(html(<CardFace size="xl" role="ASSASSIN" cost={3} />)).toMatch(/class="hw-num [^"]*">3</);
+  });
+
+  it("miniatura é decorativa", () => {
+    expect(html(<CardMini size="l" state="dead" />)).toMatch(/^<span aria-hidden="true" class="[^"]*mini-dead/);
   });
 
   it("linha do Proso some sem fala", () => {
