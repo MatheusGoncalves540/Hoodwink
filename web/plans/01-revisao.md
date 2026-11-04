@@ -2,7 +2,7 @@
 
 Status: **em andamento**. A varredura automática está feita; a revisão tela a tela depende das telas da T21–T24, que ainda não existem. Reexecutar os itens marcados como pendentes quando elas entrarem.
 
-Método: greps do prompt 10 em `web/src`, leitura dos CSS Modules e conferência das telas já prontas contra `design-handoff/referencias/capturas/`. Gates rodados neste estado: `npm test` (89 testes, 15 arquivos) e `npm run build` verdes. Sem Playwright (opcional no prompt).
+Método: greps do prompt 10 em `web/src`, leitura dos CSS Modules e conferência das telas já prontas contra `design-handoff/referencias/capturas/`. Gates rodados neste estado: `npm test` (99 testes, 15 arquivos) e `npm run build` verdes. Sem Playwright (opcional no prompt).
 
 ## 1. Cores fora dos tokens
 
@@ -89,13 +89,30 @@ Conferência de `web/src/net/actions.ts` com `game/structs/validatePlayerPlayPay
 
 Nenhum ajuste necessário no `net/`; nada a pedir ao servidor aqui.
 
-## 9. Pedidos ao servidor (não alterar aqui)
+## 9. Correções da auditoria de lógica
 
-- `rooms/roomBroadcast.go` expõe `PendingEffects`/`PendingPresentationEvents` (DTOs), mas `PublicRoomForUpdates` não tem esses campos.
-- `PublicRoomForUpdates` não manda `maxPlayers`.
-- `GameEvent` não tem tags JSON (chega `PlayerID`, `Type`, `ExpiresAt`, `Payload`); o cliente normaliza em `net/protocol.ts`. O ideal é o servidor mandar camelCase.
+Achados confirmados no servidor e corrigidos nesta passada (cada um com teste):
 
-## 10. Decisões inferidas (não desenhadas)
+- `selectScene`/`selectFootlights` passam a usar `startTime` (`protocol.ts`, `fixtures.ts`): o servidor manda `gameEvent: null` entre deixas, e a tela não volta mais para a sala no meio da partida.
+- `applyRoom` e `reset` descartam diário, fila e gavetas ao trocar de sala; `GameSocket` define `me` pelo ticket e limpa o estado ao montar.
+- `play()` lança antes de enviar se faltar `targetPlayer`/`targetCardIndex` (o servidor fecha o socket ou age na carta 0 quando o campo some).
+- Guardiã é oferecida na morte causada por você mesmo (Greed), como `guardianValidation.go` permite.
+- Egoísta não é oferecido em `STEAL_COINS` com `lostCoins/2 <= 1` (`selfishValidation.go`).
+- `CONTEST_PENALTY` sem `CONTEST` (reconexão) fecha a declaração já com o desfecho.
+- `CHANGED_CARD` com `cause: CONTEST_PENALTY` não é mais narrado como Crupiê.
+- `selectYou.timer.total` usa a janela do evento: ação 10 s, mensagem 6 s, importante 8 s (3/4/5 na morte súbita), conforme `ClassicRules.yaml`.
+- JWT lido como UTF-8 (nome com acento não vira mojibake).
+
+## 10. Pedidos ao servidor (não alterar aqui)
+
+- `players/playerConversion.go` não preenche `moveTime`, `investments` nem `pendingInvestmentCoin` no jogador público. Sem `moveTime`, a ordem de jogo (e o anfitrião) cai no id; investimentos nunca aparecem.
+- A versão pública das cartas não manda `name` nem para cartas reveladas; o `REVEALED_CARD` não vira face na tela dos outros (o cliente pode cachear o evento, mas o certo é o servidor mandar).
+- `PublicRoomForUpdates` não manda `maxPlayers`; a sala mostra sempre 6 lugares.
+- `GameEvent` não tem tags JSON (chega `PlayerID`, `Type`, `ExpiresAt`, `Payload`); o cliente normaliza em `net/protocol.ts`. O ideal é camelCase.
+- `PublicRoomForUpdates` manda `pendingEffects` (o cliente ignora) e não manda `PendingPresentationEvents` (interno, correto).
+- **Discrepância de regra, confirmar com o produto:** o servidor credita `LostCoins / 2` ao Trapaceiro (`stealCoinsEffect.go`), então “rouba 3” vira 1; a prancha `Acoes` e `pricing.ts` dizem “fica com 2”. `pricing.ts` ficou como a prancha; não troquei por uma suposição.
+
+## 11. Decisões inferidas (não desenhadas)
 
 - Fluxo de alvo da T21 (camarotes elegíveis com anel, demais a 40%, “☜ Voltar às ações”), conforme `05-protocolo.md`.
 - Modal de login (visual legado, não está nas pranchas).
