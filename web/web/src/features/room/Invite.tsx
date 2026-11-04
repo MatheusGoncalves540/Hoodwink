@@ -1,5 +1,5 @@
 /**
- * Convite da sala (Sala.dc.html → section[aria-label="Convite"]).
+ * Convite da sala (Sala.dc.html → seção "Convite").
  * O ingresso é escuro (classe global `ticket`); o botão usa currentColor para aparecer sobre ele.
  */
 import { useEffect, useState } from "react";
@@ -34,7 +34,7 @@ export function Invite({ code, layout, className }: Props) {
 
   return (
     <section
-      aria-label="Convite"
+      aria-label={copy.inviteRegion}
       className={cx("ticket", "m-rise", s.invite, layout === "desktop" && s.desk, className)}
     >
       <div className={s.room}>

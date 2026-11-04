@@ -1,5 +1,5 @@
 /**
- * Elenco da sala (Sala.dc.html → section[aria-label="Elenco"]).
+ * Elenco da sala (Sala.dc.html → seção "Elenco").
  * De 7 a 10 lugares as linhas encolhem (34 px, nome 19 px) para caber sem rolar.
  */
 import type { Layout } from "../../app/useLayout";
@@ -16,7 +16,7 @@ type Props = { vm: WaitingRoomVM; layout: Layout; className?: string };
 export function Cast({ vm, layout, className }: Props) {
   return (
     <section
-      aria-label="Elenco"
+      aria-label={copy.castRegion}
       className={cx("m-hang", s.cast, layout === "desktop" && s.desk, className)}
     >
       <h1 className={s.title}>{vm.name}</h1>

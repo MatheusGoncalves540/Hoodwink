@@ -44,7 +44,7 @@ export function ContestPick({ view, decision, layout, onPick }: Props) {
     ? (target?.cards ?? []).map((c) => ({ index: c.index, state: c.state, role: c.role }))
     : (you?.cards ?? []).map((c) => ({
         index: c.index,
-        state: c.dead ? "dead" : c.protected ? "protected" : c.role ? "revealed" : "back",
+        state: c.dead ? "dead" : c.protected ? "protected" : "back",
         role: c.role,
       }));
 
@@ -61,15 +61,18 @@ export function ContestPick({ view, decision, layout, onPick }: Props) {
       <div role="group" aria-label={picking ? copy.cardsOf(name) : copy.yourCards} className={s.cards}>
         {cards.map((c) => {
           if (picking && c.state === "dead") return null;
-          const face = c.state === "revealed" || c.state === "protected";
+          // na espera, as suas cartas são conhecidas: mostram a face mesmo sem estarem reveladas à mesa
+          const face = c.state === "revealed" || c.state === "protected" || (!picking && !!c.role);
           const note = !picking && c.state === "protected" ? copy.protectedWarn : undefined;
           const state = picking
             ? copy.cardState[c.state === "back" ? "hidden" : c.state]
             : c.state === "dead"
               ? copy.cardState.dead
-              : c.protected
+              : c.state === "protected"
                 ? copy.cardState.protected
-                : copy.inHandState;
+                : c.state === "revealed"
+                  ? copy.cardState.revealed
+                  : copy.inHandState;
           const body = face ? (
             <>
               <span className={s.state}>{state}</span>
