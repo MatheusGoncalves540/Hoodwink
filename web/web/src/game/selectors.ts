@@ -245,10 +245,11 @@ export function selectChat(v: GameView): ChatItem[] {
 export function selectFinale(v: GameView) {
   const r = v.room;
   const winner = r ? Object.values(r.players).find((p) => p.alive) : undefined;
+  const winnerIsMe = !!winner && winner.id === v.me;
   const exits = exitsOf(v.log)
     .reverse()
     .map((e, i) => ({ place: i + 2, name: e.playerId === v.me ? copy.you : firstName(e.name), round: e.turn, me: e.playerId === v.me }));
-  return { winnerName: winner ? firstName(winner.name) : "", round: r?.turn ?? 0, coins: winner?.coins ?? 0, exits, fala: "" };
+  return { winnerName: winner ? (winnerIsMe ? copy.you : firstName(winner.name)) : "", winnerIsMe, round: r?.turn ?? 0, coins: winner?.coins ?? 0, exits, fala: "" };
 }
 
 export function selectWaitingRoom(v: GameView) {

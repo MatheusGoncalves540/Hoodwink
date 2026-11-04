@@ -7,6 +7,7 @@ import { useEffect, type ComponentType } from "react";
 import LoginModal from "../componentsTSX/loginModal";
 import { FIXTURE_NAMES, type FixtureName } from "../game/fixtures";
 import { selectScene } from "../game/selectors";
+import { FinaleScene } from "../features/endgame/Finale";
 import { Lobby } from "../features/lobby/Lobby";
 import { RoomScene } from "../features/room/WaitingRoom";
 import { TableScene } from "../features/table/Table";
@@ -20,7 +21,7 @@ import "./app.css";
 export type Scene = ReturnType<typeof selectScene>;
 
 /** Cada tela entra aqui quando fica pronta (T14 lobby, T15 room, T16 table, T23 finale). */
-const SCENES: Partial<Record<Scene, ComponentType>> = { lobby: Lobby, room: RoomScene, table: TableScene };
+const SCENES: Partial<Record<Scene, ComponentType>> = { lobby: Lobby, room: RoomScene, table: TableScene, finale: FinaleScene };
 
 const param = (name: string) => (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get(name));
 const isFixture = (s: string | null): s is FixtureName => FIXTURE_NAMES.includes(s as FixtureName);
