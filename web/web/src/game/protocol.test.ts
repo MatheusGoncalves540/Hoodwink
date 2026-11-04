@@ -38,6 +38,7 @@ describe("parseRoom", () => {
       currentPlayer: "p2",
       gameEvent: { playerId: "p2", type: "CARD_PLAYED_ASSASSIN", expiresAt: Date.parse("2026-11-04T21:38:10Z"), payload: { targetPlayer: "p1", targetCardIndex: 1 } },
       gameOver: false,
+      startTime: "2026-11-04T21:30:00Z",
       chat: [],
     });
   });

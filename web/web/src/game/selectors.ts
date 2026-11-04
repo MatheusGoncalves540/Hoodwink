@@ -48,12 +48,13 @@ const miniCard = (c: PublicCard): MiniCard =>
 
 const fname = (v: GameView, id: string) => firstName(v.room?.players[id]?.name ?? "");
 const payload = (v: GameView) => (v.room?.gameEvent?.payload ?? {}) as Record<string, unknown>;
+/** startTime zero (Go: "0001-01-01T00:00:00Z") = sala ainda não começou; gameEvent nulo só marca o intervalo entre deixas. */
+const hasStarted = (r: PublicRoom | null) => !!r && Date.parse(r.startTime) > 0;
 
 export function selectScene(v: GameView): "lobby" | "room" | "table" | "finale" {
   if (!v.room) return "lobby";
   if (v.room.gameOver) return "finale";
-  if (!v.room.gameEvent || v.room.gameEvent.type === "WAITING_START") return "room";
-  return "table";
+  return hasStarted(v.room) ? "table" : "room";
 }
 
 /** Adversários na ordem de jogo, começando por quem vem depois de você. */
@@ -114,7 +115,7 @@ export function selectStage(v: GameView) {
 
 export function selectFootlights(v: GameView) {
   const r = v.room;
-  const started = !!r?.gameEvent && r.gameEvent.type !== "WAITING_START";
+  const started = hasStarted(r);
   const effects = Object.entries(r?.doubledCardValues ?? {})
     .filter(([id, d]) => d.timesValueDoubled > 0 && id in ROLES)
     .map(([id, d]) => {
@@ -126,11 +127,19 @@ export function selectFootlights(v: GameView) {
 
 export type YouCard = { role?: RoleId; protected: boolean; dead: boolean; index: number };
 
+/** Janela de cada deixa (ClassicRules.yaml): ação 10 s, mensagem 6 s, importante 8 s. */
+function eventWindow(type: string | undefined, suddenDeath: boolean): number {
+  const w = suddenDeath ? "suddenDeath" : "default";
+  if (type === "WAITING_FIRST_ACTION" || (type?.startsWith("CARD_PLAYED_") && type !== "CARD_PLAYED_GUARDIAN")) return CLASSIC_RULES.waitingAction[w];
+  if (type === "CARD_PLAYED_GUARDIAN") return CLASSIC_RULES.displayImportantMessage[w];
+  return CLASSIC_RULES.displayMessage[w];
+}
+
 export function selectYou(v: GameView) {
   const r = v.room;
   const me = v.me ? r?.players[v.me] : undefined;
   const ev = r?.gameEvent;
-  const total = r?.deck === 0 ? CLASSIC_RULES.waitingAction.suddenDeath : CLASSIC_RULES.waitingAction.default;
+  const total = eventWindow(ev?.type, r?.deck === 0);
   const owner = ev?.playerId ?? r?.currentPlayer ?? "";
   return {
     name: me?.name ?? "",
@@ -184,10 +193,12 @@ export function selectDecision(v: GameView): Decision {
     if (victim === me.id) return { kind: "waitPick", chooserId: chooser, role: card };
     return { kind: "waitOther", actorId: chooser };
   }
-  if (!mine && ev.type === "CARD_KILLED" && p.targetPlayer === me.id && p.cause !== "CONTEST_PENALTY" && p.cause !== "KAMIKAZE") {
+  if (ev.type === "CARD_KILLED" && p.targetPlayer === me.id && p.cause !== "CONTEST_PENALTY" && p.cause !== "KAMIKAZE") {
     return { kind: "react", actorId: ev.playerId, role: null, canContest: false, block: guardian(), targetsMe: true };
   }
   if (!mine && ["EARN_COINS", "STEAL_COINS", "INVESTMENT", "CHANGED_CARD"].includes(ev.type)) {
+    // selfishValidation.go: roubo cujo quociente por 2 não passa de 1 não pode ser barrado
+    if (ev.type === "STEAL_COINS" && Math.floor(Number(p.lostCoins ?? 0) / 2) <= 1) return { kind: "none" };
     const variant = ev.type === "INVESTMENT" ? 5 : 0;
     const cost = ev.type === "CHANGED_CARD" || ev.type === "INVESTMENT" ? cardValue("SELFISH", r, CLASSIC_RULES, variant) : CLASSIC_RULES.cards.SELFISH.fixedValue ?? 1;
     return { kind: "react", actorId: ev.playerId, role: null, canContest: false, block: { role: "SELFISH", cost, payload: "selfish" }, targetsMe: false };

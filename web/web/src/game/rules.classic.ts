@@ -19,6 +19,8 @@ export type Rules = {
   general: { initialCoins: number; maxCoins: number; maxTax: number; minTax: number; maxPlayers: number };
   /** segundos de cada deixa: padrão e em morte súbita */
   waitingAction: { default: number; suddenDeath: number };
+  displayMessage: { default: number; suddenDeath: number };
+  displayImportantMessage: { default: number; suddenDeath: number };
   /** moedas que o Investidor aplica; não vem do YAML: é o "Investe 1" da prancha Acoes */
   investorStake: number;
 };
@@ -40,5 +42,7 @@ export const CLASSIC_RULES: Rules = {
   },
   general: { initialCoins: 3, maxCoins: 20, maxTax: 10, minTax: -3, maxPlayers: 6 },
   waitingAction: { default: 10, suddenDeath: 5 },
+  displayMessage: { default: 6, suddenDeath: 3 },
+  displayImportantMessage: { default: 8, suddenDeath: 4 },
   investorStake: 1,
 };

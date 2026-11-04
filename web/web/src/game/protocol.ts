@@ -107,6 +107,8 @@ export const publicRoomSchema = z.object({
   currentPlayer: z.string().default(""),
   gameEvent: gameEventSchema.nullish().transform((v) => v ?? null),
   gameOver: z.boolean().default(false),
+  /** o Go manda "0001-01-01T00:00:00Z" antes de começar; zero = sala de espera */
+  startTime: z.string().default(""),
   chat: nullList(chatMessageSchema),
 });
 

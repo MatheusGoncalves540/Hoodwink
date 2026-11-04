@@ -204,6 +204,7 @@ export const copy = {
     revealed: (target: string) => `revelou uma carta de ${target} como Clarividente.`,
     revived: "reviveu uma carta como Coveiro.",
     changed: "puxou uma carta nova como Crupiê.",
+    changedContested: "trocou a carta revelada depois da contestação.",
     earned: (n: number, role: string) => `recebeu ${n} como ${role}.`,
     stole: (n: number, target: string) => `roubou ${n} de ${target} como Trapaceiro.`,
     invested: "investiu como Investidor.",

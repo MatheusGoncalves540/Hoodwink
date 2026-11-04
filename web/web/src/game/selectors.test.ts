@@ -92,6 +92,12 @@ describe("selectDecision", () => {
     expect(selectDecision(withEvent(base, "CARD_KILLED", "ana", { cause: "CONTEST_PENALTY", targetPlayer: "me" }))).toEqual({ kind: "none" });
   });
 
+  it("morte causada por você mesmo (Greed) também aceita Guardiã", () => {
+    expect(selectDecision(withEvent(base, "CARD_KILLED", "me", { cause: "GREED", targetPlayer: "me" }))).toMatchObject({
+      kind: "react", block: { role: "GUARDIAN" }, targetsMe: true,
+    });
+  });
+
   it("ganho de outro: Egoísta pode barrar, com o preço de cada caso", () => {
     expect(selectDecision(withEvent(base, "EARN_COINS", "ana"))).toMatchObject({ kind: "react", block: { role: "SELFISH", cost: 1 } });
     expect(selectDecision(withEvent(base, "INVESTMENT", "ana"))).toMatchObject({ block: { cost: 2 } });
@@ -99,10 +105,38 @@ describe("selectDecision", () => {
     expect(selectDecision(withEvent(base, "EARN_COINS", "me"))).toEqual({ kind: "none" });
   });
 
+  it("Egoísta não aparece em roubo pequeno (lostCoins/2 <= 1)", () => {
+    expect(selectDecision(withEvent(base, "STEAL_COINS", "ana", { lostCoins: 3, targetPlayer: "me" }))).toEqual({ kind: "none" });
+    expect(selectDecision(withEvent(base, "STEAL_COINS", "ana", { lostCoins: 6, targetPlayer: "me" }))).toMatchObject({
+      kind: "react", block: { role: "SELFISH" },
+    });
+  });
+
   it("fora de cena, fim e sem sala", () => {
     expect(selectDecision(view("ForaDeCena"))).toEqual({ kind: "outOfScene" });
     expect(selectDecision(view("Fim"))).toEqual({ kind: "finale" });
     expect(selectDecision(view("Lobby"))).toEqual({ kind: "none" });
+  });
+});
+
+describe("relógio e cena", () => {
+  const base = view("Mesa6");
+
+  it("gameEvent nulo no meio da partida continua mesa; sala que não começou fica sala", () => {
+    expect(selectScene({ ...base, room: { ...(base.room as PublicRoom), gameEvent: null } })).toBe("table");
+    const waiting = view("Sala");
+    expect(selectScene({ ...waiting, room: { ...(waiting.room as PublicRoom), gameEvent: null } })).toBe("room");
+  });
+
+  it("timer usa a janela do evento (ação 10 s, contestação 6 s, guardiã 8 s)", () => {
+    expect(selectYou(withEvent(base, "WAITING_FIRST_ACTION", "me")).timer?.total).toBe(10);
+    expect(selectYou(withEvent(base, "CONTEST", "ana")).timer?.total).toBe(6);
+    expect(selectYou(withEvent(base, "CARD_PLAYED_GUARDIAN", "ana")).timer?.total).toBe(8);
+
+    const sudden = view("MesaSubita");
+    expect(selectYou(withEvent(sudden, "WAITING_FIRST_ACTION", "me")).timer?.total).toBe(5);
+    expect(selectYou(withEvent(sudden, "CONTEST", "ana")).timer?.total).toBe(3);
+    expect(selectYou(withEvent(sudden, "CARD_PLAYED_GUARDIAN", "ana")).timer?.total).toBe(4);
   });
 });
 
