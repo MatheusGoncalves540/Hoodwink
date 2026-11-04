@@ -1,7 +1,7 @@
 import { cx } from "../cx";
 import s from "./Coin.module.css";
 
-export type CoinSize = 22 | 26 | 28 | 34 | 46 | 50 | 56 | 60;
+export type CoinSize = 22 | 26 | 28 | 34 | 46 | 50 | 52 | 56 | 60;
 
 type Props = { value?: number; size: CoinSize; label?: string; className?: string };
 
