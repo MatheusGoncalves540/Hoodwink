@@ -1,0 +1,74 @@
+/* Mesa6.dc.html → camarote em arco (W/2 no topo, 4 px no pé); 96×104 ou 70×88 */
+.seat {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 6px;
+  text-align: center;
+  color: var(--hw-tinta);
+  background: var(--hw-luz);
+  border: 1.5px solid var(--hw-filete);
+  border-radius: 48px 48px 4px 4px;
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.small {
+  gap: 5px;
+  padding: 9px 4px 4px;
+  border-radius: 35px 35px 4px 4px;
+}
+.active {
+  border: 2px solid var(--hw-ouro);
+  box-shadow: 0 0 0 3px var(--hw-plateia), 0 0 0 5px var(--hw-ouro);
+}
+.out {
+  color: var(--hw-sobre-veludo);
+  background: repeating-linear-gradient(90deg, #5A1820 0, #7A2430 6px, #5A1820 12px);
+  border: 1.5px solid #5A1820;
+}
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--hw-font-display);
+  line-height: 1.1;
+  font-size: 17px;
+}
+.small .name {
+  font-size: 14px;
+}
+.out .name {
+  font-family: var(--hw-font-texto);
+  font-size: 15px;
+  font-style: italic;
+}
+.small.out .name {
+  font-size: 13px;
+}
+.body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.small .body {
+  gap: 6px;
+}
+.cards {
+  display: flex;
+  gap: 4px;
+}
+.dots {
+  font-size: 18px;
+  line-height: 1;
+}
+.small .dots {
+  font-size: 14px;
+}
+.noDots {
+  visibility: hidden;
+}
