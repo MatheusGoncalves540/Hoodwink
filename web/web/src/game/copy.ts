@@ -3,6 +3,7 @@
  * Voz: 01-produto-e-voz.md (caixa de frase, vocabulário de palco, "?" para a dúvida, sem "Blefe!").
  */
 import type { Price } from "./pricing";
+import type { RoleId } from "./protocol";
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const NUM_WORDS = ["nenhum", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez"];
@@ -52,6 +53,7 @@ export const copy = {
   tableSaw: "O que a mesa já viu",
   nothingSeen: "Ainda nada. A mesa observa.",
   cardState: { dead: "morta", revealed: "revelada", protected: "protegida", hidden: "escondida" },
+  inHandState: "na mão",
   yourBox: "Seu camarote",
   overLimit: (max: number) => `Passou de ${max} moedas, perde uma carta.`,
   tableSees: (what: "protected" | "back" | "revealed" | "dead") =>
@@ -140,6 +142,8 @@ export const copy = {
   // reação e contestação
   claims: (name: string, role: string) => `${name} se diz ${role}`,
   yourCue: "Sua deixa",
+  reactionLabel: "Reagir",
+  reactionTimer: "Tempo para reagir",
   block: (role: string) => `Bloquear com ${role}`,
   contest: "Contestar",
   letPass: "Deixar passar",
@@ -151,6 +155,41 @@ export const copy = {
   hadCard: (name: string, role: string) => `${name} tinha ${role}.`,
   choosesYourCard: (name: string) => `${name} escolhe qual carta sua cai`,
   contestTimer: (s: number) => `${s} segundos para escolher`,
+  declaredLead: (name: string) => `${name} se diz`,
+  contestedLead: (name: string) => `${name} se disse`,
+  truthLead: (name: string) => `${name} era mesmo`,
+  declaredNotRevealed: "declarada, não revelada",
+  cardArt: (role: string) => `arte do ${role}`,
+  bluffFall: (name: string) => ` A jogada não acontece e ${name} perde uma carta.`,
+  truthReturn: (name: string) => ` ${name} mostra a carta, devolve ao baralho e pega outra.`,
+  hand: (names: string[]) => (names.length ? `Na mão: ${names.join(" e ")}` : "Na mão: nada"),
+  blockCost: (cost: number) => `por ${plural(cost, "moeda", "moedas")}`,
+  dropCard: (name: string) => `Derrube uma carta de ${name}`,
+  dropRevealed: (name: string, role: string) => `Derrubar a carta revelada de ${name}, ${role}`,
+  dropHidden: (name: string) => `Derrubar a carta escondida de ${name}`,
+  cardsOf: (name: string) => `Cartas de ${name}`,
+  yourCards: "Suas cartas",
+  waitPickHint: "Depois disso a jogada dela ainda mira você.",
+  protectedWarn: "se for esta, cai só a proteção",
+  sorteEscolhe: (s: number) => `Em ${s} s, a sorte escolhe por você.`,
+  sorteEscolheOther: (name: string, s: number) => `${name} tem ${s} s. Depois, a sorte escolhe.`,
+  declaredEffect: (name: string, role: RoleId, price: Price, targetsMe: boolean) => {
+    const target = targetsMe ? "uma carta sua" : "uma carta de outro ator";
+    switch (role) {
+      case "ASSASSIN": return `${name} paga ${price.coins} moedas e mira ${target}.`;
+      case "CLAIRVOYANT": return `${name} paga ${price.coins} moedas e revela ${target}.`;
+      case "TRICKSTER": return `${name} rouba ${price.kind === "gain" ? price.steals ?? 0 : 0} de ${targetsMe ? "você" : "alguém"}.`;
+      case "KAMIKAZE": return `${name} se sacrifica e leva ${target} junto.`;
+      case "GUARDIAN": return `${name} paga ${price.coins} moedas e protege uma carta sua.`;
+      case "GRAVEDIGGER": return `${name} paga ${price.coins} moedas e revive uma carta.`;
+      case "CROUPIER": return `${name} paga ${price.coins} moedas e puxa uma carta nova.`;
+      case "INVESTOR": return `${name} investe ${price.coins}, que rende por ${price.kind === "invest" ? price.lasts + 1 : 0} turnos.`;
+      case "TRILLIONAIRE": return `${name} recebe ${price.coins} moedas.`;
+      case "POLITICAL": return `${name} sobe a taxa em 1; o preço dobra.`;
+      case "REBEL": return `${name} baixa a taxa em 1; o preço dobra.`;
+      default: return "";
+    }
+  },
 
   // fim de jogo
   outOfScene: "Fora de cena",

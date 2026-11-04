@@ -3,15 +3,16 @@
  * A view é pura (testável em Node); TableScene liga ao gameStore/uiStore.
  * Slots para as camadas de T21–T24: stageOverlay, bottomPanel, sheet, scenery, rail e screenOverlay.
  */
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useLayout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
 import type { RoleId } from "../../game/protocol";
 import { ROLES } from "../../game/roles";
+import { eventKey } from "../../game/log";
 import { desktopSeats, mobileSeats } from "../../game/seats";
 import type { GameView } from "../../game/selectors";
 import { selectDecision, selectFootlights, selectSeats, selectStage, selectYou } from "../../game/selectors";
-import { play, type Target } from "../../net/actions";
+import { contest, contestPenalty, play, type Target } from "../../net/actions";
 import { send } from "../../net/GameSocket";
 import { useGameStore } from "../../store/gameStore";
 import { useUiStore } from "../../store/uiStore";
@@ -22,6 +23,9 @@ import { RoomMenu } from "../sheets/RoomMenu";
 import { SeatSheet } from "../sheets/SeatSheet";
 import { YouSheet } from "../sheets/YouSheet";
 import { ActionBoard } from "../turn/ActionBoard";
+import { ContestPick } from "../turn/ContestPick";
+import { DeclaredCard } from "../turn/DeclaredCard";
+import { ReactionPanel } from "../turn/ReactionPanel";
 import { TargetBar } from "../turn/TargetBar";
 import { Footlights } from "./Footlights";
 import { Header } from "./Header";
@@ -54,10 +58,12 @@ type Props = {
   onMenu?(): void;
   onChat?(): void;
   targeting?: boolean;
+  /** Reação/contestação no trilho: a faixa Você some no desktop (MainDesk). */
+  hideYou?: boolean;
   slots?: TableSlots;
 };
 
-export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, slots = {} }: Props) {
+export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hideYou, slots = {} }: Props) {
   const layout = useLayout();
   const desktop = layout === "desktop";
   const [ref, width] = useStageWidth(desktop ? 1020 : 390);
@@ -79,12 +85,12 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, slo
       <div ref={ref} className={s.tableArea}>
         <Spotlight box={activeBox} width={width} top={desktop ? 64 : 0} />
         <SeatRing seats={seats} layoutSeats={layoutSeats} layout={layout} onSeat={onSeat} targeting={targeting} />
-        <Stage vm={stage} layout={layout} />
+        {!slots.stageOverlay && <Stage vm={stage} layout={layout} />}
         <Footlights vm={footlights} layout={layout} />
         {slots.bottomPanel && <div className={s.bottomPanel}>{slots.bottomPanel}</div>}
       </div>
 
-      {!slots.bottomPanel && <YouBar vm={you} suddenDeath={footlights.suddenDeath} layout={layout} />}
+      {!slots.bottomPanel && !hideYou && <YouBar vm={you} suddenDeath={footlights.suddenDeath} layout={layout} />}
       {desktop && <aside className={s.rail}>{slots.rail}</aside>}
       {slots.stageOverlay && <div className={s.stageOverlay}>{slots.stageOverlay}</div>}
       {slots.sheet}
@@ -93,7 +99,7 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, slo
   );
 }
 
-/** Liga a mesa ao estado real: gavetas pelo uiStore, trilho no desktop, ações e fluxo de alvo. */
+/** Liga a mesa ao estado real: gavetas, trilho, ações, reação e contestação. */
 export function TableScene() {
   const me = useGameStore((st) => st.me);
   const room = useGameStore((st) => st.room);
@@ -106,8 +112,11 @@ export function TableScene() {
   const setTargeting = useUiStore((st) => st.setTargeting);
   const layout = useLayout();
   const chatInputRef = useRef<HTMLInputElement>(null);
+  const [passed, setPassed] = useState<string | null>(null);
   const view = { me, room, log };
   const decision = selectDecision(view);
+  const declared = selectStage(view).declared;
+  const evKey = room?.gameEvent ? eventKey(room.gameEvent) : "";
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
 
   const sendPlay = (role: RoleId, target?: Target) => {
@@ -206,6 +215,34 @@ export function TableScene() {
     }
   };
 
+  const onBlock = () => {
+    if (decision.kind !== "react" || !decision.block) return;
+    if (decision.block.role === "GUARDIAN") {
+      const index = Number(((room?.gameEvent?.payload ?? {}) as Record<string, unknown>).targetCardIndex ?? 0);
+      sendPlay("GUARDIAN", { cardIndex: index });
+    } else {
+      sendPlay("SELFISH");
+    }
+  };
+
+  const reactPanel =
+    decision.kind === "react" && passed !== evKey ? (
+      <ReactionPanel
+        view={view}
+        decision={decision}
+        layout={layout}
+        onContest={() => send(contest())}
+        onBlock={onBlock}
+        onPass={() => setPassed(evKey)}
+      />
+    ) : undefined;
+
+  const pickPanel =
+    decision.kind === "pickCardToKill" || decision.kind === "waitPick" ? (
+      <ContestPick view={view} decision={decision} layout={layout} onPick={(index) => send(contestPenalty(index))} />
+    ) : undefined;
+
+  const panel = reactPanel ?? pickPanel;
   const board = decision.kind === "myTurn" && !targeting ? <ActionBoard view={view} layout={layout} onPick={pickRole} /> : undefined;
   const targetBar = targeting ? <TargetBar role={targeting.role} onBack={() => setTargeting(null)} /> : undefined;
 
@@ -214,15 +251,16 @@ export function TableScene() {
       view={view}
       unread={unread}
       targeting={!!targeting}
+      hideYou={layout === "desktop" && !!panel}
       onMenu={() => open("menu")}
       onChat={onChat}
       onSeat={onSeat}
       slots={{
         sheet,
-     
-        rail: <DesktopRail view={view} chatInputRef={chatInputRef} />,
+        rail: panel ?? <DesktopRail view={view} chatInputRef={chatInputRef} />,
+        stageOverlay: declared ? <DeclaredCard view={view} layout={layout} /> : undefined,
         screenOverlay: board,
-        bottomPanel: targetBar,
+        bottomPanel: targeting ? targetBar : layout === "mobile" ? panel : undefined,
       }}
     />
   );
