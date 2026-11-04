@@ -3,7 +3,7 @@
  * A view é pura (testável em Node); TableScene liga ao gameStore/uiStore.
  * Slots para as camadas de T18–T24: stageOverlay, bottomPanel, sheet, scenery e rail.
  */
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { useLayout } from "../../app/useLayout";
 import { desktopSeats, mobileSeats } from "../../game/seats";
 import type { GameView } from "../../game/selectors";
@@ -12,6 +12,7 @@ import { useGameStore } from "../../store/gameStore";
 import { useUiStore } from "../../store/uiStore";
 import { cx } from "../../ui/cx";
 import { ChatSheet } from "../sheets/ChatSheet";
+import { DesktopRail } from "../sheets/DesktopRail";
 import { RoomMenu } from "../sheets/RoomMenu";
 import { SeatSheet } from "../sheets/SeatSheet";
 import { YouSheet } from "../sheets/YouSheet";
@@ -81,7 +82,7 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, slots = {} }: 
   );
 }
 
-/** Liga a mesa ao estado real: gavetas pelo uiStore, conversa com o contador de novas. */
+/** Liga a mesa ao estado real: gavetas pelo uiStore, trilho no desktop e conversa com o contador. */
 export function TableScene() {
   const me = useGameStore((st) => st.me);
   const room = useGameStore((st) => st.room);
@@ -91,6 +92,7 @@ export function TableScene() {
   const openSheet = useUiStore((st) => st.openSheet);
   const close = useUiStore((st) => st.close);
   const layout = useLayout();
+  const chatInputRef = useRef<HTMLInputElement>(null);
   const view = { me, room, log };
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
 
@@ -105,14 +107,26 @@ export function TableScene() {
       <SeatSheet view={view} seatId={openSheet.seat} mode={layout} onClose={close} />
     ) : undefined;
 
+  const onChat = () => {
+    if (layout === "desktop") {
+      if (openSheet) close();
+      requestAnimationFrame(() => {
+        chatInputRef.current?.scrollIntoView({ block: "center" });
+        chatInputRef.current?.focus();
+      });
+    } else {
+      open("chat");
+    }
+  };
+
   return (
     <Table
       view={view}
       unread={unread}
       onMenu={() => open("menu")}
-      onChat={() => open("chat")}
+      onChat={onChat}
       onSeat={(seat) => open({ seat })}
-      slots={{ sheet }}
+      slots={{ sheet, rail: <DesktopRail view={view} chatInputRef={chatInputRef} /> }}
     />
   );
 }

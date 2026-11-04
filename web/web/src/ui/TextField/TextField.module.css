@@ -42,3 +42,8 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+.actionDark {
+  background: var(--hw-tinta);
+  border-color: var(--hw-tinta);
+  color: var(--hw-plateia);
+}
