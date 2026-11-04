@@ -3,12 +3,13 @@
  * A view é pura (testável em Node); TableScene liga ao gameStore/uiStore.
  * Slots para as camadas de T21–T24: stageOverlay, bottomPanel, sheet, scenery, rail e screenOverlay.
  */
-import { useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { useLayout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
 import type { RoleId } from "../../game/protocol";
 import { ROLES } from "../../game/roles";
 import { eventKey } from "../../game/log";
+import { CLASSIC_RULES } from "../../game/rules.classic";
 import { desktopSeats, mobileSeats } from "../../game/seats";
 import type { GameView } from "../../game/selectors";
 import { selectDecision, selectFootlights, selectSeats, selectStage, selectYou } from "../../game/selectors";
@@ -38,6 +39,9 @@ import { YouBar } from "./YouBar";
 import { useStageWidth } from "./useStageWidth";
 import s from "./Table.module.css";
 
+const SuddenDeathStage = lazy(() => import("../endgame/SuddenDeathStage").then((m) => ({ default: m.SuddenDeathStage })));
+const SuddenDeathAlert = lazy(() => import("../endgame/SuddenDeathAlert").then((m) => ({ default: m.SuddenDeathAlert })));
+
 export type TableSlots = {
   /** Painel de reação sobre o palco (T22). */
   stageOverlay?: ReactNode;
@@ -62,10 +66,12 @@ type Props = {
   targeting?: boolean;
   /** Reação/contestação no trilho: a faixa Você some no desktop (MainDesk). */
   hideYou?: boolean;
+  /** Morte súbita: a mesa inteira fica escura. */
+  dark?: boolean;
   slots?: TableSlots;
 };
 
-export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hideYou, slots = {} }: Props) {
+export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hideYou, dark, slots = {} }: Props) {
   const layout = useLayout();
   const desktop = layout === "desktop";
   const [ref, width] = useStageWidth(desktop ? 1020 : 390);
@@ -79,10 +85,10 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
   const room = view.room;
 
   return (
-    <main className={cx(s.screen, desktop && s.desk)}>
+    <main data-theme={dark ? "dark" : undefined} className={cx(s.screen, desktop && s.desk)}>
       {slots.scenery && <div className={s.scenery}>{slots.scenery}</div>}
 
-      <Header turn={room?.turn ?? 0} tax={room?.tax ?? 0} unread={unread} layout={layout} onMenu={onMenu} onChat={onChat} />
+      <Header turn={room?.turn ?? 0} tax={room?.tax ?? 0} unread={unread} layout={layout} sudden={footlights.suddenDeath} onMenu={onMenu} onChat={onChat} />
 
       <div ref={ref} className={s.tableArea}>
         <Spotlight box={activeBox} width={width} top={desktop ? 64 : 0} />
@@ -117,9 +123,21 @@ export function TableScene() {
   const [passed, setPassed] = useState<string | null>(null);
   const view = { me, room, log };
   const decision = selectDecision(view);
+  const footlights = selectFootlights(view);
   const declared = selectStage(view).declared;
+  const [showAlert, setShowAlert] = useState(false);
   const evKey = room?.gameEvent ? eventKey(room.gameEvent) : "";
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
+
+  useEffect(() => {
+    if (!footlights.suddenDeath || !room) return;
+    const ui = useUiStore.getState();
+    if (ui.suddenDeathShown === room.id) return;
+    ui.setSuddenDeathShown(room.id);
+    setShowAlert(true);
+    const timer = setTimeout(() => setShowAlert(false), 4000);
+    return () => clearTimeout(timer);
+  }, [footlights.suddenDeath, room?.id]);
 
   const sendPlay = (role: RoleId, target?: Target) => {
     try {
@@ -258,6 +276,17 @@ export function TableScene() {
   const outPanel = decision.kind === "outOfScene" ? <OutOfScene view={view} layout={layout} onChat={onChat} onLeave={leaveRoom} /> : undefined;
   const panel = reactPanel ?? pickPanel ?? outPanel;
   const board = decision.kind === "myTurn" && !targeting ? <ActionBoard view={view} layout={layout} onPick={pickRole} /> : undefined;
+  const scenery = footlights.suddenDeath ? <Suspense fallback={null}><SuddenDeathStage layout={layout} /></Suspense> : undefined;
+  const screenOverlay = board || showAlert ? (
+    <>
+      {board}
+      {showAlert && (
+        <Suspense fallback={null}>
+          <SuddenDeathAlert layout={layout} seconds={CLASSIC_RULES.waitingAction.suddenDeath} />
+        </Suspense>
+      )}
+    </>
+  ) : undefined;
   const targetBar = targeting ? <TargetBar role={targeting.role} onBack={() => setTargeting(null)} /> : undefined;
 
   return (
@@ -266,6 +295,7 @@ export function TableScene() {
       unread={unread}
       targeting={!!targeting}
       hideYou={layout === "desktop" && !!panel}
+      dark={footlights.suddenDeath}
       onMenu={() => open("menu")}
       onChat={onChat}
       onSeat={onSeat}
@@ -273,7 +303,8 @@ export function TableScene() {
         sheet,
         rail: panel ?? <DesktopRail view={view} chatInputRef={chatInputRef} />,
         stageOverlay: declared ? <DeclaredCard view={view} layout={layout} /> : undefined,
-        screenOverlay: board,
+        scenery,
+        screenOverlay,
         bottomPanel: targeting ? targetBar : layout === "mobile" ? panel : undefined,
       }}
     />
