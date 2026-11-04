@@ -35,7 +35,7 @@ Pré-requisitos: Node 26 + npm (`npm ci` em `web/`); servidor local em `D:\GitHu
 - [x] T13 [Frontend] `ui/Sheet` com Radix Dialog (gaveta mobile e painel desktop) · arquivos: `web/src/ui/Sheet/*` · depende: T10 · verificar: `npm run build`; Esc fecha e devolve foco nas amostras
 
 ### Fase 3: entrada, sala e mesa (prompts 04 e 05)
-- [ ] T14 [Frontend] Entrada (tela 1) mobile e desktop · arquivos: `web/src/features/lobby/*` · depende: T9, T13 · verificar: `npm test` (fumaça com aria-labels) e `?cena=lobby` vs `Lobby.png`/`LobbyDesk.png`
+- [x] T14 [Frontend] Entrada (tela 1) mobile e desktop · arquivos: `web/src/features/lobby/*` · depende: T9, T13 · verificar: `npm test` (fumaça com aria-labels) e `?cena=lobby` vs `Lobby.png`/`LobbyDesk.png`
 - [ ] T15 [Frontend] Sala de espera (telas 2, 17) · arquivos: `web/src/features/room/*` · depende: T9, T13 · verificar: `npm test` (fumaça `Sala`, `SalaCheia`) e `?cena=room&fixture=Sala` vs `Sala.png`
 - [ ] T16 [Frontend] Mesa mobile (telas 3, 7, 13) com slots `stageOverlay`, `bottomPanel`, `sheet`, `scenery` · arquivos: `web/src/features/table/*` · depende: T9, T13 · verificar: `npm test` (fumaça `Mesa3`, `Mesa6`, `Mesa10`) e `?cena=table&fixture=Mesa6` vs `Mesa6.png`
 - [ ] T17 [Frontend] Mesa desktop: grade palco + trilho 420 px, camarotes em parábola · arquivos: `web/src/features/table/*` · depende: T16 · verificar: `npm run build` e 1440×900 vs `Mesa6Desk.png`
