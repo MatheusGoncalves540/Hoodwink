@@ -51,7 +51,7 @@ Pré-requisitos: Node 26 + npm (`npm ci` em `web/`); servidor local em `D:\GitHu
 
 ### Fase 5: integração (prompt 09)
 - [ ] T25 [Frontend] `App.tsx` pelo estado real: login → criar/entrar (`?sala=`) → ticket → `GameSocket`; fila de apresentação; reconexão sem duplicar diário · arquivos: `web/src/app/App.tsx`, `web/src/net/*`, `web/src/store/gameStore.ts` · depende: T14, T15, T20, T22, T24 · verificar: `npm test` (reaplicar a mesma sala não duplica o diário) e partida local no servidor
-- [ ] T26 [Frontend] remover legado (`componentsJSX/ButtonPanel`, `CommandPanel`, `ChatViewer`, `roomViewer`, `inGame/main.tsx`) mantendo `Auth/` e `authStore.ts` · arquivos: `web/src/componentsJSX/*`, `web/src/inGame/main.tsx` · depende: T25 · verificar: `npm run build` e nenhuma importação restante (`grep -r componentsJSX web/src`)
+- [x] T26 [Frontend] remover legado (`componentsJSX/ButtonPanel`, `CommandPanel`, `ChatViewer`, `roomViewer`, `inGame/main.tsx`) mantendo `Auth/` e `authStore.ts` · arquivos: `web/src/componentsJSX/*`, `web/src/inGame/main.tsx` · depende: T25 · verificar: `npm run build` e nenhuma importação restante (`grep -r componentsJSX web/src`)
 
 ### Fase 6: revisão (prompt 10)
 - [ ] T27 [QA] varredura: cores fora dos tokens, `transition`/`animation` fora de `transform`/`opacity`, texto fora de `copy.ts`, preço fixo; corrigir os de 1 linha e registrar o resto em `plans/01-revisao.md` · arquivos: `web/src/**`, `plans/01-revisao.md` · depende: T26 · verificar: greps do prompt 10 sem ocorrências não justificadas

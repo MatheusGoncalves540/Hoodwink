@@ -1,7 +1,7 @@
 /**
- * Paridade com o cliente legado (`componentsJSX/ButtonPanel.jsx`): o servidor usa
+ * Paridade com o painel de botões antigo (removido na T26): o servidor usa
  * DecodeStrictJSON, então nome e forma de cada campo importam — campo a mais é recusado.
- * A tabela abaixo é a cópia literal das mensagens do ButtonPanel, com os mesmos alvos.
+ * A tabela abaixo é a cópia literal das mensagens do painel antigo, com os mesmos alvos.
  */
 import { describe, expect, it } from "vitest";
 import { chat, contest, contestPenalty, play, startGame } from "./actions";
@@ -10,18 +10,18 @@ const me = "eu";
 const targetPlayer = "ana";
 const targetCardIndex = 2;
 
-// ButtonPanel.jsx: todas as cartas usam o mesmo índice no alvo e no aliado.
+// No painel antigo, todas as cartas usam o mesmo índice no alvo e no aliado.
 const legacyPlay = (type: string, payload: unknown) => ({ type, payload });
 
 describe("actions", () => {
-  it("monta as mensagens de comando iguais às do ButtonPanel.jsx", () => {
+  it("monta as mensagens de comando iguais às do painel antigo", () => {
     expect(startGame()).toEqual(legacyPlay("COMMAND_START_GAME", {}));
     expect(contest()).toEqual(legacyPlay("CONTEST", {}));
     expect(contestPenalty(targetCardIndex)).toEqual(legacyPlay("CONTEST_PENALTY", { TargetCardIndex: targetCardIndex }));
     expect(chat("ablubluble")).toEqual(legacyPlay("CHAT_MESSAGE", { msg: "ablubluble" }));
   });
 
-  it("monta as mensagens de papel iguais às do ButtonPanel.jsx", () => {
+  it("monta as mensagens de papel iguais às do painel antigo", () => {
     expect(play("TRILLIONAIRE", me)).toEqual(legacyPlay("TRILLIONAIRE", null));
     expect(play("POLITICAL", me)).toEqual(legacyPlay("POLITICAL", null));
     expect(play("REBEL", me)).toEqual(legacyPlay("REBEL", null));

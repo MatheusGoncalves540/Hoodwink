@@ -1,5 +1,5 @@
 /**
- * Mensagens do cliente para o gameServer: { type, payload }, como no ButtonPanel.jsx legado.
+ * Mensagens do cliente para o gameServer: { type, payload }, como no painel de botões antigo.
  * O servidor valida com DecodeStrictJSON (structs/validatePlayerPlayPayload.go): campo a mais é recusado.
  */
 import type { RoleId } from "../game/protocol";
