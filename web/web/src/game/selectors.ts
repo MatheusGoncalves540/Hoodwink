@@ -264,3 +264,51 @@ export function selectWaitingRoom(v: GameView) {
     isHost: !!v.me && hostId === v.me,
   };
 }
+
+export type SeatSheetVM = {
+  id: string;
+  name: string;
+  coins: number;
+  alive: boolean;
+  cards: MiniCard[];
+  investments: number[];
+  log: { key: string; turn: number; text: string }[];
+};
+
+/** Gaveta de um camarote (telas 4 e 14): cartas no estado que a mesa vê, diário do ator e investimentos. */
+export function selectSeatSheet(v: GameView, id: string): SeatSheetVM | null {
+  const p = v.room?.players[id];
+  if (!p) return null;
+  return {
+    id: p.id,
+    name: p.name,
+    coins: p.coins,
+    alive: p.alive,
+    cards: p.cards.map(miniCard),
+    investments: p.investments,
+    log: selectLog(v, id),
+  };
+}
+
+export type YouSheetVM = {
+  name: string;
+  coins: number;
+  limit: number;
+  cards: YouCard[];
+  investments: number[];
+  roles: ReturnType<typeof selectRolesUsed>;
+};
+
+/** Seu camarote (telas 12 e 16): suas cartas, o limite, investimentos e os papéis que a mesa já viu. */
+export function selectYouSheet(v: GameView): YouSheetVM | null {
+  const p = v.me ? v.room?.players[v.me] : undefined;
+  if (!p) return null;
+  return {
+    name: copy.you,
+    coins: p.coins,
+    limit: CLASSIC_RULES.general.maxCoins,
+    cards: p.cards.map((c): YouCard => ({ role: c.name, protected: c.protected, dead: c.dead, index: c.index })),
+    investments: p.investments,
+    roles: selectRolesUsed(v, p.id),
+  };
+}

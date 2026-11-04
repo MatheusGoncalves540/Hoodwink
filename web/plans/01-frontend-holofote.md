@@ -41,7 +41,7 @@ Pré-requisitos: Node 26 + npm (`npm ci` em `web/`); servidor local em `D:\GitHu
 - [x] T17 [Frontend] Mesa desktop: grade palco + trilho 420 px, camarotes em parábola · arquivos: `web/src/features/table/*` · depende: T16 · verificar: `npm run build` e 1440×900 vs `Mesa6Desk.png`
 
 ### Fase 4: gavetas, turno e fim (prompts 06, 07 e 08)
-- [ ] T18 [Frontend] SeatSheet e YouSheet (telas 4, 12, 14, 16) · arquivos: `web/src/features/sheets/SeatSheet.tsx`, `web/src/features/sheets/YouSheet.tsx` · depende: T17 · verificar: `npm test` (fumaça `Camarote`, `Voce`) e vs `Camarote.png`
+- [x] T18 [Frontend] SeatSheet e YouSheet (telas 4, 12, 14, 16) · arquivos: `web/src/features/sheets/SeatSheet.tsx`, `web/src/features/sheets/YouSheet.tsx` · depende: T17 · verificar: `npm test` (fumaça `Camarote`, `Voce`) e vs `Camarote.png`
 - [ ] T19 [Frontend] RoomMenu e ChatSheet (telas 10, 11, 15), preferências em `localStorage`, texto do chat como texto · arquivos: `web/src/features/sheets/RoomMenu.tsx`, `web/src/features/sheets/ChatSheet.tsx` · depende: T17 · verificar: `npm test` (fumaça `Conversa`, `ConversaCheia`) e vs `Menu.png`
 - [ ] T20 [Frontend] SceneLog e DesktopRail, ligando `uiStore.openSheet` no mobile e no desktop · arquivos: `web/src/features/sheets/SceneLog.tsx`, `web/src/features/sheets/DesktopRail.tsx`, `web/src/features/table/Table.tsx` · depende: T18, T19 · verificar: `npm run build` e trilho vs `Mesa6Desk.png`
 - [ ] T21 [Frontend] ActionBoard + ActionButton (tela 6) e fluxo de alvo inferido · arquivos: `web/src/features/turn/ActionBoard.tsx`, `web/src/features/turn/ActionButton.tsx` · depende: T17 · verificar: `npm test` (fumaça `Acoes`: preço de `pricing.ts`, Egoísta não clicável) e vs `Acoes.png`

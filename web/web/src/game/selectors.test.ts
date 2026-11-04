@@ -3,7 +3,7 @@ import { fixture, FIXTURE_NAMES, type FixtureName } from "./fixtures";
 import type { PublicRoom } from "./protocol";
 import {
   selectChat, selectDecision, selectFinale, selectFootlights, selectLog, selectRolesUsed, selectScene,
-  selectSeats, selectStage, selectWaitingRoom, selectYou, type GameView,
+  selectSeatSheet, selectSeats, selectStage, selectWaitingRoom, selectYou, selectYouSheet, type GameView,
 } from "./selectors";
 
 const NOW = Date.UTC(2026, 10, 4, 21, 41);
@@ -166,6 +166,32 @@ describe("outras telas", () => {
 
   it("papéis que a mesa já viu você usar", () => {
     expect(selectRolesUsed(view("Voce"), "me").map((r) => [r.name, r.turn, r.text])).toEqual([
+      ["Guardiã", 2, "Protegeu uma carta."],
+      ["Trilionário", 1, "Recebeu 4 moedas."],
+    ]);
+  });
+});
+
+describe("gavetas", () => {
+  it("camarote: cartas, diário do ator e investimentos", () => {
+    const seat = selectSeatSheet(view("Camarote"), "bruno")!;
+    expect(seat).toMatchObject({ id: "bruno", name: "Bruno", coins: 2, alive: true, investments: [] });
+    expect(seat.cards).toEqual([{ state: "dead", role: "ASSASSIN" }, { state: "back" }]);
+    expect(seat.log.map((l) => [l.turn, l.text])).toEqual([
+      [3, "Se disse Assassino, foi contestado e perdeu a carta."],
+      [2, "Roubou 3 de Eva como Trapaceiro."],
+      [1, "Recebeu 4 como Trilionário."],
+    ]);
+  });
+
+  it("seu camarote: cartas, limite e papéis que a mesa viu", () => {
+    const you = selectYouSheet(view("Voce"))!;
+    expect(you).toMatchObject({ name: "Você", coins: 7, limit: 20, investments: [2] });
+    expect(you.cards).toEqual([
+      { role: "GUARDIAN", protected: true, dead: false, index: 0 },
+      { role: "TRILLIONAIRE", protected: false, dead: false, index: 1 },
+    ]);
+    expect(you.roles.map((r) => [r.name, r.turn, r.text])).toEqual([
       ["Guardiã", 2, "Protegeu uma carta."],
       ["Trilionário", 1, "Recebeu 4 moedas."],
     ]);

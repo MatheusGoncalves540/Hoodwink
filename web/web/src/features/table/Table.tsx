@@ -11,6 +11,8 @@ import { selectFootlights, selectSeats, selectStage, selectYou } from "../../gam
 import { useGameStore } from "../../store/gameStore";
 import { useUiStore } from "../../store/uiStore";
 import { cx } from "../../ui/cx";
+import { SeatSheet } from "../sheets/SeatSheet";
+import { YouSheet } from "../sheets/YouSheet";
 import { Footlights } from "./Footlights";
 import { Header } from "./Header";
 import { SeatRing } from "./SeatRing";
@@ -84,15 +86,27 @@ export function TableScene() {
   const log = useGameStore((st) => st.log);
   const chatSeen = useUiStore((st) => st.chatSeen);
   const open = useUiStore((st) => st.open);
+  const openSheet = useUiStore((st) => st.openSheet);
+  const close = useUiStore((st) => st.close);
+  const layout = useLayout();
+  const view = { me, room, log };
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
+
+  const sheet =
+    openSheet === "you" ? (
+      <YouSheet view={view} mode={layout} onClose={close} />
+    ) : openSheet && typeof openSheet === "object" ? (
+      <SeatSheet view={view} seatId={openSheet.seat} mode={layout} onClose={close} />
+    ) : undefined;
 
   return (
     <Table
-      view={{ me, room, log }}
+      view={view}
       unread={unread}
       onMenu={() => open("menu")}
       onChat={() => open("chat")}
       onSeat={(seat) => open({ seat })}
+      slots={{ sheet }}
     />
   );
 }

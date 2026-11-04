@@ -1,0 +1,95 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.name {
+  margin: 0;
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1;
+}
+.rule {
+  margin: 0;
+  font-size: 16px;
+  font-style: italic;
+}
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.investments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.investLine {
+  margin: 0;
+  font-size: 14px;
+  font-style: italic;
+}
+.boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.box {
+  border: 1.5px dashed var(--hw-tinta);
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.endsIn {
+  font-size: 14px;
+  font-style: italic;
+}
+.pips {
+  display: flex;
+  gap: 4px;
+}
+.pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hw-tinta);
+}
+.roles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.roleList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.roleRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px dotted color-mix(in srgb, var(--hw-tinta) 40%, transparent);
+}
+.roleHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.roleName {
+  font-family: var(--hw-font-display);
+  font-size: 20px;
+  line-height: 1.1;
+}
+.roleRound {
+  font-size: 14px;
+  font-style: italic;
+}
+.roleText {
+  font-size: 16px;
+  line-height: 1.35;
+}
