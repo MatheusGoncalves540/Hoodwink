@@ -25,6 +25,8 @@ export type LogEntry = {
   open?: "declared" | "contested";
   /** papel declarado nesta linha, para "Papéis que a mesa já viu você usar" */
   role?: RoleId;
+  /** acontecimento que também aparece na conversa, entre parênteses (contestação resolvida, saída de cena) */
+  chat?: boolean;
 };
 
 export const eventKey = (e: GameEvent | null) => (e ? `${e.type}|${e.playerId}|${e.expiresAt}` : "");
@@ -48,8 +50,8 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
     const p = obj(ev.payload);
     const push = (actorId: string, pred: string, extra: Partial<LogEntry> = {}) =>
       out.push({ key, turn: next.turn, at: now, actorId, actorName: nameOf(actorId), pred, ...extra });
-    const amend = (pred: string, state?: LogEntry["open"]) => {
-      if (open) out[last] = { ...open, pred, open: state };
+    const amend = (pred: string, state?: LogEntry["open"], chat?: true) => {
+      if (open) out[last] = { ...open, pred, open: state, ...(chat && { chat }) };
     };
 
     // a declaração anterior não foi contestada: fecha a linha dela
@@ -65,10 +67,11 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
           else push(ev.playerId, copy.log.contestedBy(fname(str(p.contestedPlayer))));
           break;
         case "CONTEST_PENALTY":
-          if (open?.open === "contested") amend(open.pred + (p.hasCard ? copy.log.showedCard : copy.log.lostCard));
+          if (open?.open === "contested") amend(open.pred + (p.hasCard ? copy.log.showedCard : copy.log.lostCard), undefined, true);
           break;
         case "CARD_KILLED":
-          if (str(p.cause) !== "CONTEST") push(str(p.targetPlayer) || ev.playerId, copy.log.lostACard);
+          // morte por contestação já está na linha da declaração (effects.go: EffectContestPenalty)
+          if (!["CONTEST", "CONTEST_PENALTY"].includes(str(p.cause))) push(str(p.targetPlayer) || ev.playerId, copy.log.lostACard);
           break;
         case "REVEALED_CARD":
           push(ev.playerId, copy.log.revealed(fname(str(p.targetPlayer))));
@@ -109,7 +112,7 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
     for (const p of Object.values(next.players)) {
       const exitKey = `EXIT|${p.id}`;
       if (!p.alive && prev.players[p.id]?.alive && !out.some((e) => e.key === exitKey)) {
-        out.push({ key: exitKey, turn: next.turn, at: now, actorId: p.id, actorName: p.name, pred: copy.log.exited });
+        out.push({ key: exitKey, turn: next.turn, at: now, actorId: p.id, actorName: p.name, pred: copy.log.exited, chat: true });
       }
     }
   }

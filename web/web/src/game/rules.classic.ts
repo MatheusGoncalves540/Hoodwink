@@ -16,7 +16,7 @@ export type CardRule = {
 
 export type Rules = {
   cards: Record<RoleId, CardRule>;
-  general: { initialCoins: number; maxCoins: number; maxTax: number; minTax: number };
+  general: { initialCoins: number; maxCoins: number; maxTax: number; minTax: number; maxPlayers: number };
   /** segundos de cada deixa: padrão e em morte súbita */
   waitingAction: { default: number; suddenDeath: number };
   /** moedas que o Investidor aplica; não vem do YAML: é o "Investe 1" da prancha Acoes */
@@ -38,7 +38,7 @@ export const CLASSIC_RULES: Rules = {
     INVESTOR: { fixedValue: 3, value: 4, taxMinimum: 2, taxMaximum: 6, affectedByTaxes: true },
     SELFISH: { fixedValue: 1, value: 6, taxMinimum: 3, taxMaximum: 9, affectedByTaxes: true },
   },
-  general: { initialCoins: 3, maxCoins: 20, maxTax: 10, minTax: -3 },
+  general: { initialCoins: 3, maxCoins: 20, maxTax: 10, minTax: -3, maxPlayers: 6 },
   waitingAction: { default: 10, suddenDeath: 5 },
   investorStake: 1,
 };

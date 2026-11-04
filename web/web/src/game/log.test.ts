@@ -39,7 +39,7 @@ describe("appendLog", () => {
       room(2, "CARD_PLAYED_ASSASSIN", "b"),
       room(2, "CONTEST", "c", { contestedPlayer: "b", contestedCard: "ASSASSIN" }),
       room(2, "CONTEST_PENALTY", "c", { contestedPlayer: "b", contestedCard: "ASSASSIN", hasCard: false }),
-      room(2, "CARD_KILLED", "c", { cause: "CONTEST", targetPlayer: "b", targetCardIndex: 0 }),
+      room(2, "CARD_KILLED", "c", { cause: "CONTEST_PENALTY", targetPlayer: "b", targetCardIndex: 0 }),
       room(3, "CARD_KILLED", "a", { cause: "ASSASSIN", targetPlayer: "d", targetCardIndex: 1 }, ["d"]),
       room(3, "STEAL_COINS", "b", { cause: "TRICKSTER", lostCoins: 3, targetPlayer: "e" }, ["d"]),
     ]);
