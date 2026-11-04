@@ -21,6 +21,7 @@ const room = (turn: number, type: string | null, playerId: Id = "a", payload: un
   currentPlayer: playerId,
   gameEvent: type ? { playerId, type, expiresAt: turn * 1000 + type.length, payload } : null,
   gameOver: false,
+  startTime: "2026-11-04T00:00:00Z",
   chat: [],
 });
 
@@ -69,6 +70,25 @@ describe("appendLog", () => {
       room(5, "CONTEST_PENALTY", "a", { contestedPlayer: "c", hasCard: true }),
     ]);
     expect(log.map(logText)).toEqual(["Carla se disse Guardiã, foi contestado e mostrou a carta."]);
+  });
+
+  it("contestação perdida na reconexão ainda fecha a declaração com o desfecho", () => {
+    const log = run([
+      room(6, "CARD_PLAYED_REBEL", "b"),
+      room(6, "CONTEST_PENALTY", "a", { contestedPlayer: "b", hasCard: false }),
+    ]);
+    expect(log.map(logText)).toEqual(["Bruno se disse Rebelde, foi contestado e perdeu a carta."]);
+  });
+
+  it("troca de carta por contestação não se disfarça de Crupiê", () => {
+    const log = run([
+      room(7, "CARD_PLAYED_CROUPIER", "c"),
+      room(7, "CHANGED_CARD", "c", { cause: "CONTEST_PENALTY" }),
+    ]);
+    expect(log.map(logText)).toEqual([
+      "Carla se disse Crupiê. Ninguém contestou.",
+      "Carla trocou a carta revelada depois da contestação.",
+    ]);
   });
 
   it("a mesma sala reaplicada (reconexão) não duplica linhas", () => {

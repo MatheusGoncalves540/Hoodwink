@@ -66,9 +66,16 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
           if (open?.open === "declared" && open.role) amend(copy.log.contested(roleName(open.role)), "contested");
           else push(ev.playerId, copy.log.contestedBy(fname(str(p.contestedPlayer))));
           break;
-        case "CONTEST_PENALTY":
-          if (open?.open === "contested") amend(open.pred + (p.hasCard ? copy.log.showedCard : copy.log.lostCard), undefined, true);
+        case "CONTEST_PENALTY": {
+          const outcome = p.hasCard ? copy.log.showedCard : copy.log.lostCard;
+          if (open?.open === "declared" && open.role) {
+            // o CONTEST pode se perder na reconexão: fecha a declaração como contestada e já aplica o desfecho
+            out[last] = { ...open, pred: copy.log.contested(roleName(open.role)) + outcome, open: undefined, chat: true };
+          } else if (open?.open === "contested") {
+            out[last] = { ...open, pred: open.pred + outcome, open: undefined, chat: true };
+          }
           break;
+        }
         case "CARD_KILLED":
           // morte por contestação já está na linha da declaração (effects.go: EffectContestPenalty)
           if (!["CONTEST", "CONTEST_PENALTY"].includes(str(p.cause))) push(str(p.targetPlayer) || ev.playerId, copy.log.lostACard);
@@ -80,7 +87,8 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
           push(ev.playerId, copy.log.revived);
           break;
         case "CHANGED_CARD":
-          push(ev.playerId, copy.log.changed);
+          // troca da carta revelada pela contestação não é jogada de Crupiê
+          push(ev.playerId, str(p.cause) === "CONTEST_PENALTY" ? copy.log.changedContested : copy.log.changed);
           break;
         case "EARN_COINS":
           push(ev.playerId, copy.log.earned(num(p.earnedCoins), roleName(declaredRole(`CARD_PLAYED_${str(p.cause)}`) ?? "TRILLIONAIRE")));

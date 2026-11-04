@@ -135,6 +135,7 @@ function table(now: number, o: TableOpts): PublicRoom {
     currentPlayer: o.active,
     gameEvent: { type: ev.type, playerId: ev.playerId ?? o.active, expiresAt: now + (ev.left ?? 8) * 1000, payload: ev.payload ?? null },
     gameOver: !!o.gameOver,
+    startTime: new Date(now).toISOString(),
     chat: CHAT,
   };
 }
@@ -156,6 +157,7 @@ const waiting = (now: number, names: string[], max: number, roomName: string): P
   currentPlayer: "",
   gameEvent: { type: "WAITING_START", playerId: "", expiresAt: now, payload: null },
   gameOver: false,
+  startTime: "",
   chat: [],
 });
 
