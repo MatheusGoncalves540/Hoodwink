@@ -76,3 +76,26 @@ describe("gameStore (fila de apresentação)", () => {
     expect(s().log[0].pred).toContain("foi contestado");
   });
 });
+
+describe("gameStore (troca de sala e reset)", () => {
+  it("troca de sala descarta o diário e a fila da anterior", () => {
+    const base = fixture("Mesa6", NOW).room!;
+    s().applyRoom(event(base, "CARD_PLAYED_REBEL", "ana", NOW + 1), NOW);
+
+    const other = { ...event(base, "CARD_PLAYED_ASSASSIN", "bruno", NOW + 2), id: "OUTRA" };
+    s().applyRoom(other, NOW);
+
+    expect(s().log.map((e) => e.actorId)).toEqual(["bruno"]);
+    expect(s().presentation.map((e) => e.type)).toEqual(["CARD_PLAYED_ASSASSIN"]);
+  });
+
+  it("reset limpa a sala e a interface da sala", () => {
+    s().loadFixture("Camarote", NOW);
+    useUiStore.setState({ openSheet: "chat", chatDraft: "oi", chatSeen: 5, targeting: { role: "ASSASSIN" } });
+
+    s().reset();
+
+    expect({ room: s().room, log: s().log, presentation: s().presentation }).toEqual({ room: null, log: [], presentation: [] });
+    expect(useUiStore.getState()).toMatchObject({ openSheet: null, chatDraft: "", chatSeen: 0, targeting: null });
+  });
+});

@@ -59,6 +59,12 @@ describe("sessionStore", () => {
     expect(usernameFromToken("nada")).toBe("");
   });
 
+  it("lê nome com acento no JWT (UTF-8)", () => {
+    const bytes = new TextEncoder().encode(JSON.stringify({ username: "João" }));
+    const token = `h.${btoa(String.fromCharCode(...bytes))}.s`;
+    expect(usernameFromToken(token)).toBe("João");
+  });
+
   it("lê o playerId do ticket (ou do JWT do backend, no login)", () => {
     const ticket = `h.${btoa(JSON.stringify({ playerId: "eu", roomId: "a1b2" }))}.s`;
     const login = `h.${btoa(JSON.stringify({ id: "eu", username: "Matheus" }))}.s`;

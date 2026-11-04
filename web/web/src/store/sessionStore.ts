@@ -25,7 +25,10 @@ export function roomCodeFromSearch(search: string): string | null {
 function tokenClaims(token: string): Record<string, unknown> {
   try {
     const payload = token.split(".")[1];
-    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as Record<string, unknown>;
+    const binary = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    // o JWT carrega UTF-8; atob devolve bytes em Latin-1
+    const json = new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0)));
+    return JSON.parse(json) as Record<string, unknown>;
   } catch {
     return {};
   }

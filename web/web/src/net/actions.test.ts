@@ -55,4 +55,10 @@ describe("actions", () => {
       payload: { targetPlayer },
     });
   });
+
+  it("recusa jogada sem o alvo que o servidor exige", () => {
+    expect(() => play("ASSASSIN", me, { playerId: targetPlayer })).toThrow("targetCardIndex");
+    expect(() => play("GUARDIAN", me)).toThrow("targetCardIndex");
+    expect(() => play("TRICKSTER", me)).toThrow("targetPlayer");
+  });
 });
