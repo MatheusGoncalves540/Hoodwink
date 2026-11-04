@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Coin } from "../ui/Coin/Coin";
+import { CountdownDots } from "../ui/CountdownDots/CountdownDots";
+import { Timer } from "../ui/Timer/Timer";
 import { ProsoLine } from "../ui/ProsoLine/ProsoLine";
 import { Ticket } from "../ui/Ticket/Ticket";
 import { Toggle } from "../ui/Toggle/Toggle";
@@ -27,6 +29,28 @@ describe("primitivos de ui/ (fumaça em Node)", () => {
   it("moeda com rótulo é imagem acessível; sem valor vira losango", () => {
     expect(html(<Coin size={26} value={7} label="7 moedas" />)).toContain('role="img" aria-label="7 moedas">7<');
     expect(html(<Coin size={46} />)).toContain('aria-hidden="true"');
+  });
+
+  it("timer: segundos restantes no número e na barra; barra parte da fração que falta", () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    const out = html(<Timer expiresAt={1_007_500} total={10} label="Tempo para reagir" decision />);
+    vi.useRealTimers();
+    expect(out).toContain('role="progressbar" aria-label="Tempo para reagir" aria-valuemin="0" aria-valuemax="10" aria-valuenow="8"');
+    expect(out).toContain("--de:0.75;animation-duration:7500ms");
+    expect(out).toMatch(/restam <b class="hw-num">8<span[^>]*>\?<\/span><\/b>/);
+  });
+
+  it("timer vencido para em zero", () => {
+    vi.useFakeTimers({ now: 2_000_000 });
+    const out = html(<Timer expiresAt={1_000_000} total={5} label="t" />);
+    vi.useRealTimers();
+    expect(out).toContain('aria-valuenow="0"');
+    expect(out).toContain("--de:0;animation-duration:0ms");
+  });
+
+  it("pontos da contestação: 6 cheios de 10, o sexto pisca", () => {
+    const out = html(<CountdownDots seconds={6} total={10} />);
+    expect(out.match(/<span class="[^"]*"/g)?.map((c) => c.includes("m-tick"))).toEqual([false, false, false, false, false, true, false, false, false, false]);
   });
 
   it("linha do Proso some sem fala", () => {
