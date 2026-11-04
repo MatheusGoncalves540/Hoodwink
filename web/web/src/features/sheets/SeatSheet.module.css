@@ -1,0 +1,80 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.name {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.logRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dotted color-mix(in srgb, var(--hw-tinta) 40%, transparent);
+  font-size: 16px;
+  line-height: 1.35;
+}
+.round {
+  flex-shrink: 0;
+  width: 18px;
+  font-family: var(--hw-font-display);
+  font-size: 16px;
+}
+.text {
+  flex: 1;
+  min-width: 0;
+}
+.empty {
+  margin: 0;
+  font-size: 16px;
+  font-style: italic;
+}
+.investments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.box {
+  border: 1.5px dashed var(--hw-tinta);
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.endsIn {
+  font-size: 14px;
+  font-style: italic;
+}
+.pips {
+  display: flex;
+  gap: 4px;
+}
+.pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hw-tinta);
+}

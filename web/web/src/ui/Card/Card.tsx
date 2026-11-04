@@ -59,9 +59,9 @@ export function CardBack({ size, as: Tag = "div", className, ...rest }: Base) {
 }
 
 /** Carta de outro, vista aberta: tracejada, poça de luz e "?". */
-export function CardHidden({ size, label, as: Tag = "div", className, ...rest }: Base & { label?: ReactNode }) {
+export function CardHidden({ size, label, protected: prot, as: Tag = "div", className, ...rest }: Base & { label?: ReactNode; protected?: boolean }) {
   return (
-    <Tag {...rest} className={cx(s.card, s.hidden, s[size], className)}>
+    <Tag {...rest} className={cx(s.card, s.hidden, s[size], prot && s.protected, className)}>
       {label && <span className={s.hiddenLabel}>{label}</span>}
       <span aria-hidden="true" className={s.ask}>
         ?

@@ -12,7 +12,7 @@ button.card {
 
 /* tamanhos */
 .s { width: 78px; height: 110px; }
-.m { width: 100%; height: 112px; }
+.m { width: 100%; height: 96px; }
 .l { width: 100%; height: 150px; }
 .xl { width: 132px; height: 186px; }
 
@@ -160,3 +160,8 @@ button.card {
 .d { width: 104px; height: 144px; }
 .d .name { font-size: 15px; }
 .d .bottom { font-size: 14px; }
+
+/* gaveta: carta escondida protegida (anel de ouro) */
+.card.protected {
+  box-shadow: 0 0 0 3px var(--hw-luz), 0 0 0 6px var(--hw-ouro);
+}
