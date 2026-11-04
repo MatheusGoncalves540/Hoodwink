@@ -26,7 +26,7 @@ Pré-requisitos: Node 26 + npm (`npm ci` em `web/`); servidor local em `D:\GitHu
 - [x] T6 [Backend] `game/copy.ts` e `game/log.ts` (diário) com testes a partir de `05-protocolo.md` · arquivos: `web/src/game/copy.ts`, `web/src/game/log.ts`, `web/src/game/log.test.ts` · depende: T3, T4 · verificar: `npm test`
 - [x] T7 [Backend] `game/fixtures.ts` (estados das pranchas) e `game/selectors.ts` com testes de `selectDecision` (vez, alvo, espectador) e de `Mesa6` · arquivos: `web/src/game/fixtures.ts`, `web/src/game/selectors.ts`, `web/src/game/selectors.test.ts` · depende: T5, T6 · verificar: `npm test`
 - [x] T8 [Backend] `store/gameStore.ts` e `store/uiStore.ts` com `loadFixture` · arquivos: `web/src/store/gameStore.ts`, `web/src/store/uiStore.ts` · depende: T7 · verificar: `npm test` (teste de `loadFixture('Mesa6')` + `applyRoom`)
-- [ ] T9 [Backend] `net/GameSocket.tsx` (host de `envs.ts`, reconexão, Zod) e `net/actions.ts` · arquivos: `web/src/net/GameSocket.tsx`, `web/src/net/actions.ts`, `web/src/net/actions.test.ts` · depende: T8 · verificar: `npm test` (mensagens montadas iguais às do `ButtonPanel.jsx`) e `npm run build`
+- [x] T9 [Backend] `net/GameSocket.tsx` (host de `envs.ts`, reconexão, Zod) e `net/actions.ts` · arquivos: `web/src/net/GameSocket.tsx`, `web/src/net/actions.ts`, `web/src/net/actions.test.ts` · depende: T8 · verificar: `npm test` (mensagens montadas iguais às do `ButtonPanel.jsx`) e `npm run build`
 
 ### Fase 2: primitivos (prompt 02)
 - [x] T10 [Frontend] `ui/` Ticket, Button, TextField, Coin, Label, Marquee, ProsoLine, Stamp, Toggle, com seção em amostras · arquivos: `web/src/ui/*` · depende: T2 · verificar: `npm run build`; amostras nos dois temas no navegador
