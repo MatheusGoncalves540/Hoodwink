@@ -14,6 +14,7 @@ import { Timer } from "../ui/Timer/Timer";
 import { Label } from "../ui/Label/Label";
 import { Marquee } from "../ui/Marquee/Marquee";
 import { ProsoLine } from "../ui/ProsoLine/ProsoLine";
+import { Sheet } from "../ui/Sheet/Sheet";
 import { Stamp } from "../ui/Stamp/Stamp";
 import { TextField } from "../ui/TextField/TextField";
 import { Ticket } from "../ui/Ticket/Ticket";
@@ -35,6 +36,12 @@ function Primitivos() {
   const [code, setCode] = useState("");
   const [on, setOn] = useState(true);
   const [t0] = useState(() => Date.now());
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetMode, setSheetMode] = useState<"mobile" | "desktop">("mobile");
+  const openSheet = (m: "mobile" | "desktop") => {
+    setSheetMode(m);
+    setSheetOpen(true);
+  };
   return (
     <div className="am-fontes">
       <Label tone="ouro">ui · botões</Label>
@@ -127,6 +134,27 @@ function Primitivos() {
           (["back", "revealed", "protected", "dead"] as const).map((st) => <CardMini key={z + st} size={z} state={st} />),
         )}
       </div>
+
+      <Label tone="ouro">gaveta</Label>
+      <div className="am-linha">
+        <Button variant="outline" onClick={() => openSheet("mobile")}>
+          Abrir gaveta (mobile)
+        </Button>
+        <Button variant="outline" onClick={() => openSheet("desktop")}>
+          Abrir trilho (desktop)
+        </Button>
+      </div>
+      <Sheet open={sheetOpen} mode={sheetMode} label="Camarote de Bruno" onClose={() => setSheetOpen(false)}>
+        <div className="am-linha">
+          <span className="am-display">Bruno</span>
+          <Coin size={56} value={2} label="2 moedas" />
+        </div>
+        <div className="am-grade">
+          <CardDead size="m" role="ASSASSIN" />
+          <CardHidden size="m" label="escondida" />
+        </div>
+        <Label tone="suave">O que a mesa já viu</Label>
+      </Sheet>
 
       <div>
         <Toggle label="Som" value={on} onChange={setOn} />
