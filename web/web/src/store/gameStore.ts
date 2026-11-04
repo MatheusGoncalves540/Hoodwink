@@ -52,22 +52,30 @@ export const useGameStore = create<GameState>((set, get) => ({
   setConnection: (connection) => set({ connection }),
   applyRoom: (incoming, now = Date.now()) => {
     const { room: prev, log, presentation, me } = get();
-    const room = keepMyCardNames(prev, incoming, me);
+    // novo ticket/sala: diário e fila da sala anterior não valem mais
+    const sameRoom = !!prev && prev.id === incoming.id;
+    const previous = sameRoom ? prev : null;
+    const baseLog = sameRoom ? log : [];
+    const basePresentation = sameRoom ? presentation : [];
+    const room = keepMyCardNames(previous, incoming, me);
     const ev = room.gameEvent;
     // Evento já vencido (reconexão/reload) entra no diário mas não na fila: a janela de animação acabou.
     const fresh =
       !!ev &&
-      eventKey(ev) !== eventKey(prev?.gameEvent ?? null) &&
+      eventKey(ev) !== eventKey(previous?.gameEvent ?? null) &&
       ev.expiresAt > now &&
-      !presentation.some((e) => eventKey(e) === eventKey(ev));
+      !basePresentation.some((e) => eventKey(e) === eventKey(ev));
     set({
       room,
-      log: appendLog(log, prev, room, now),
-      presentation: fresh && !log.some((e) => e.key === eventKey(ev)) ? [...presentation, ev] : presentation,
+      log: appendLog(baseLog, previous, room, now),
+      presentation: fresh && !baseLog.some((e) => e.key === eventKey(ev)) ? [...basePresentation, ev] : basePresentation,
     });
   },
   shift: () => set({ presentation: get().presentation.slice(1) }),
-  reset: () => set({ room: null, log: [], presentation: [] }),
+  reset: () => {
+    set({ room: null, log: [], presentation: [] });
+    useUiStore.setState({ openSheet: null, chatDraft: "", chatSeen: 0, targeting: null });
+  },
   loadFixture: (name, now = Date.now()) => {
     const f = fixture(name, now);
     set({ me: f.me, room: f.room, log: f.log, presentation: [], connection: "open" });

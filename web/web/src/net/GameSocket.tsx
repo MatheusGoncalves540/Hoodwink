@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { ENV } from "../config/envs";
 import { parseRoom } from "../game/protocol";
 import { useGameStore } from "../store/gameStore";
+import { playerIdFromToken } from "../store/sessionStore";
 import type { ClientMessage } from "./actions";
 
 // ponytail: uma conexão de jogo por aba, guardada no módulo; send() funciona de qualquer componente.
@@ -23,7 +24,11 @@ export const gameUrl = (ticket: string) =>
 
 export function GameSocket({ ticket }: { ticket: string }) {
   useEffect(() => {
-    const { setConnection, applyRoom } = useGameStore.getState();
+    const { setConnection, applyRoom, reset, setMe } = useGameStore.getState();
+    // ticket novo = sala nova: diário e fila da anterior não valem mais; o id do jogador sai do próprio ticket
+    reset();
+    const me = playerIdFromToken(ticket);
+    if (me) setMe(me);
     let alive = true;
     let tries = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
