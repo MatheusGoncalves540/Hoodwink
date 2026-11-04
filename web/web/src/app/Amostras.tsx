@@ -3,6 +3,15 @@
  * as classes de components.css e motion.css. Cada primitivo de ui/ ganha uma seção aqui (T10–T13).
  */
 import { useState, type CSSProperties } from "react";
+import { Button } from "../ui/Button/Button";
+import { Coin } from "../ui/Coin/Coin";
+import { Label } from "../ui/Label/Label";
+import { Marquee } from "../ui/Marquee/Marquee";
+import { ProsoLine } from "../ui/ProsoLine/ProsoLine";
+import { Stamp } from "../ui/Stamp/Stamp";
+import { TextField } from "../ui/TextField/TextField";
+import { Ticket } from "../ui/Ticket/Ticket";
+import { Toggle } from "../ui/Toggle/Toggle";
 import { useMotionPref } from "./useMotionPref";
 import { useTheme, type Theme } from "./useTheme";
 
@@ -11,6 +20,70 @@ const CORES = [
   "ouro-texto", "lampada", "filete", "carta", "carta-tinta", "carta-rotulo", "poca", "cone", "scrim",
 ];
 const MOVIMENTOS = ["m-rise", "m-drop", "m-flip", "m-stamp", "m-hit", "m-bow", "m-hang", "m-slam"];
+
+/** T10: primitivos de ui/ com todas as variantes. */
+function Primitivos() {
+  const [code, setCode] = useState("");
+  const [on, setOn] = useState(true);
+  return (
+    <div className="am-fontes">
+      <Label tone="ouro">ui · botões</Label>
+      <Ticket size="l">Criar sala</Ticket>
+      <Ticket>
+        Bloquear com Guardiã <i>por 6 moedas</i>
+      </Ticket>
+      <Ticket disabled>Abrir as cortinas</Ticket>
+      <div className="am-linha">
+        <Button variant="danger">Contestar</Button>
+        <Button variant="outline">Deixar passar</Button>
+        <Button variant="link">☜ Voltar</Button>
+        <Button variant="outline" disabled>
+          Sem moedas
+        </Button>
+      </div>
+
+      <Label tone="ouro">campo</Label>
+      <TextField label="Código da sala" placeholder="Código da sala" maxLength={6} upper value={code} onChange={setCode} action="Entrar" />
+      <TextField label="Mensagem" placeholder="Fale com a mesa" value="" onChange={() => {}} />
+
+      <Label tone="ouro">moedas</Label>
+      <div className="am-linha">
+        {([22, 26, 34, 46, 50, 56, 60] as const).map((n) => (
+          <Coin key={n} size={n} value={7} label={`${n} px, 7 moedas`} />
+        ))}
+        <Coin size={46} label="sem custo" />
+      </div>
+
+      <Label tone="ouro">rótulos</Label>
+      <div className="am-linha">
+        <Label>Rodada 4 · Taxa +1</Label>
+        <Label tone="ouro">Em cartaz</Label>
+        <Label tone="suave">Para ganhar moedas</Label>
+      </div>
+
+      <Marquee className="am-letreiro">Carla</Marquee>
+      <ProsoLine text="Quem mente melhor fica em cena." />
+      <ProsoLine text="" />
+
+      <div className="am-linha">
+        <span className="am-carimbo">
+          <Stamp text="revelada" animate />
+        </span>
+        <span className="am-carimbo">
+          <Stamp text="Blefe?" animate />
+        </span>
+        <span className="am-carimbo">
+          <Stamp text="Verdade" />
+        </span>
+      </div>
+
+      <div>
+        <Toggle label="Som" value={on} onChange={setOn} />
+        <Toggle label="Menos movimento" hint="cartas e cortinas sem animação" value={!on} onChange={(v) => setOn(!v)} />
+      </div>
+    </div>
+  );
+}
 
 export function Amostras() {
   const { theme, override, setOverride } = useTheme();
@@ -73,6 +146,8 @@ export function Amostras() {
               ))}
               <span className="am-bloco m-tick">m-tick</span>
             </div>
+
+            <Primitivos />
           </section>
         ))}
       </div>

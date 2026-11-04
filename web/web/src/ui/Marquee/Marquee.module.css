@@ -1,0 +1,5 @@
+.marquee {
+  padding: var(--hw-space-4);
+  color: var(--hw-sobre-veludo);
+  box-shadow: inset 0 0 0 2px var(--hw-ouro);
+}

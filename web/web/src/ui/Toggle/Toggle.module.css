@@ -1,0 +1,51 @@
+/* Menu.dc.html */
+.toggle {
+  min-height: 52px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--hw-tinta);
+  text-align: left;
+  cursor: pointer;
+}
+.text {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.label {
+  font-size: 18px;
+}
+.hint {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--hw-tinta-suave);
+}
+.leader {
+  flex: 1;
+  min-width: 12px;
+  margin: 0 var(--hw-space-2);
+  align-self: center;
+  border-bottom: 2px dotted color-mix(in srgb, var(--hw-tinta) 40%, transparent);
+}
+.options {
+  flex-shrink: 0;
+  display: flex;
+  font-size: 16px;
+}
+.option {
+  padding: 2px 9px;
+  color: var(--hw-tinta-suave);
+  font-style: italic;
+}
+.on {
+  border: 1.5px solid var(--hw-alerta);
+  border-radius: 50%;
+  color: var(--hw-alerta);
+  font-style: normal;
+  font-weight: 700;
+  transform: rotate(-4deg);
+}
