@@ -4,6 +4,10 @@
  */
 import { useState, type CSSProperties } from "react";
 import { Button } from "../ui/Button/Button";
+import { ROLE_GROUPS } from "../game/roles";
+import { CLASSIC_RULES } from "../game/rules.classic";
+import type { RoleId } from "../game/protocol";
+import { CardBack, CardDead, CardFace, CardHidden, CardMini } from "../ui/Card/Card";
 import { Coin } from "../ui/Coin/Coin";
 import { CountdownDots } from "../ui/CountdownDots/CountdownDots";
 import { Timer } from "../ui/Timer/Timer";
@@ -23,7 +27,10 @@ const CORES = [
 ];
 const MOVIMENTOS = ["m-rise", "m-drop", "m-flip", "m-stamp", "m-hit", "m-bow", "m-hang", "m-slam"];
 
-/** T10: primitivos de ui/ com todas as variantes. */
+/** Grupo do papel, como rótulo da faixa de baixo do catálogo. */
+const g = (r: RoleId) => ROLE_GROUPS.find((x) => x.roles.includes(r))?.title;
+
+/** T10–T12: primitivos de ui/ com todas as variantes. */
 function Primitivos() {
   const [code, setCode] = useState("");
   const [on, setOn] = useState(true);
@@ -85,6 +92,41 @@ function Primitivos() {
       <Timer expiresAt={t0 + 7000} total={10} label="Tempo para reagir" decision />
       <Timer expiresAt={t0 + 3000} total={5} label="Tempo da jogada, morte súbita" tone="alerta" />
       <CountdownDots seconds={6} total={10} />
+
+      <Label tone="ouro">cartas: seis estados (Cartas.png)</Label>
+      <div className="am-linha">
+        <CardBack size="xl" />
+        <CardHidden size="xl" />
+        <CardFace size="xl" role="TRILLIONAIRE" />
+        <CardFace size="xl" role="GUARDIAN" protected />
+        <CardFace size="xl" role="ASSASSIN" stamp="revelada" />
+        <CardDead size="xl" />
+      </div>
+      <div className="am-linha">
+        {ROLE_GROUPS.flatMap((g) => g.roles).map((r) => (
+          <CardFace key={r} size="xl" role={r} cost={r === "KAMIKAZE" ? null : CLASSIC_RULES.cards[r].value} bottom={g(r)} />
+        ))}
+      </div>
+      <Label tone="ouro">no jogo: faixa Você (s), gaveta (m), contestação (l)</Label>
+      <div className="am-linha">
+        <CardFace size="s" role="GUARDIAN" protected bottom="protegida" />
+        <CardFace size="s" role="TRILLIONAIRE" />
+        <CardBack size="s" />
+        <CardHidden size="s" />
+        <CardDead size="s" role="ASSASSIN" />
+      </div>
+      <div className="am-grade">
+        <CardFace size="m" role="GUARDIAN" protected top="a mesa vê: carta protegida" bottom="protegida" />
+        <CardFace size="m" role="TRILLIONAIRE" top="a mesa vê: carta virada" bottom="escondida" />
+        <CardFace size="l" role="CROUPIER" bottom="revelada" as="button" aria-label="Derrubar a carta revelada de Ana, Crupiê" />
+        <CardHidden size="l" label="escondida" as="button" aria-label="Derrubar a carta escondida de Ana" />
+      </div>
+      <Label tone="ouro">miniaturas do camarote</Label>
+      <div className="am-linha">
+        {(["l", "s", "desk-l", "desk-s"] as const).map((z) =>
+          (["back", "revealed", "protected", "dead"] as const).map((st) => <CardMini key={z + st} size={z} state={st} />),
+        )}
+      </div>
 
       <div>
         <Toggle label="Som" value={on} onChange={setOn} />
