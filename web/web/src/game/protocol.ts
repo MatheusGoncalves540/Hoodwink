@@ -94,6 +94,8 @@ export const chatMessageSchema = z.object({
 export const publicRoomSchema = z.object({
   id: z.string(),
   name: z.string().default(""),
+  /** ainda não vem em PublicRoomForUpdates (pedido ao servidor); quem cria a sala sabe o número */
+  maxPlayers: z.number().optional(),
   turn: z.number(),
   tax: z.number(),
   doubledCardValues: z
