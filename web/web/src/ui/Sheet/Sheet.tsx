@@ -22,10 +22,12 @@ type Props = {
   footer?: ReactNode;
   /** Texto do botão de voltar; padrão "☜ Voltar à mesa". */
   backLabel?: string;
+  /** Gaveta de altura cheia (conversa): o corpo rola e o pé fica embaixo. */
+  fill?: boolean;
 };
 
 // ponytail: sem animação de saída (o Radix desmonta na hora); entra com m-sheet/m-rail.
-export function Sheet({ open, onClose, label, mode, children, footer, backLabel = copy.backToTable }: Props) {
+export function Sheet({ open, onClose, label, mode, children, footer, backLabel = copy.backToTable, fill }: Props) {
   const mobile = mode === "mobile";
   // Aberta por estado (sem Dialog.Trigger), o Radix não sabe a quem devolver o foco: guardamos quem abriu.
   const opener = useRef<HTMLElement | null>(null);
@@ -35,7 +37,7 @@ export function Sheet({ open, onClose, label, mode, children, footer, backLabel 
         {mobile && <Dialog.Overlay className={cx("m-scrim", s.scrim)} />}
         <Dialog.Content
           aria-describedby={undefined}
-          className={cx("stub", mobile ? cx("m-sheet", s.sheet) : s.rail)}
+          className={cx("stub", mobile ? cx("m-sheet", s.sheet) : s.rail, fill && mobile && s.fill)}
           onInteractOutside={mobile ? undefined : (e) => e.preventDefault()}
           onOpenAutoFocus={() => {
             opener.current = document.activeElement as HTMLElement | null;

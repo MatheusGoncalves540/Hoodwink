@@ -11,6 +11,8 @@ import { selectFootlights, selectSeats, selectStage, selectYou } from "../../gam
 import { useGameStore } from "../../store/gameStore";
 import { useUiStore } from "../../store/uiStore";
 import { cx } from "../../ui/cx";
+import { ChatSheet } from "../sheets/ChatSheet";
+import { RoomMenu } from "../sheets/RoomMenu";
 import { SeatSheet } from "../sheets/SeatSheet";
 import { YouSheet } from "../sheets/YouSheet";
 import { Footlights } from "./Footlights";
@@ -95,6 +97,10 @@ export function TableScene() {
   const sheet =
     openSheet === "you" ? (
       <YouSheet view={view} mode={layout} onClose={close} />
+    ) : openSheet === "menu" ? (
+      <RoomMenu view={view} mode={layout} onClose={close} />
+    ) : openSheet === "chat" ? (
+      <ChatSheet view={view} mode={layout} onClose={close} />
     ) : openSheet && typeof openSheet === "object" ? (
       <SeatSheet view={view} seatId={openSheet.seat} mode={layout} onClose={close} />
     ) : undefined;

@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { fixture, type FixtureName } from "../../game/fixtures";
-import { selectSeatSheet, selectYouSheet, type GameView } from "../../game/selectors";
+import { selectChat, selectSeatSheet, selectYouSheet, type GameView } from "../../game/selectors";
+import { ChatSheetBody } from "./ChatSheet";
+import { RoomMenuContent } from "./RoomMenu";
 import { SeatSheetBody } from "./SeatSheet";
 import { YouSheetBody } from "./YouSheet";
 
@@ -42,5 +44,54 @@ describe("gavetas (fumaça em Node)", () => {
     expect(out).toContain("Guardiã");
     expect(out).toContain("rodada 2");
     expect(out).toContain("Protegeu uma carta.");
+  });
+});
+
+describe("menu e conversa (fumaça em Node)", () => {
+  it("menu da sala: sala, preferências e saída", () => {
+    const out = renderToStaticMarkup(
+      <RoomMenuContent
+        code="K7Q2"
+        turn={4}
+        sound
+        vibration
+        motion={false}
+        onSound={() => {}}
+        onVibration={() => {}}
+        onMotion={() => {}}
+        onLeave={() => {}}
+      />,
+    );
+    expect(out).toContain("Sala nº");
+    expect(out).toContain("K7Q2");
+    expect(out).toContain("rodada 4");
+    expect(out).toContain("Como se joga");
+    expect(out).toContain("os 12 papéis");
+    expect(out).toContain("Som");
+    expect(out).toContain("Vibração");
+    expect(out).toContain("quando chega a sua deixa");
+    expect(out).toContain("Menos movimento");
+    expect(out).toContain("cartas e cortinas sem animação");
+    expect(out).toContain("Sair de cena");
+    expect(out).toContain("Seu camarote fica na mesa e o tempo corre sem você. Para voltar, entre de novo com o código K7Q2.");
+    expect(out.match(/aria-checked="true"/g)).toHaveLength(2);
+    expect(out.match(/aria-checked="false"/g)).toHaveLength(1);
+  });
+
+  it("conversa: falas, horas e acontecimentos", () => {
+    const out = renderToStaticMarkup(<ChatSheetBody items={selectChat(view("Conversa"))} />);
+    expect(out).toContain('role="log" aria-label="Falas"');
+    expect(out).toContain("Conversa da mesa");
+    expect(out).toContain("ficam as 30 últimas");
+    expect(out).toContain("Carla.");
+    expect(out).toContain("Ninguém aqui tem Guardiã, né?");
+    expect(out).toContain("21:38");
+    expect(out).toContain("Você.");
+  });
+
+  it("ConversaCheia entra com a lista cheia", () => {
+    const items = selectChat(view("ConversaCheia"));
+    expect(items.length).toBeGreaterThanOrEqual(30);
+    expect(renderToStaticMarkup(<ChatSheetBody items={items} />)).toContain("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk");
   });
 });

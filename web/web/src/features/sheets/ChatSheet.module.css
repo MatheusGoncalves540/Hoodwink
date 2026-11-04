@@ -1,0 +1,57 @@
+.chat {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.title {
+  margin: 0;
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.05;
+}
+.keeps {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-style: italic;
+}
+.log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.item {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.35;
+}
+.time {
+  float: right;
+  margin-left: 8px;
+  font-size: 13px;
+  font-style: italic;
+}
+.name {
+  font-family: var(--hw-font-display);
+}
+.mine .name {
+  color: var(--hw-alerta);
+}
+.event {
+  align-self: center;
+  text-align: center;
+  font-style: italic;
+  font-size: 15px;
+}
