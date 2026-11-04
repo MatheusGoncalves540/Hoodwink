@@ -1,0 +1,27 @@
+/* Hoodwink, tema Holofote. Classes de componente compartilhadas: rótulo, numerais, ticket, carta Cortina, letreiro, base (rolagem, foco, recorte de canhoto).
+   Fonte: design-handoff (canvas v62). Não edite cores soltas: use os tokens. */
+.hw-rotulo{font-family:var(--hw-font-rotulo);font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+.hw-num{font-family:var(--hw-font-display);font-variant-numeric:tabular-nums}
+/* botão principal: pílula de tinta com filete de ouro */
+.ticket{border:0!important;border-radius:var(--hw-radius-pill);background:var(--hw-tinta)!important;color:var(--hw-plateia)!important;box-shadow:0 0 0 3px var(--hw-plateia),0 0 0 5px var(--hw-ouro);font-family:var(--hw-font-display)!important}
+/* carta Cortina (Hoodwink — Cartas.html): arte em sangria total; o último filho é a faixa de cima (nome),
+   o primeiro, se houver outro, é a faixa de baixo. column-reverse põe o último no alto sem mexer no HTML. */
+.hw-carta{position:relative;overflow:hidden;display:flex!important;flex-direction:column-reverse!important;justify-content:flex-start!important;align-items:stretch!important;gap:0!important;padding:0!important;text-align:center;border:0!important;outline:0!important;background:repeating-linear-gradient(135deg,#3A2A24 0 8px,#2E211C 8px 16px)!important;color:var(--hw-carta-tinta)!important;box-shadow:0 2px 0 rgba(0,0,0,.15),0 12px 24px -14px rgba(0,0,0,.5)}
+.hw-carta>*{position:relative;flex:none!important}
+.hw-carta>:last-child{margin-bottom:auto;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 4px 7px;line-height:1.05;background:repeating-linear-gradient(90deg,var(--hw-ouro) 0 1px,transparent 1px 3px) 0 100%/100% 3px no-repeat,var(--hw-carta)}
+.hw-carta>:last-child::after{content:"";position:absolute;left:0;right:0;top:100%;height:6px;background:radial-gradient(circle at 50% 0,var(--hw-carta) 5px,transparent 5.5px) 0 0/12px 6px repeat-x}
+.hw-carta>:first-child:not(:last-child):not([data-carimbo]){display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 6px 6px;line-height:1.2;background:repeating-linear-gradient(90deg,var(--hw-ouro) 0 1px,transparent 1px 3px) 0 0/100% 3px no-repeat,var(--hw-carta)}
+.hw-carta [style*="tinta-suave"]{color:var(--hw-carta-rotulo)!important}
+.hw-carta .hw-rotulo{color:var(--hw-carta-rotulo)}
+/* letreiro: moldura de veludo com lâmpadas acesas */
+.hw-letreiro{background-color:var(--hw-veludo)!important;background-image:radial-gradient(circle,var(--hw-lampada) 0 3px,rgba(185,138,46,.6) 4px,transparent 6px)!important;background-size:22px 22px!important;background-position:3px 3px!important;border-radius:var(--hw-radius-s)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:radial-gradient(circle,currentColor 1px,#0000 1.5px) center/9px 6px repeat-y}
+::-webkit-scrollbar-track:horizontal{background-size:6px 9px;background-repeat:repeat-x}
+::-webkit-scrollbar-thumb{background:currentColor;background-clip:padding-box;border:solid #0000;border-width:0 3px}
+::-webkit-scrollbar-thumb:horizontal{border-width:3px 0}
+::-webkit-scrollbar-button,::-webkit-scrollbar-corner{display:none}
+@supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:currentColor #0000}}
+button{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--hw-ouro);outline-offset:2px}
+.stub{-webkit-mask:radial-gradient(circle 6px at 50% 0,#0000 96%,#000) 0 0/16px 100% repeat-x;mask:radial-gradient(circle 6px at 50% 0,#0000 96%,#000) 0 0/16px 100% repeat-x}
