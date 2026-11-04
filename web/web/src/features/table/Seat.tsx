@@ -12,17 +12,30 @@ type Props = {
   big: boolean;
   layout: Layout;
   onOpen?(id: string): void;
+  /** Fluxo de alvo: camarote elegível ganha o anel de ouro. */
+  targetable?: boolean;
+  /** Camarote fora do alvo (ou fora de cena) fica a 40%. */
+  dimmed?: boolean;
 };
 
 /** Camarote: arco, primeiro nome, 2 miniaturas + moeda e "···" quando há algo para ver. */
-export function Seat({ seat, box, big, layout, onOpen }: Props) {
+export function Seat({ seat, box, big, layout, onOpen, targetable, dimmed }: Props) {
   const desktop = layout === "desktop";
   const mini = desktop ? (big ? "desk-l" : "desk-s") : big ? "l" : "s";
   const coinSize = desktop ? (big ? 34 : 28) : big ? 26 : 22;
   return (
     <button
       type="button"
-      className={cx("m-item", s.seat, !big && s.small, seat.inScene && s.active, seat.out && s.out, desktop && s.desk)}
+      className={cx(
+        "m-item",
+        s.seat,
+        !big && s.small,
+        seat.inScene && s.active,
+        seat.out && s.out,
+        targetable && s.targetable,
+        dimmed && s.dimmed,
+        desktop && s.desk,
+      )}
       style={{ left: box.x, top: box.y, width: box.w, height: box.h }}
       aria-label={seat.label}
       onClick={() => onOpen?.(seat.id)}

@@ -128,6 +128,12 @@ export const copy = {
   priceLabel: (p: Price) => (p.kind === "gain" ? `+${p.coins}` : p.kind === "reaction" ? `${p.coins}+` : String(p.coins)),
   pickTarget: "Escolha o alvo",
   pickTargetHint: (role: string) => `Toque no camarote de quem recebe o ${role}.`,
+  pickCard: (name: string, state: string) => `Escolher a carta ${state} de ${name}`,
+  pickOwnCard: (role: string) => `Escolher ${role}`,
+  actionCost: (name: string, cost: number) => `${name}, custa ${cost}`,
+  actionGain: (name: string, coins: number) => `${name}, recebe ${plural(coins, "moeda", "moedas")}`,
+  actionPoor: (name: string, cost: number, missing: number) => `${name}, custa ${cost}, faltam ${plural(missing, "moeda", "moedas")}`,
+  actionOffTurn: (name: string) => `${name}, fora do seu turno`,
   backToActions: "☜ Voltar às ações",
   pickCardOf: (name: string) => `Escolha a carta de ${name}`,
 

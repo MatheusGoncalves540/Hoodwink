@@ -13,7 +13,7 @@ export type UiState = {
   openSheet: OpenSheet;
   chatDraft: string;
   chatSeen: number;
-  targeting: { role: RoleId } | null;
+  targeting: { role: RoleId; target?: { playerId: string; cardIndex: number } } | null;
   suddenDeathShown: string | null;
   open(sheet: OpenSheet): void;
   close(): void;

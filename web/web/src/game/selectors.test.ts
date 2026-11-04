@@ -210,7 +210,10 @@ describe("gavetas", () => {
   it("camarote: cartas, diário do ator e investimentos", () => {
     const seat = selectSeatSheet(view("Camarote"), "bruno")!;
     expect(seat).toMatchObject({ id: "bruno", name: "Bruno", coins: 2, alive: true, investments: [] });
-    expect(seat.cards).toEqual([{ state: "dead", role: "ASSASSIN" }, { state: "back" }]);
+    expect(seat.cards).toEqual([
+      { state: "dead", role: "ASSASSIN", index: 0 },
+      { state: "back", index: 1 },
+    ]);
     expect(seat.log.map((l) => [l.turn, l.text])).toEqual([
       [3, "Se disse Assassino, foi contestado e perdeu a carta."],
       [2, "Roubou 3 de Eva como Trapaceiro."],

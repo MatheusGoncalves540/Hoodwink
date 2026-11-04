@@ -61,3 +61,10 @@
   gap: 14px;
   z-index: 1;
 }
+
+/* Camada de tela inteira (ações, aviso de morte súbita): cobre cabeçalho e trilho. */
+.screenOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+}
