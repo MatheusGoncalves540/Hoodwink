@@ -98,6 +98,14 @@
   padding: var(--hw-space-4) var(--hw-space-3) var(--hw-space-3);
   background: var(--hw-luz);
 }
+.am-carimbo {
+  position: relative;
+  width: 132px;
+  height: 186px;
+  border-radius: var(--hw-radius-m);
+  background: var(--hw-luz);
+  box-shadow: inset 0 0 0 1px var(--hw-filete);
+}
 .am-bloco {
   width: 64px;
   height: 64px;

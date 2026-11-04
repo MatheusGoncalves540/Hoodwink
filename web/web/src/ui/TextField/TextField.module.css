@@ -1,0 +1,41 @@
+/* Lobby.dc.html: campo e "Entrar", 56 px, pílula, borda 1,5 px tinta */
+.field {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+}
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.input,
+.action {
+  height: 56px;
+  border: 1.5px solid var(--hw-tinta);
+  border-radius: var(--hw-radius-pill);
+  background: none;
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+  font-size: 18px;
+}
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--hw-space-3);
+}
+.input::placeholder {
+  color: var(--hw-tinta-suave);
+}
+.upper {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.action {
+  padding: 0 22px;
+  font-weight: 700;
+  cursor: pointer;
+}
