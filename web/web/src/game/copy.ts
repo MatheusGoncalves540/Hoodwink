@@ -81,6 +81,7 @@ export const copy = {
   menuTitle: "Menu da sala",
   room: "Sala",
   roomCode: "código",
+  chatShort: "Conversa",
   howToPlay: "Como se joga",
   rolesLink: "os 12 papéis",
   vibrationHint: "quando chega a sua deixa",

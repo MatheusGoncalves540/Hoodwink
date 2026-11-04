@@ -1,0 +1,48 @@
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.title {
+  margin: 0;
+  font-family: var(--hw-font-texto);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.1;
+}
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dotted color-mix(in srgb, var(--hw-tinta) 40%, transparent);
+  font-size: 16px;
+  line-height: 1.35;
+}
+.round {
+  flex-shrink: 0;
+  width: 14px;
+  font-family: var(--hw-font-display);
+  font-size: 16px;
+}
+.text {
+  flex: 1;
+  min-width: 0;
+}
+.empty {
+  margin: 0;
+  font-size: 16px;
+  font-style: italic;
+}
