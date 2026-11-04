@@ -38,6 +38,14 @@ describe("gameStore", () => {
     expect(s().log).toHaveLength(1);
   });
 
+  it("evento vencido (reconexão tardia) não reanima, mas entra no diário", () => {
+    const base = fixture("Mesa6", NOW).room!;
+    const stale = event(base, "CARD_PLAYED_REBEL", "ana", NOW - 1);
+    s().applyRoom(stale, NOW);
+    expect(s().presentation).toEqual([]);
+    expect(s().log).toHaveLength(1);
+  });
+
   it("mantém o nome das suas cartas quando a versão pública chega sem eles", () => {
     const base = fixture("Mesa6", NOW).room!;
     s().applyRoom(base, NOW);

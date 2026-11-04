@@ -54,7 +54,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     const { room: prev, log, presentation, me } = get();
     const room = keepMyCardNames(prev, incoming, me);
     const ev = room.gameEvent;
-    const fresh = ev && eventKey(ev) !== eventKey(prev?.gameEvent ?? null) && !presentation.some((e) => eventKey(e) === eventKey(ev));
+    // Evento já vencido (reconexão/reload) entra no diário mas não na fila: a janela de animação acabou.
+    const fresh =
+      !!ev &&
+      eventKey(ev) !== eventKey(prev?.gameEvent ?? null) &&
+      ev.expiresAt > now &&
+      !presentation.some((e) => eventKey(e) === eventKey(ev));
     set({
       room,
       log: appendLog(log, prev, room, now),
