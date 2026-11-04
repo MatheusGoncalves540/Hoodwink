@@ -5,6 +5,8 @@
 import { useState, type CSSProperties } from "react";
 import { Button } from "../ui/Button/Button";
 import { Coin } from "../ui/Coin/Coin";
+import { CountdownDots } from "../ui/CountdownDots/CountdownDots";
+import { Timer } from "../ui/Timer/Timer";
 import { Label } from "../ui/Label/Label";
 import { Marquee } from "../ui/Marquee/Marquee";
 import { ProsoLine } from "../ui/ProsoLine/ProsoLine";
@@ -25,6 +27,7 @@ const MOVIMENTOS = ["m-rise", "m-drop", "m-flip", "m-stamp", "m-hit", "m-bow", "
 function Primitivos() {
   const [code, setCode] = useState("");
   const [on, setOn] = useState(true);
+  const [t0] = useState(() => Date.now());
   return (
     <div className="am-fontes">
       <Label tone="ouro">ui · botões</Label>
@@ -76,6 +79,12 @@ function Primitivos() {
           <Stamp text="Verdade" />
         </span>
       </div>
+
+      <Label tone="ouro">tempo</Label>
+      <Timer expiresAt={t0 + 8000} total={10} label="Tempo da jogada de Carla" caption={<>Vez de <b>Carla</b>. Se declarar, você reage.</>} />
+      <Timer expiresAt={t0 + 7000} total={10} label="Tempo para reagir" decision />
+      <Timer expiresAt={t0 + 3000} total={5} label="Tempo da jogada, morte súbita" tone="alerta" />
+      <CountdownDots seconds={6} total={10} />
 
       <div>
         <Toggle label="Som" value={on} onChange={setOn} />

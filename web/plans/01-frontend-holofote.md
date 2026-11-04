@@ -30,7 +30,7 @@ Pré-requisitos: Node 26 + npm (`npm ci` em `web/`); servidor local em `D:\GitHu
 
 ### Fase 2: primitivos (prompt 02)
 - [x] T10 [Frontend] `ui/` Ticket, Button, TextField, Coin, Label, Marquee, ProsoLine, Stamp, Toggle, com seção em amostras · arquivos: `web/src/ui/*` · depende: T2 · verificar: `npm run build`; amostras nos dois temas no navegador
-- [ ] T11 [Frontend] `ui/` Timer e CountdownDots (barra só por CSS) · arquivos: `web/src/ui/Timer/*`, `web/src/ui/CountdownDots/*` · depende: T10 · verificar: `npm run build`; amostras
+- [x] T11 [Frontend] `ui/` Timer e CountdownDots (barra só por CSS) · arquivos: `web/src/ui/Timer/*`, `web/src/ui/CountdownDots/*` · depende: T10 · verificar: `npm run build`; amostras
 - [ ] T12 [Frontend] `ui/Card` (CardFace, CardBack, CardHidden, CardDead, CardMini) comparado a `Cartas.png` · arquivos: `web/src/ui/Card/*` · depende: T10 · verificar: `npm run build`; amostras vs `Cartas.png`/`CartasEscuro.png`
 - [ ] T13 [Frontend] `ui/Sheet` com Radix Dialog (gaveta mobile e painel desktop) · arquivos: `web/src/ui/Sheet/*` · depende: T10 · verificar: `npm run build`; Esc fecha e devolve foco nas amostras
 
