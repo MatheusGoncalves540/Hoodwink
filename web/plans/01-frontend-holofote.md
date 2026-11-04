@@ -50,7 +50,7 @@ Pré-requisitos: Node 26 + npm (`npm ci` em `web/`); servidor local em `D:\GitHu
 - [x] T24 [Frontend] SuddenDeathAlert, SuddenDeathStage e FlameRow portados da prancha (telas 21, 22) · arquivos: `web/src/features/endgame/SuddenDeathAlert.tsx`, `web/src/features/endgame/SuddenDeathStage.tsx`, `web/src/features/endgame/FlameRow.tsx` · depende: T23 · verificar: `npm test` (fumaça `MorteSubita`, `MesaSubita`) e vs `MorteSubita.png`
 
 ### Fase 5: integração (prompt 09)
-- [ ] T25 [Frontend] `App.tsx` pelo estado real: login → criar/entrar (`?sala=`) → ticket → `GameSocket`; fila de apresentação; reconexão sem duplicar diário · arquivos: `web/src/app/App.tsx`, `web/src/net/*`, `web/src/store/gameStore.ts` · depende: T14, T15, T20, T22, T24 · verificar: `npm test` (reaplicar a mesma sala não duplica o diário) e partida local no servidor
+- [x] T25 [Frontend] `App.tsx` pelo estado real: login → criar/entrar (`?sala=`) → ticket → `GameSocket`; fila de apresentação; reconexão sem duplicar diário · arquivos: `web/src/app/App.tsx`, `web/src/net/*`, `web/src/store/gameStore.ts` · depende: T14, T15, T20, T22, T24 · verificar: `npm test` (reaplicar a mesma sala não duplica o diário) e partida local no servidor
 - [x] T26 [Frontend] remover legado (`componentsJSX/ButtonPanel`, `CommandPanel`, `ChatViewer`, `roomViewer`, `inGame/main.tsx`) mantendo `Auth/` e `authStore.ts` · arquivos: `web/src/componentsJSX/*`, `web/src/inGame/main.tsx` · depende: T25 · verificar: `npm run build` e nenhuma importação restante (`grep -r componentsJSX web/src`)
 
 ### Fase 6: revisão (prompt 10)

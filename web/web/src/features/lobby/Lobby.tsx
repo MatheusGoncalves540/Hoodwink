@@ -7,7 +7,7 @@ import { useLayout } from "../../app/useLayout";
 import LoginModal from "../../componentsTSX/loginModal";
 import { copy } from "../../game/copy";
 import { useAuthStore } from "../../store/authStore";
-import { createInput, useSessionStore, usernameFromToken } from "../../store/sessionStore";
+import { createInput, roomCodeFromSearch, useSessionStore, usernameFromToken } from "../../store/sessionStore";
 import { Button } from "../../ui/Button/Button";
 import { Label } from "../../ui/Label/Label";
 import { TextField } from "../../ui/TextField/TextField";
@@ -38,7 +38,7 @@ export function Profile({ signedIn, name, onLogin }: { signedIn: boolean; name: 
 
 export function Lobby() {
   const layout = useLayout();
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(() => (typeof window === "undefined" ? "" : roomCodeFromSearch(window.location.search) ?? ""));
   const jwtToken = useAuthStore((st) => st.jwtToken);
   const openLogin = useAuthStore((st) => st.openLogin);
   const busy = useSessionStore((st) => st.busy);
