@@ -1,0 +1,72 @@
+/* Camarote.dc.html (mobile) e CamaroteDesk.dc.html (.desk-mesa section.m-sheet → trilho de 420 px) */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: var(--hw-scrim);
+}
+.sheet,
+.rail {
+  position: fixed;
+  z-index: 11;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--hw-luz);
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+}
+.sheet {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: min(748px, 100dvh - 40px);
+  padding: var(--hw-space-4) 18px var(--hw-space-2);
+}
+.rail {
+  top: 64px;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  padding: var(--hw-space-4) var(--hw-space-4) var(--hw-space-2);
+  border-left: 3px double var(--hw-tinta);
+  animation: rail 0.44s var(--m-drawer) both;
+}
+@keyframes rail {
+  from {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail {
+    animation-name: m-fade;
+  }
+}
+:global([data-motion="reduced"]) .rail {
+  animation-name: m-fade;
+}
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+.back {
+  flex-shrink: 0;
+  align-self: center;
+}
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.sheet:focus,
+.rail:focus {
+  outline: none;
+}
