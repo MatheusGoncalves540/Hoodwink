@@ -10,7 +10,7 @@ import { Stamp, type StampText } from "../Stamp/Stamp";
 import { cx } from "../cx";
 import s from "./Card.module.css";
 
-export type CardSize = "s" | "m" | "l" | "xl";
+export type CardSize = "s" | "m" | "l" | "xl" | "d";
 
 type Base = HTMLAttributes<HTMLElement> & { size: CardSize; as?: "div" | "button" };
 

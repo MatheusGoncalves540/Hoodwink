@@ -42,3 +42,13 @@
   align-items: center;
   justify-content: center;
 }
+
+.desk {
+  height: 64px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--hw-filete);
+  background: var(--hw-plateia);
+}
+.desk .round {
+  font-size: 14px;
+}

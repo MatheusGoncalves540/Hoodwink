@@ -28,3 +28,14 @@
   max-width: 26ch;
   font-size: 18px;
 }
+
+.desk {
+  top: 410px;
+}
+.desk .name {
+  font-size: 88px;
+}
+.desk .fala {
+  font-size: 22px;
+  max-width: 40ch;
+}

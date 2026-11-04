@@ -16,11 +16,13 @@ type Props = {
 
 /** Camarote: arco, primeiro nome, 2 miniaturas + moeda e "···" quando há algo para ver. */
 export function Seat({ seat, box, big, layout, onOpen }: Props) {
-  const mini = layout === "desktop" ? (big ? "desk-l" : "desk-s") : big ? "l" : "s";
+  const desktop = layout === "desktop";
+  const mini = desktop ? (big ? "desk-l" : "desk-s") : big ? "l" : "s";
+  const coinSize = desktop ? (big ? 34 : 28) : big ? 26 : 22;
   return (
     <button
       type="button"
-      className={cx("m-item", s.seat, !big && s.small, seat.inScene && s.active, seat.out && s.out, layout === "desktop" && s.desk)}
+      className={cx("m-item", s.seat, !big && s.small, seat.inScene && s.active, seat.out && s.out, desktop && s.desk)}
       style={{ left: box.x, top: box.y, width: box.w, height: box.h }}
       aria-label={seat.label}
       onClick={() => onOpen?.(seat.id)}
@@ -33,7 +35,7 @@ export function Seat({ seat, box, big, layout, onOpen }: Props) {
               <CardMini key={i} state={c.state} role={c.role} size={mini} />
             ))}
           </span>
-          <Coin size={big ? 26 : 22} value={seat.coins} />
+          <Coin size={coinSize} value={seat.coins} />
         </span>
       )}
       <span aria-hidden="true" className={cx(s.dots, !seat.hasMore && s.noDots)}>

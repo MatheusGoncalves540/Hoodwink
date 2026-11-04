@@ -69,3 +69,19 @@
   color: var(--hw-plateia);
   border-color: var(--hw-alerta);
 }
+
+.desk {
+  top: 596px;
+  left: 48px;
+  right: 48px;
+}
+.desk .item {
+  height: 60px;
+  padding: 6px 14px;
+}
+.desk {
+  justify-content: center;
+}
+.desk .effectsGroup {
+  flex: 0 1 auto;
+}

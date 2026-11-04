@@ -40,3 +40,24 @@
   bottom: 0;
   z-index: 4;
 }
+
+/* Desktop (Mesa6Desk.dc.html): palco de 1020 px + trilho de 420 px */
+.desk .tableArea {
+  right: 420px;
+}
+.rail {
+  position: absolute;
+  top: 64px;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  box-sizing: border-box;
+  background: var(--hw-luz);
+  color: var(--hw-tinta);
+  border-left: 3px double var(--hw-tinta);
+  padding: 26px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 1;
+}
