@@ -70,3 +70,6 @@
 .rail:focus {
   outline: none;
 }
+.sheet.fill {
+  height: min(748px, 100dvh - 40px);
+}

@@ -1,0 +1,112 @@
+import { useState } from "react";
+import { setPref, usePref } from "../../app/prefs";
+import { useMotionPref } from "../../app/useMotionPref";
+import { copy } from "../../game/copy";
+import type { GameView } from "../../game/selectors";
+import { useGameStore } from "../../store/gameStore";
+import { useSessionStore } from "../../store/sessionStore";
+import { Button } from "../../ui/Button/Button";
+import { Sheet } from "../../ui/Sheet/Sheet";
+import { Toggle } from "../../ui/Toggle/Toggle";
+import s from "./RoomMenu.module.css";
+
+const SOUND_KEY = "hw-som";
+const VIBRATION_KEY = "hw-vibracao";
+
+type ContentProps = {
+  code: string;
+  turn: number;
+  sound: boolean;
+  vibration: boolean;
+  motion: boolean;
+  onSound(value: boolean): void;
+  onVibration(value: boolean): void;
+  onMotion(value: boolean): void;
+  onLeave(): void;
+};
+
+export function RoomMenuContent({ code, turn, sound, vibration, motion, onSound, onVibration, onMotion, onLeave }: ContentProps) {
+  const [confirm, setConfirm] = useState(false);
+  return (
+    <>
+      <div className={s.head}>
+        <h2 className={s.title}>
+          {copy.roomNumber} <span className={s.code}>{code}</span>
+        </h2>
+        <span className={s.round}>{copy.roundN(turn)}</span>
+      </div>
+
+      <a className={s.how} href="#como-se-joga">
+        <span>☞ {copy.howToPlay}</span>
+        <span aria-hidden="true" className={s.leader} />
+        <span className={s.rolesLink}>{copy.rolesLink}</span>
+      </a>
+
+      <div className={s.prefs}>
+        <Toggle label={copy.sound} value={sound} onChange={onSound} />
+        <Toggle label={copy.vibration} hint={copy.vibrationHint} value={vibration} onChange={onVibration} />
+        <Toggle label={copy.lessMotion} hint={copy.lessMotionHint} value={motion} onChange={onMotion} />
+      </div>
+
+      <p className={s.warning}>{copy.menuWarning(code)}</p>
+
+      {confirm ? (
+        <div className={s.confirm}>
+          <p className={s.confirmText}>{copy.leaveConfirm}</p>
+          <div className={s.confirmRow}>
+            <Button variant="danger" onClick={onLeave}>
+              {copy.leaveYes}
+            </Button>
+            <Button variant="outline" onClick={() => setConfirm(false)}>
+              {copy.leaveNo}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button variant="danger" className={s.leave} onClick={() => setConfirm(true)}>
+          {copy.leaveScene}
+        </Button>
+      )}
+    </>
+  );
+}
+
+type Props = { view: GameView; mode: "mobile" | "desktop"; onClose(): void };
+
+/** Menu da sala (telas 10): preferências e saída, na mesma gaveta. */
+export function RoomMenu({ view, mode, onClose }: Props) {
+  const code = (view.room?.id ?? "").toUpperCase();
+  const turn = view.room?.turn ?? 0;
+  const sound = usePref(SOUND_KEY) !== "nao";
+  const vibration = usePref(VIBRATION_KEY) !== "nao";
+  const motion = useMotionPref();
+
+  const leave = () => {
+    useGameStore.getState().reset();
+    useSessionStore.getState().reset();
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("sala");
+      url.searchParams.delete("cena");
+      url.searchParams.delete("fixture");
+      window.history.replaceState(null, "", url);
+    }
+    onClose();
+  };
+
+  return (
+    <Sheet open onClose={onClose} label={copy.menuTitle} mode={mode}>
+      <RoomMenuContent
+        code={code}
+        turn={turn}
+        sound={sound}
+        vibration={vibration}
+        motion={motion.reduced}
+        onSound={(v) => setPref(SOUND_KEY, v ? "sim" : "nao")}
+        onVibration={(v) => setPref(VIBRATION_KEY, v ? "sim" : "nao")}
+        onMotion={motion.setReduced}
+        onLeave={leave}
+      />
+    </Sheet>
+  );
+}
