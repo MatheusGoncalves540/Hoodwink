@@ -1,0 +1,81 @@
+/* Sala.dc.html (390×844) e SalaDesk.dc.html (.desk-sala) */
+.screen {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100dvh;
+  background: var(--hw-plateia);
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+  display: flex;
+  flex-direction: column;
+  padding: 0 18px 24px;
+  overflow: hidden;
+}
+.header {
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: -12px;
+}
+.back {
+  width: 48px;
+  height: 48px;
+  background: none;
+  border: 0;
+  color: var(--hw-tinta);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.backstage {
+  font-size: 16px;
+  font-style: italic;
+}
+.start {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 18px;
+}
+.startButton {
+  animation-delay: 0.7s;
+}
+.hint {
+  align-self: center;
+  font-size: 15px;
+  font-style: italic;
+}
+/* Desktop: convite e começar na coluna de 440 px, elenco à direita em 2 colunas. */
+.desk {
+  display: grid;
+  grid-template-columns: 440px 1fr;
+  grid-template-rows: 72px 1fr auto auto 1fr;
+  column-gap: 56px;
+  padding: 0 64px 40px;
+}
+.desk .header {
+  grid-column: 1 / -1;
+  height: 72px;
+}
+.desk .backstage {
+  font-size: 18px;
+}
+.desk .inviteSlot {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: end;
+  margin-bottom: 28px;
+}
+.desk .castSlot {
+  grid-column: 2;
+  grid-row: 2 / 6;
+}
+.desk .start {
+  grid-column: 1;
+  grid-row: 4;
+  align-self: start;
+}

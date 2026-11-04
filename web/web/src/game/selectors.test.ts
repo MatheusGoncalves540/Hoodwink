@@ -158,8 +158,9 @@ describe("outras telas", () => {
     const s = selectWaitingRoom(view("Sala"));
     expect(s).toMatchObject({ code: "K7Q2", name: "Quinta dos mentirosos", max: 6, count: 3, castLine: "três de seis papéis preenchidos", isHost: true });
     expect(s.seats.map((x) => [x.name, x.tag])).toEqual([
-      ["Matheus", "anfitrião, você"], ["Ana", ""], ["Bruno", ""], ["Papel vago", "aguardando"], ["Papel vago", "aguardando"], ["Papel vago", "aguardando"],
+      ["Matheus", "anfitrião, você"], ["Ana", "pronto"], ["Bruno", "pronto"], ["Papel vago", "aguardando"], ["Papel vago", "aguardando"], ["Papel vago", "aguardando"],
     ]);
+    expect(s.tight).toBe(false);
     expect(selectWaitingRoom(view("SalaCheia", "p1")).isHost).toBe(false);
   });
 

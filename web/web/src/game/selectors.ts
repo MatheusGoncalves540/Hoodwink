@@ -249,9 +249,10 @@ export function selectWaitingRoom(v: GameView) {
   const seats = Array.from({ length: max }, (_, i) => {
     const p = order[i];
     if (!p) return { key: `vago${i}`, name: copy.vacantRole, tag: copy.waiting, vacant: true };
-    const tag = p.id === hostId ? (p.id === v.me ? copy.hostYou : copy.host) : p.id === v.me ? copy.you.toLowerCase() : "";
+    const tag = p.id === hostId ? (p.id === v.me ? copy.hostYou : copy.host) : p.id === v.me ? copy.you.toLowerCase() : copy.ready;
     return { key: p.id, name: p.name, tag, vacant: false };
   });
+  const tight = max > 6;
   return {
     code: r?.id ?? "",
     name: r?.name || (r ? `${copy.room} ${r.id}` : ""),
@@ -259,6 +260,7 @@ export function selectWaitingRoom(v: GameView) {
     count: order.length,
     seats,
     castLine: copy.castLine(order.length, max),
+    tight,
     isHost: !!v.me && hostId === v.me,
   };
 }

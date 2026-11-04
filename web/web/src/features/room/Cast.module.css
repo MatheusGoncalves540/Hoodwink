@@ -1,0 +1,104 @@
+/* Sala.dc.html → papel pendurado (m-hang); SalaDesk.dc.html → lista em 2 colunas e título 44 px */
+.cast {
+  flex: 1;
+  min-height: 0;
+  margin: 20px 6px 6px;
+  background: var(--hw-luz);
+  color: var(--hw-tinta);
+  border: 3px double var(--hw-tinta);
+  outline: 6px solid var(--hw-luz);
+  padding: 18px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  animation-delay: 0.1s;
+}
+.title {
+  margin: 0;
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.1;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.castLine {
+  margin: 4px 0 12px;
+  text-align: center;
+  font-size: 16px;
+  font-style: italic;
+}
+.list {
+  --m-base: 0.45s;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  min-height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid color-mix(in srgb, var(--hw-tinta) 13%, transparent);
+}
+.name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--hw-font-display);
+  font-size: 22px;
+}
+.leader {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 2px dotted color-mix(in srgb, var(--hw-tinta) 40%, transparent);
+  margin: 0 8px;
+  transform: translateY(-5px);
+}
+.tag {
+  flex-shrink: 0;
+  font-size: 16px;
+  font-style: italic;
+}
+.vacant {
+  color: var(--hw-tinta-suave);
+}
+.vacant .name {
+  font-size: 18px;
+  font-style: italic;
+}
+.tight .row {
+  min-height: 34px;
+}
+.tight .name {
+  font-size: 19px;
+}
+.tight .vacant .name {
+  font-size: 16px;
+}
+.rule {
+  margin: 0;
+  padding-top: 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: center;
+}
+.desk.cast {
+  margin-top: 24px;
+  padding: 28px 40px;
+}
+.desk .title {
+  font-size: 44px;
+}
+.desk .list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 40px;
+  align-content: start;
+}
