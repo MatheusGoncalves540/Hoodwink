@@ -2,6 +2,7 @@ import ReactDOM from "react-dom/client";
 import { useAuthStore } from "./store/authStore";
 import LoginModal from "./componentsTSX/LoginModal";
 import "./main.css";
+import "./styles/index.css";
 
 function App() {
   const openLogin = useAuthStore((state) => state.openLogin);
