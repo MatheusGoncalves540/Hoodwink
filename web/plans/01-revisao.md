@@ -77,13 +77,25 @@ Pendentes (tela ainda não construída):
 - As telas de `features/` leem `room` cru em 3 pontos, fora dos seletores: `sheets/ChatSheet.tsx:48` (`chat.length`), `sheets/RoomMenu.tsx:78-79` (`id`, `turn`) e `sheets/SceneLog.tsx:10` (`turn`). Trocar por seletores em `game/selectors.ts` quando essas gavetas forem revistas.
 - Seletores do Zustand devolvem valores primitivos/referências (`me`, `room`, `log`), sem objeto novo por render; não precisam de `useShallow` no estado atual.
 
-## 8. Pedidos ao servidor (não alterar aqui)
+## 8. Protocolo (conferido contra o servidor)
+
+Conferência de `web/src/net/actions.ts` com `game/structs/validatePlayerPlayPayload.go` e os handlers:
+
+- `ASSASSIN`, `KAMIKAZE`, `CLAIRVOYANT`, `GUARDIAN`, `TRICKSTER`, `GRAVEDIGGER` e `CROUPIER` mandam os campos que o `DecodeStrictJSON` exige, com os nomes certos (`targetPlayer`, `targetCardIndex`, `targetAllyCardIndex`, `useOnTwoCards`).
+- `CONTEST_PENALTY` manda `TargetCardIndex` com T maiúsculo, como no cliente antigo; o `encoding/json` do Go casa o campo `targetCardIndex` sem diferenciar caixa.
+- `TRILLIONAIRE`, `POLITICAL`, `REBEL`, `INVESTOR` e `SELFISH` vão com `payload: null`; o servidor decodifica `null` como struct vazia e deriva o alvo do evento (`protocols/selfish.go`), então não falta campo.
+- `CONTEST` e `COMMAND_*` vão com `{}`.
+- `CHAT_MESSAGE` só é enviado com texto não vazio (`ChatSheet` faz `trim` e desabilita o botão).
+
+Nenhum ajuste necessário no `net/`; nada a pedir ao servidor aqui.
+
+## 9. Pedidos ao servidor (não alterar aqui)
 
 - `rooms/roomBroadcast.go` expõe `PendingEffects`/`PendingPresentationEvents` (DTOs), mas `PublicRoomForUpdates` não tem esses campos.
 - `PublicRoomForUpdates` não manda `maxPlayers`.
 - `GameEvent` não tem tags JSON (chega `PlayerID`, `Type`, `ExpiresAt`, `Payload`); o cliente normaliza em `net/protocol.ts`. O ideal é o servidor mandar camelCase.
 
-## 9. Decisões inferidas (não desenhadas)
+## 10. Decisões inferidas (não desenhadas)
 
 - Fluxo de alvo da T21 (camarotes elegíveis com anel, demais a 40%, “☜ Voltar às ações”), conforme `05-protocolo.md`.
 - Modal de login (visual legado, não está nas pranchas).
