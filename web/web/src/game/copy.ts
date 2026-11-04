@@ -161,6 +161,9 @@ export const copy = {
   // entrada e sala
   createRoom: "Criar sala",
   roomCodePlaceholder: "Código da sala",
+  profile: (name: string) => `Perfil de ${name}`,
+  prosoAlt: "Proso, o narrador, de cartola com pena e máscara com olho de estrela",
+  roomNotFound: (code: string) => `Não achamos a sala ${code}. Confira o código com quem convidou.`,
   enter: "Entrar",
   nowShowing: "Em cartaz",
   epigraph: "Dê ao homem uma máscara, e ele dirá a verdade.",
