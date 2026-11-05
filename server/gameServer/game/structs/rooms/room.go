@@ -33,6 +33,7 @@ type Room struct {
 type PublicRoomForUpdates struct {
 	ID                string                                                `json:"id"`
 	Name              string                                                `json:"name"`
+	MaxPlayers        int                                                   `json:"maxPlayers"`
 	Turn              int                                                   `json:"turn"`
 	Tax               int                                                   `json:"tax"`
 	DoubledCardValues map[structs.TypePlayerPlays]structs.DoubledCardValues `json:"doubledCardValues"`

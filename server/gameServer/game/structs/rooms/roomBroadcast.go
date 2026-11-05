@@ -62,11 +62,12 @@ func (r *Room) PublishUnsafeRoomData(ctx context.Context, rdb *redis.Client, toA
 	return nil
 }
 
-// PublishRoomUpdate publica a versão pública da sala para todos os players de uma sala
-func (r *Room) PublishRoomUpdate(ctx context.Context, rdb *redis.Client, toAll bool, playerIds []string) error {
-	// Prepara os dados públicos da sala
+// GetPublicRoomForUpdates monta a versão pública da sala para updates
+func (r *Room) GetPublicRoomForUpdates() PublicRoomForUpdates {
 	roomDataPublic := PublicRoomForUpdates{
 		ID:                r.ID,
+		Name:              r.Name,
+		MaxPlayers:        r.MaxPlayers,
 		Turn:              r.Turn,
 		Tax:               r.Tax,
 		Players:           make(map[string]players.PublicPlayerForUpdates, len(r.Players)),
@@ -80,11 +81,17 @@ func (r *Room) PublishRoomUpdate(ctx context.Context, rdb *redis.Client, toAll b
 		Chat:              r.Chat,
 	}
 
-	// Prepara os dados públicos dos jogadores
 	for playerId, player := range r.Players {
-		publicPlayer := player.GetPublicPlayerForUpdates()
-		roomDataPublic.Players[playerId] = publicPlayer
+		roomDataPublic.Players[playerId] = player.GetPublicPlayerForUpdates()
 	}
+
+	return roomDataPublic
+}
+
+// PublishRoomUpdate publica a versão pública da sala para todos os players de uma sala
+func (r *Room) PublishRoomUpdate(ctx context.Context, rdb *redis.Client, toAll bool, playerIds []string) error {
+	// Prepara os dados públicos da sala
+	roomDataPublic := r.GetPublicRoomForUpdates()
 
 	// Cria a mensagem de broadcast
 	var broadcastMsg *structs.BroadcastMessage
