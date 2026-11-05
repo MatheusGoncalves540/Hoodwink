@@ -10,9 +10,6 @@
   padding: 0 var(--hw-space-3);
   border-radius: 0;
 }
-.outline {
-  border: 1.5px solid var(--hw-tinta);
-}
 .danger {
   border: 2px solid var(--hw-alerta);
   color: var(--hw-alerta);

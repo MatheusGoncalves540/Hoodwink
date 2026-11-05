@@ -1,0 +1,2 @@
+/* Peça de cartas "xadrez": verso quadriculado preto e branco. */
+[data-sk-cartas="xadrez"]{--hw-verso:conic-gradient(#111111 25%,#EEEEEE 0 50%,#111111 0 75%,#EEEEEE 0) 0 0/16px 16px;--hw-carta:#111111;--hw-carta-tinta:#EEEEEE;--hw-carta-rotulo:#BBBBBB;--hw-escondida-borda:2px dashed #777777}

@@ -1,0 +1,5 @@
+/* Peça de molduras "bambinela": sanefa de cortina em cima e filete dos lados. Vale para todos os lugares (lobby, elenco, fim, aviso). */
+[data-sk-molduras="bambinela"] .hw-moldura:not([data-sk-molduras="bambinela"] [data-sk-molduras]:not([data-sk-molduras="bambinela"]) .hw-moldura)::before{content:none}
+[data-sk-molduras="bambinela"] .hw-moldura:not([data-sk-molduras="bambinela"] [data-sk-molduras]:not([data-sk-molduras="bambinela"]) .hw-moldura)>.hw-moldura-f{inset:5px;width:auto;height:auto;padding:0;background:none;-webkit-mask:none;mask:none;border:2px solid var(--hw-veludo);border-top-width:0;border-radius:0 0 6px 6px;background:radial-gradient(circle at 50% 0,var(--hw-veludo) 0 9px,transparent 10px) 0 0/20px 12px repeat-x}
+[data-sk-molduras="bambinela"] .hw-moldura:not([data-sk-molduras="bambinela"] [data-sk-molduras]:not([data-sk-molduras="bambinela"]) .hw-moldura)>.hw-moldura-f:nth-of-type(2){background-position:3px 0}
+[data-sk-molduras="bambinela"] .hw-moldura:not([data-sk-molduras="bambinela"] [data-sk-molduras]:not([data-sk-molduras="bambinela"]) .hw-moldura)>.hw-moldura-f:nth-of-type(3){background-position:-3px 1px}

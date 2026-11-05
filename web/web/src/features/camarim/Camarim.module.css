@@ -1,0 +1,151 @@
+/* Camarim: prévia vestida com a escolha atual, abas e grade de peças (2 colunas no mobile, 4 no desktop). */
+.screen {
+  box-sizing: border-box;
+  min-height: 100dvh;
+  padding: 16px 18px 32px;
+  background: var(--hw-plateia);
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.desk {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.back {
+  color: var(--hw-tinta);
+  font-style: italic;
+  text-decoration: none;
+}
+.title {
+  margin: 4px 0 0;
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 40px;
+  color: var(--hw-titulo);
+}
+.lead,
+.tabLead {
+  margin: 0;
+  font-style: italic;
+}
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 18px;
+  border-radius: var(--hw-radius-m);
+  background: var(--hw-plateia);
+  color: var(--hw-tinta);
+  box-shadow: inset 0 0 0 1px var(--hw-filete);
+}
+.previewCast {
+  padding: 18px 22px;
+  font-family: var(--hw-font-display);
+  font-size: 22px;
+  background: var(--hw-luz);
+}
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tab {
+  padding: 6px 12px;
+  border: 1.5px solid var(--hw-filete);
+  border-radius: var(--hw-radius-pill);
+  background: none;
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.tab[aria-selected="true"] {
+  border-color: var(--hw-ouro);
+  background: var(--hw-luz);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.desk .grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border: 2px solid var(--hw-filete);
+  border-radius: var(--hw-radius-m);
+  background: none;
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+  cursor: pointer;
+}
+.tile[aria-pressed="true"] {
+  border-color: var(--hw-ouro);
+}
+.sample {
+  width: 100%;
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--hw-radius-s);
+  background: var(--hw-plateia);
+  color: var(--hw-tinta);
+}
+.miniTicket {
+  padding: 6px 14px;
+  font-size: 14px;
+}
+.miniMoldura {
+  padding: 10px 14px;
+  font-family: var(--hw-font-display);
+  background: var(--hw-luz);
+}
+.letras {
+  font-family: var(--hw-font-display);
+  font-size: 34px;
+  color: var(--hw-titulo);
+}
+.cores {
+  display: flex;
+  gap: 4px;
+}
+.cores i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--hw-filete);
+}
+.cores i:nth-child(1) {
+  background: var(--hw-plateia);
+}
+.cores i:nth-child(2) {
+  background: var(--hw-tinta);
+}
+.cores i:nth-child(3) {
+  background: var(--hw-veludo);
+}
+.cores i:nth-child(4) {
+  background: var(--hw-ouro);
+}
+.tileName {
+  font-size: 16px;
+}
+.worn {
+  font-family: var(--hw-font-rotulo);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--hw-ouro-texto);
+}

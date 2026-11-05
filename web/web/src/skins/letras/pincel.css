@@ -1,0 +1,3 @@
+@import url("https://fonts.googleapis.com/css2?family=Caveat+Brush&display=swap");
+/* Peça de letras "pincel": títulos e rótulos em pincel. O texto corrido continua em Literata (trava). */
+[data-sk-letras="pincel"]{--hw-font-display:"Caveat Brush",cursive;--hw-font-rotulo:"Patrick Hand","Comic Sans MS",cursive;--hw-font-cartao:"Patrick Hand","Comic Sans MS",cursive;--hw-font-rabisco:"Caveat Brush",cursive}

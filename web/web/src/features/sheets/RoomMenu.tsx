@@ -49,6 +49,10 @@ export function RoomMenuContent({ code, turn, sound, vibration, motion, onSound,
         <MotionToggles motion={motion} onMotion={onMotion} onIdle={onIdle} />
       </div>
 
+      <a className={s.how} href="#camarim">
+        <span>☞ {copy.camarim.title}</span>
+      </a>
+
       <p className={s.warning}>{copy.menuWarning(code)}</p>
 
       {confirm ? (

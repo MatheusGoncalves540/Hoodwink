@@ -340,4 +340,23 @@ export const copy = {
       }
     },
   },
+
+  // Camarim (fase 8, plans/03-skins.md)
+  camarim: {
+    title: "Camarim",
+    lead: "Escolha o visual do jogo. Toque numa peça para vestir.",
+    preview: "Prévia",
+    previewCast: "Elenco",
+    previewButton: "Criar sala",
+    worn: "✓ vestido",
+    tabs: { pacotes: "Pacotes", cores: "Cores", letras: "Letras", molduras: "Molduras", botoes: "Botões", cartas: "Cartas" },
+    tabLead: {
+      pacotes: "Um visual pronto, com uma peça de cada tipo.",
+      cores: "Muda as cores de todas as telas, no claro e no escuro.",
+      letras: "Muda a letra dos títulos e dos rótulos.",
+      molduras: "Muda o contorno do cartaz, da lista de jogadores e do fim da partida.",
+      botoes: "Muda o botão principal e o secundário.",
+      cartas: "Muda o verso das cartas.",
+    },
+  },
 };

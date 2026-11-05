@@ -14,7 +14,7 @@ export function Button({ children, variant, disabled, className, onClick, type =
     <button
       {...rest}
       type={type}
-      className={cx(s.button, s[variant], className)}
+      className={cx(s.button, s[variant], variant === "outline" && "hw-botao2", className)}
       aria-disabled={disabled || undefined}
       onClick={disabled ? (e) => e.preventDefault() : onClick}
     >

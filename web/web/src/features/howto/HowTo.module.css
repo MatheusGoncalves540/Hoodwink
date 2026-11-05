@@ -139,6 +139,7 @@
 }
 .canhoto {
   --mordida: 12px;
+  padding: 24px 28px 20px;
 }
 .picote {
   fill: none;

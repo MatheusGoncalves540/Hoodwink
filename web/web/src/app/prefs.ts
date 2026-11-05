@@ -10,7 +10,10 @@ const subscribe = (cb: () => void) => {
   return () => void listeners.delete(cb);
 };
 
-function read(key: string): string | null {
+/** Chave da skin (JSON de Equip, plans/03-skins.md). Lida sempre por resolveEquip. */
+export const SKIN_KEY = "hw-skin";
+
+export function readPref(key: string): string | null {
   try {
     return localStorage.getItem(key);
   } catch {
@@ -28,7 +31,7 @@ export function setPref(key: string, value: string | null) {
   listeners.forEach((l) => l());
 }
 
-export const usePref = (key: string) => useSyncExternalStore(subscribe, () => read(key), () => null);
+export const usePref = (key: string) => useSyncExternalStore(subscribe, () => readPref(key), () => null);
 
 export function useMedia(query: string): boolean {
   return useSyncExternalStore(
