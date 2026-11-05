@@ -8,10 +8,10 @@ type GameEventType string
 
 // ===== EVENTO (janela de decisão / input) =====
 type GameEvent struct {
-	PlayerID  string
-	Type      GameEventType
-	ExpiresAt time.Time
-	Payload   any
+	PlayerID  string        `json:"playerId"`
+	Type      GameEventType `json:"type"`
+	ExpiresAt time.Time     `json:"expiresAt"`
+	Payload   any           `json:"payload"`
 }
 
 // NewGameEvent centralizes creation of a GameEvent pointer.
