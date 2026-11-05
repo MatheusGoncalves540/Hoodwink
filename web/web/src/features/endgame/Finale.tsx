@@ -19,7 +19,7 @@ type Props = {
   onLobby(): void;
 };
 
-/** Fim do espetáculo (tela 23): cartaz com o vencedor e a ordem de saída. */
+/** Fim da partida (tela 23): cartaz com o vencedor e a ordem de saída. */
 export function Finale({ vm, layout, onNewRoom, onLobby }: Props) {
   const desktop = layout === "desktop";
   const size = vm.winnerName.length > 9 ? (desktop ? 96 : 56) : desktop ? 132 : 92;

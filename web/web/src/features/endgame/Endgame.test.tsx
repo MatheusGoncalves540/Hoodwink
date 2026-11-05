@@ -26,7 +26,7 @@ describe("fim de jogo", () => {
   it("Fim: vencedor, ordem de saída e as ações", () => {
     const vm = selectFinale(view("Fim"));
     const out = renderToStaticMarkup(<Finale vm={vm} layout="mobile" onNewRoom={() => {}} onLobby={() => {}} />);
-    expect(out).toContain("Fim do espetáculo");
+    expect(out).toContain("Fim da partida");
     expect(out).toContain(">Carla<");
     expect(out).toContain("Venceu na rodada 17, com 14 moedas.");
     expect(out).toContain("Ordem de saída");
