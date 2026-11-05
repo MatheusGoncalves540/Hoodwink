@@ -1,0 +1,21 @@
+/* medidas: Lobby.dc.html (Criar sala, 60 px, 24 px) e Main.dc.html (Bloquear, 58 px, 18 px) */
+.ticket {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.m {
+  height: 58px;
+  font-size: 18px;
+}
+.l {
+  height: 60px;
+  font-size: 24px;
+}
+.ticket[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

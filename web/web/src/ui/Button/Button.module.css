@@ -1,0 +1,30 @@
+.button {
+  font-size: 18px;
+  background: none;
+  cursor: pointer;
+  color: var(--hw-tinta);
+}
+.outline,
+.danger {
+  height: 52px;
+  padding: 0 var(--hw-space-3);
+  border-radius: 0;
+}
+.outline {
+  border: 1.5px solid var(--hw-tinta);
+}
+.danger {
+  border: 2px solid var(--hw-alerta);
+  color: var(--hw-alerta);
+  font-weight: 700;
+}
+.link {
+  min-height: 48px;
+  padding: 0 var(--hw-space-3);
+  border: 0;
+  font-style: italic;
+}
+.button[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

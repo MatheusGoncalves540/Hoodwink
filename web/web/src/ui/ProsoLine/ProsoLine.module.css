@@ -1,0 +1,10 @@
+/* Menu.dc.html */
+.line {
+  margin: var(--hw-space-1) 0 0;
+  max-width: 26ch;
+  font-size: 18px;
+  font-style: italic;
+}
+.name {
+  font-style: normal;
+}

@@ -1,0 +1,42 @@
+.stamp {
+  position: absolute;
+  z-index: 2;
+  background: var(--hw-plateia);
+  font-family: var(--hw-font-display);
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+}
+/* selo da carta: Cartas.dc.html (CARIMBO). translate separado para não brigar com o transform do m-stamp */
+.card {
+  left: 50%;
+  top: 56%;
+  translate: -50% -50%;
+  transform: rotate(-12deg);
+  padding: 2px 8px;
+  font-size: 22px;
+  color: var(--hw-alerta);
+  border: 2px solid var(--hw-alerta);
+  outline: 1.5px solid var(--hw-ouro);
+  outline-offset: 3px;
+}
+/* faixa da contestação: ContestaBlefe/Verdade.dc.html */
+.bluff,
+.truth {
+  left: -8px;
+  right: -8px;
+  top: 56px;
+  padding: 2px 0;
+  font-size: 30px;
+  transform: rotate(-14deg);
+  outline: 2px solid var(--hw-ouro);
+  outline-offset: 4px;
+}
+.bluff {
+  color: var(--hw-alerta);
+  border: 3px solid var(--hw-alerta);
+}
+.truth {
+  color: var(--hw-tinta);
+  border: 3px solid var(--hw-tinta);
+}

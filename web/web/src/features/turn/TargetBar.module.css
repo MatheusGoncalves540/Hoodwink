@@ -1,0 +1,24 @@
+.bar {
+  background: var(--hw-luz);
+  color: var(--hw-tinta);
+  border-top: 3px double var(--hw-tinta);
+  padding: 14px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.title {
+  margin: 0;
+  font-family: var(--hw-font-display);
+  font-size: 24px;
+  line-height: 1.1;
+}
+.hint {
+  margin: 0;
+  font-size: 15px;
+  font-style: italic;
+}
+.back {
+  align-self: flex-start;
+  margin-top: 4px;
+}

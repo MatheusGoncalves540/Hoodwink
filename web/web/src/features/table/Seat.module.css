@@ -1,0 +1,115 @@
+/* Mesa6.dc.html → camarote em arco (W/2 no topo, 4 px no pé); 96×104 ou 70×88 */
+.seat {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 6px;
+  text-align: center;
+  color: var(--hw-tinta);
+  background: var(--hw-luz);
+  border: 1.5px solid var(--hw-filete);
+  border-radius: 48px 48px 4px 4px;
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.small {
+  gap: 5px;
+  padding: 9px 4px 4px;
+  border-radius: 35px 35px 4px 4px;
+}
+.active {
+  border: 2px solid var(--hw-ouro);
+  box-shadow: 0 0 0 3px var(--hw-plateia), 0 0 0 5px var(--hw-ouro);
+}
+.out {
+  color: var(--hw-sobre-veludo);
+  /* listras do veludo: --hw-veludo fica igual nos dois temas */
+  background: repeating-linear-gradient(
+    90deg,
+    var(--hw-veludo) 0,
+    color-mix(in srgb, var(--hw-veludo) 88%, var(--hw-sobre-veludo)) 6px,
+    var(--hw-veludo) 12px
+  );
+  border: 1.5px solid var(--hw-veludo);
+}
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--hw-font-display);
+  line-height: 1.1;
+  font-size: 17px;
+}
+.small .name {
+  font-size: 14px;
+}
+.out .name {
+  font-family: var(--hw-font-texto);
+  font-size: 15px;
+  font-style: italic;
+}
+.small.out .name {
+  font-size: 13px;
+}
+.body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.small .body {
+  gap: 6px;
+}
+.cards {
+  display: flex;
+  gap: 4px;
+}
+.dots {
+  font-size: 18px;
+  line-height: 1;
+}
+.small .dots {
+  font-size: 14px;
+}
+.noDots {
+  visibility: hidden;
+}
+
+/* Desktop: 132×140 / 108×120; nomes 22/18 px e moedas 34/28 px (inline na Seat.tsx) */
+.desk {
+  padding: 16px 10px 8px;
+  gap: 11px;
+  border-radius: 66px 66px 4px 4px;
+}
+.desk.small {
+  padding: 13px 6px 6px;
+  gap: 8px;
+  border-radius: 54px 54px 4px 4px;
+}
+.desk .name {
+  font-size: 22px;
+}
+.desk.small .name {
+  font-size: 18px;
+}
+.desk.out .name {
+  font-family: var(--hw-font-texto);
+  font-size: 18px;
+  font-style: italic;
+}
+.desk.small.out .name {
+  font-size: 15px;
+}
+
+/* Fluxo de alvo inferido (05-protocolo.md): anel de ouro nos elegíveis, 40% nos demais. */
+.targetable {
+  border: 2px solid var(--hw-ouro);
+  box-shadow: 0 0 0 3px var(--hw-plateia), 0 0 0 5px var(--hw-ouro);
+}
+.dimmed {
+  opacity: 0.4;
+}

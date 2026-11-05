@@ -1,0 +1,46 @@
+/* Camarote.dc.html / CamaroteDesk.dc.html → cartas de 96 px da gaveta */
+.revealed {
+  outline: 1px solid var(--hw-ouro);
+  outline-offset: 3px;
+}
+.hiddenCard,
+.deadCard {
+  box-sizing: border-box;
+  width: 100%;
+  height: 96px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-radius: var(--hw-radius-m);
+  text-align: left;
+}
+.hiddenCard {
+  border: var(--hw-escondida-borda);
+  background: radial-gradient(ellipse at 50% 90%, var(--hw-poca) 0 30%, transparent 70%);
+  color: var(--hw-titulo);
+}
+.hiddenCard.protected {
+  box-shadow: 0 0 0 3px var(--hw-luz), 0 0 0 6px var(--hw-ouro);
+}
+.hiddenLabel,
+.state {
+  font-size: 14px;
+  font-style: italic;
+}
+.ask {
+  font-family: var(--hw-font-display);
+  font-size: 20px;
+  line-height: 1;
+}
+.deadCard {
+  border: 2px solid var(--hw-filete);
+  background: linear-gradient(to top right, transparent 48%, var(--hw-alerta) 48% 52%, transparent 52%), var(--hw-filete);
+  color: var(--hw-tinta-suave);
+}
+.deadName {
+  font-family: var(--hw-font-display);
+  font-size: 20px;
+  line-height: 1.1;
+}

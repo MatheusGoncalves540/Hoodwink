@@ -1,0 +1,16 @@
+.dots {
+  display: flex;
+  gap: 5px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.full {
+  background: var(--hw-tinta);
+}
+.empty {
+  border: 1px solid color-mix(in srgb, var(--hw-tinta) 40%, transparent);
+}

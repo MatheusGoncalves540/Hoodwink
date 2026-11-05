@@ -1,0 +1,49 @@
+.input,
+.action {
+  height: 56px;
+  border: 1.5px solid var(--hw-tinta);
+  border-radius: var(--hw-radius-pill);
+  background: none;
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+  font-size: 18px;
+}
+.field {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+}
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--hw-space-3);
+}
+.input::placeholder {
+  color: var(--hw-tinta-suave);
+}
+.upper {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.action {
+  padding: 0 22px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.action[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.actionDark {
+  background: var(--hw-tinta);
+  border-color: var(--hw-tinta);
+  color: var(--hw-plateia);
+}
