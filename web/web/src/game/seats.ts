@@ -55,7 +55,18 @@ export function desktopSeats(k: number, stageWidth: number): SeatLayout {
   return { boxes, big, scale };
 }
 
-/** clip-path do cone de luz: do ponto (ox, oy) até a base do camarote, com 6 px de folga de cada lado. */
-export function conePolygon(b: SeatBox, ox: number, oy = 0): string {
-  return `polygon(${ox}px ${oy}px, ${b.x - 6}px ${b.y + b.h}px, ${b.x + b.w + 6}px ${b.y + b.h}px)`;
+/**
+ * Holofote (trava 2): cone do ponto (ox, oy) até a base do camarote, com 6 px de folga de cada lado,
+ * e a poça de luz centrada nessa mesma base, com a largura da base do cone. Um desenho só.
+ * `dx` mexe só a ponta de cima (quadros do contorno).
+ */
+export function spotShape(b: SeatBox, ox: number, oy = 0, dx = 0) {
+  const base = b.y + b.h;
+  const left = b.x - 6;
+  const right = b.x + b.w + 6;
+  const rx = (right - left) / 2;
+  return {
+    cone: `${ox + dx},${oy} ${left},${base} ${right},${base}`,
+    pool: { cx: left + rx, cy: base, rx, ry: Math.max(6, Math.round(rx * 0.2)) },
+  };
 }

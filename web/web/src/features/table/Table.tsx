@@ -84,7 +84,8 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
   const room = view.room;
 
   return (
-    <main data-theme={dark ? "dark" : undefined} className={cx(s.screen, desktop && s.desk)}>
+    // data-deixa: na sua vez o ambiente para; só o timer e o botão de ação tremem (motion.css)
+    <main data-theme={dark ? "dark" : undefined} data-deixa={selectDecision(view).kind === "myTurn" || undefined} className={cx(s.screen, desktop && s.desk)}>
       {slots.scenery && <div className={s.scenery}>{slots.scenery}</div>}
 
       <Header turn={room?.turn ?? 0} tax={room?.tax ?? 0} unread={unread} layout={layout} sudden={footlights.suddenDeath} onMenu={onMenu} onChat={onChat} />

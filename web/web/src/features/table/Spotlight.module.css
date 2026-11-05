@@ -1,7 +1,20 @@
-.cone {
+/* Holofote (trava 2): por cima do camarote, translúcido, sem clique. Cone e poça no mesmo desenho. */
+.spot {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(transparent, var(--hw-cone));
-  z-index: 0;
+  z-index: 1;
+}
+.frame {
+  overflow: visible;
+}
+.fade0 {
+  stop-color: var(--hw-cone);
+  stop-opacity: 0;
+}
+.fade1 {
+  stop-color: var(--hw-cone);
+}
+.pool {
+  fill: var(--hw-poca);
 }
