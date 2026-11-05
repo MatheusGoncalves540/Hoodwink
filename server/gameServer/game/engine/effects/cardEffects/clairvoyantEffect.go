@@ -42,6 +42,9 @@ func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 	revealedCardName := string(revealedCard.Name)
 
 	if clairvoyantPayload.ShowToAllPlayers {
+		// a carta fica virada para cima para todos até ser trocada
+		revealedCard.RevealedToAll = true
+
 		// adiciona o nome da carta revelada ao payload
 		clairvoyantPayload.RevealedCard = &revealedCardName
 

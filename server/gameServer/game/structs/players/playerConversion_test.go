@@ -47,6 +47,45 @@ func TestGetPublicPlayerForUpdatesSendsEmptyInvestmentsSlice(t *testing.T) {
 	}
 }
 
+func TestGetPublicPlayerForUpdatesOnlyExposesKnownCards(t *testing.T) {
+	player := &Player{
+		Id: "p1",
+		Cards: []structs.Card{
+			{Name: structs.CardAssassin, Index: 0},
+			{Name: structs.CardKamikaze, Index: 1, Dead: true},
+			{Name: structs.CardGuardian, Index: 2, RevealedToAll: true},
+			{Name: structs.CardTrickster, Index: 3, Protected: true},
+		},
+	}
+
+	got := player.GetPublicPlayerForUpdates()
+
+	if got.Cards[0].Name != nil {
+		t.Fatalf("carta viva e oculta expôs o nome %q", *got.Cards[0].Name)
+	}
+	if got.Cards[1].Name == nil || *got.Cards[1].Name != structs.CardKamikaze {
+		t.Fatalf("carta morta sem nome, quer %q", structs.CardKamikaze)
+	}
+	if got.Cards[2].Name == nil || *got.Cards[2].Name != structs.CardGuardian {
+		t.Fatalf("carta revelada sem nome, quer %q", structs.CardGuardian)
+	}
+	if got.Cards[3].Name != nil {
+		t.Fatalf("carta protegida e oculta expôs o nome %q", *got.Cards[3].Name)
+	}
+}
+
+func TestGetPrivatePlayerForPublicUpdatesKeepsAllCardNames(t *testing.T) {
+	player := &Player{
+		Id:    "p1",
+		Cards: []structs.Card{{Name: structs.CardAssassin, Index: 0}},
+	}
+
+	got := player.GetPrivatePlayerForPublicUpdates()
+	if got.Cards[0].Name == nil || *got.Cards[0].Name != structs.CardAssassin {
+		t.Fatalf("carta privada sem nome, quer %q", structs.CardAssassin)
+	}
+}
+
 func TestGetPrivatePlayerForPublicUpdatesCopiesTurnState(t *testing.T) {
 	player := &Player{
 		Id:                    "p1",

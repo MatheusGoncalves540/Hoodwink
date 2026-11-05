@@ -167,8 +167,9 @@ func (r *Room) ChangeCard(player *players.Player, index int) error {
 	// remove a carta do topo do deck
 	r.Deck = r.Deck[1:]
 
-	// carta sempre vem como viva
+	// carta sempre vem como viva e virada para baixo
 	card.Dead = false
+	card.RevealedToAll = false
 	return nil
 }
 

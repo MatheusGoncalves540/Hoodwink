@@ -15,11 +15,16 @@ func cloneInvestments(investments []int) []int {
 func (p *Player) GetPublicPlayerForUpdates() PublicPlayerForUpdates {
 	PublicCardInfos := make([]structs.PublicCardForUpdates, len(p.Cards))
 	for i := range p.Cards {
-		PublicCardInfos[i] = structs.PublicCardForUpdates{
+		publicCard := structs.PublicCardForUpdates{
 			Index:     p.Cards[i].Index,
 			Protected: p.Cards[i].Protected,
 			Dead:      p.Cards[i].Dead,
 		}
+		if p.Cards[i].Dead || p.Cards[i].RevealedToAll {
+			name := p.Cards[i].Name
+			publicCard.Name = &name
+		}
+		PublicCardInfos[i] = publicCard
 	}
 
 	return PublicPlayerForUpdates{
