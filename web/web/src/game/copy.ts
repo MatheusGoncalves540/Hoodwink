@@ -206,7 +206,7 @@ export const copy = {
   suddenTurnAfter: (s: number) => `. Agora cada deixa dura ${s} s.`,
   playResumes: (s: number) => `A peça volta em ${s} s`,
   suddenDeathYouLine: (s: number) => `Cada deixa dura ${s} s. Decida rápido.`,
-  finale: "Fim do espetáculo",
+  finale: "Fim da partida",
   wonAtRound: (round: number, coins: number) => `Venceu na rodada ${round}, com ${coins} moedas.`,
   exitOrder: "Ordem de saída",
   place: (n: number) => `${n}º`,

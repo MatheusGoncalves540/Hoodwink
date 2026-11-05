@@ -72,3 +72,10 @@ Regras rígidas: teste é parte da feature, não etapa posterior.
 - Nunca apague, pule (`skip`/`only`) ou enfraqueça um teste existente para a sua mudança passar. Se o teste codifica o comportamento antigo e a mudança é intencional, atualize o teste no mesmo commit e explique no resumo o que mudou e por quê.
 - Teste não depende de ordem, relógio real, rede, aleatoriedade sem seed nem estado global: tem que passar sozinho e passar de novo em sequência.
 - Teste lento ou instável não fica "por enquanto": corrige ou remove.
+
+## Travas de design e texto
+
+- Antes de mexer em ActionButton, Spotlight, letreiro ou idle, leia `tech-docs/travas-de-design.md`.
+- Todo texto que o jogador lê passa pela skill `texto-claro` (`.claude/skills/texto-claro/SKILL.md`).
+- Handoff completo do Refino v2 (ordem das fases): `plans/04-handoff-refino-v2.md`.
+- Skins: `plans/03-skins.md`. Componente nunca lê a skin; só tokens e classes de slot.

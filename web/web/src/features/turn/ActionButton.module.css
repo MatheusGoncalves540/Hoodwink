@@ -1,4 +1,5 @@
-/* Acoes.dc.html: botão de papel 84 px, arte panorâmica e moeda de 46 px. */
+/* Acoes.dc.html: botão de papel 84 px, arte panorâmica e moeda de 46 px.
+   TRAVA: a faixa .art svg (230x76, right 44) é o espaço da arte final. Ver tech-docs/travas-de-design.md §1. */
 .button {
   position: relative;
   width: 100%;
