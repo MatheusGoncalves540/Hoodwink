@@ -1,0 +1,218 @@
+/* Como se joga: bastidor em papelão (trava 5). Só o papel dos cartões se mexe (.m-q3 no ::before). */
+.screen {
+  box-sizing: border-box;
+  min-height: 100dvh;
+  background:
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--hw-papelao-escuro) 18%, transparent) 0 1px, transparent 1px 7px),
+    var(--hw-papelao);
+  color: var(--hw-papelao-tinta);
+  font-family: var(--hw-font-cartao);
+  font-size: 18px;
+  line-height: 1.35;
+  padding: 0 16px 40px;
+}
+/* chave Movimento desligada: nada se mexe nesta tela */
+.pausa :global(*),
+.pausa :global(*)::before {
+  animation: none !important;
+}
+.pausa :global(.m-f):first-of-type {
+  opacity: 1;
+}
+.barra {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0 -16px 16px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--hw-papelao-escuro);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--hw-papelao-tinta) 30%, transparent);
+}
+.back {
+  color: var(--hw-papel);
+  font-family: var(--hw-font-cartao);
+  text-decoration: none;
+}
+.placa {
+  margin: 0;
+  flex: 1;
+  font-family: var(--hw-font-rabisco);
+  font-weight: 400;
+  font-size: 26px;
+  color: var(--hw-papel);
+  rotate: -1deg;
+}
+.roles .placa {
+  display: inline-block;
+  padding: 4px 14px;
+  background: var(--hw-papelao-escuro);
+  clip-path: polygon(2% 6%, 99% 0, 97% 94%, 0 100%);
+}
+.chave {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 2px solid var(--hw-papelao-tinta);
+  border-radius: var(--hw-radius-pill);
+  background: var(--hw-papelao);
+  color: var(--hw-papelao-tinta);
+  font-family: var(--hw-font-cartao);
+  font-size: 16px;
+  cursor: pointer;
+}
+.knob {
+  width: 30px;
+  height: 16px;
+  border-radius: var(--hw-radius-pill);
+  background: var(--hw-papelao-escuro);
+  position: relative;
+}
+.knob::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--hw-papel);
+}
+.chave[aria-checked="true"] .knob::after {
+  left: 16px;
+}
+.grid {
+  display: grid;
+  gap: 22px;
+}
+.desk .grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.desk .roles {
+  grid-column: 1 / -1;
+}
+/* cartão de papel: o fundo e a sombra moram no ::before, que é o que se mexe */
+.folha {
+  position: relative;
+  padding: 18px 18px 14px;
+  color: var(--hw-papel-tinta);
+  rotate: -0.6deg;
+}
+.folha:nth-child(even) {
+  rotate: 0.7deg;
+}
+.folha::before {
+  background: var(--hw-papel);
+  box-shadow: 0 6px 12px var(--hw-papel-sombra);
+}
+.folha p {
+  margin: 0 0 8px;
+}
+.cardTitle {
+  margin: 0 0 8px;
+  font-family: var(--hw-font-cartao);
+  font-size: 24px;
+  font-weight: 400;
+  text-decoration: underline wavy color-mix(in srgb, var(--hw-papel-tinta) 40%, transparent);
+}
+.fita {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  translate: -50% 0;
+  rotate: -3deg;
+  padding: 2px 14px;
+  background: var(--hw-fita);
+  font-size: 15px;
+}
+.list {
+  margin: 0;
+  padding-left: 20px;
+}
+.list li {
+  margin-bottom: 6px;
+}
+.canhoto {
+  --mordida: 12px;
+}
+.picote {
+  fill: none;
+  stroke: var(--hw-papel-tinta);
+  stroke-width: 1.5px;
+  stroke-dasharray: 5 4;
+  overflow: visible;
+}
+.taxa {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+.taxa input {
+  accent-color: var(--hw-papelao-escuro);
+}
+.marcador {
+  font-family: var(--hw-font-rabisco);
+  font-weight: 400;
+  font-size: 22px;
+}
+.rabisco {
+  margin: 0;
+  align-self: center;
+  font-family: var(--hw-font-rabisco);
+  font-size: 20px;
+  rotate: -3deg;
+}
+.arrow {
+  width: 48px;
+  height: 28px;
+}
+.arrow svg {
+  fill: none;
+  stroke: var(--hw-papelao-tinta);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+.etiqueta {
+  padding: 4px 12px;
+  border: 1.5px solid var(--hw-papelao-tinta);
+  border-radius: var(--hw-radius-s);
+  background: var(--hw-papel);
+  color: var(--hw-papel-tinta);
+  font-family: var(--hw-font-cartao);
+  font-size: 17px;
+  cursor: pointer;
+}
+.etiqueta[aria-pressed="true"] {
+  background: var(--hw-papelao-escuro);
+  color: var(--hw-papel);
+}
+.ficha {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.arte {
+  aspect-ratio: 4 / 5;
+  border: 2px dashed var(--hw-papel-tinta);
+  border-radius: var(--hw-radius-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.arteNota {
+  font-size: 15px;
+  rotate: -4deg;
+}

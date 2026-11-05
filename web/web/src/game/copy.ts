@@ -289,4 +289,55 @@ export const copy = {
     exited: "saiu da partida.",
     suddenDeath: "O baralho acabou. Morte súbita.",
   },
+
+  // Como se joga (fase 7). Os números vêm de pricing.ts com a taxa da tela.
+  howto: {
+    title: "Como se joga",
+    mode: "Modo Clássico",
+    back: "☜ Voltar",
+    motion: "Movimento",
+    goalTitle: "O objetivo",
+    goal: [
+      "Cada jogador começa com 2 cartas viradas para baixo e 3 moedas.",
+      "Cada carta é um personagem. Quando uma carta morre, ela fica virada para cima e não vale mais.",
+      "Ganha quem ficar com carta viva por último.",
+    ],
+    bluff: "Você pode dizer que tem qualquer personagem, mesmo sem a carta. Isso é blefar.",
+    turnTitle: "Na sua vez",
+    turnLead: "Escolha 1 ação. As ações do turno funcionam até sem carta, e ninguém pode duvidar delas.",
+    take: (n: number) => `Pegar moeda. Você recebe ${plural(n, "moeda", "moedas")}.`,
+    kill: (n: number) => `Matar. Você paga ${n} e mata uma carta de outro jogador. A Guardiã pode impedir.`,
+    swap: "Trocar cartas. Você paga metade das suas moedas e troca 1 carta pelo baralho. Precisa de 6 moedas. Trocar as 2 custa todas.",
+    useTitle: "Usar um personagem",
+    use: ["Diga qual personagem você usa e pague o preço dele.", "Os outros podem duvidar."],
+    doubtTitle: "Duvidar",
+    doubtHad: "Se ele tinha a carta, mostra a carta. Quem duvidou perde uma carta. A jogada acontece, e ele troca a carta mostrada por outra do baralho.",
+    doubtNot: "Se ele não tinha, quem duvidou escolhe uma carta dele para morrer. A jogada não acontece.",
+    taxTitle: "A taxa",
+    tax: "A taxa vai de −5 a +5 e soma no preço da maioria das ações. Kamikaze, Político e Rebelde não sentem a taxa.",
+    limit: "Quem passa de 20 moedas perde o que passou e uma carta.",
+    taxTry: "Teste outra taxa",
+    taxNow: (t: number) => `Taxa ${signed(t)}`,
+    scribble: "os preços mudam aqui",
+    rolesTitle: "Personagens",
+    rolesPick: "Escolha um personagem",
+    artSoon: "arte em breve!",
+    price: (label: string) => `Preço: ${label}`,
+    ficha: (id: RoleId, p: { cost: number; gain: number; steals: number; cap: number; threshold: number; cardChange: number; guard: [number, number, number] }) => {
+      switch (id) {
+        case "TRILLIONAIRE": return `Recebe ${p.gain} moedas. A Egoísta pode barrar se o ganho for ${p.threshold} ou mais.`;
+        case "TRICKSTER": return `Tira ${p.steals} moedas de outro jogador e fica com ${p.gain}.`;
+        case "INVESTOR": return `Investe 1 moeda por turno, até ${p.cap} no total. Em todo turno seu, rende metade do que está investido. Cada moeda volta para você em 6 turnos.`;
+        case "ASSASSIN": return `Paga ${p.cost} e mata uma carta de outro jogador. A Guardiã pode impedir.`;
+        case "CLAIRVOYANT": return `Paga ${p.cost} e mostra uma carta de outro jogador. Você escolhe se todos veem ou só você.`;
+        case "KAMIKAZE": return "Não custa nada. Quando morre, leva junto uma carta de outro jogador.";
+        case "GUARDIAN": return `Protege uma carta sua. Impedir um ataque custa ${p.guard[0]}. Contra o Clarividente, ${p.guard[1]}. No seu turno, ${p.guard[2]}, e protege do próximo ataque.`;
+        case "GRAVEDIGGER": return `Paga ${p.cost} e revive uma carta sua que morreu. Não dá para usar com as 2 cartas vivas.`;
+        case "CROUPIER": return `Paga ${p.cost}, descarta uma carta sua e puxa uma nova do baralho.`;
+        case "POLITICAL": return `Paga ${p.cost} e sobe a taxa em 1. Cada uso dobra o preço para todos, até 8.`;
+        case "REBEL": return `Paga ${p.cost} e baixa a taxa em 1. Cada uso dobra o preço para todos, até 8.`;
+        case "SELFISH": return `Só fora do seu turno. Por 1, impede alguém de receber ${p.threshold} ou mais moedas. Por ${p.cardChange}, impede alguém de receber uma carta.`;
+      }
+    },
+  },
 };

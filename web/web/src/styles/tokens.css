@@ -9,6 +9,8 @@
 --hw-carta:#E4D0A8;--hw-carta-tinta:#1E1512;--hw-carta-rotulo:#5A1820;--hw-escondida-borda:2px solid #5A4636;--hw-poca:rgba(244,230,196,.22);--hw-cone:rgba(244,230,196,.12);--hw-scrim:rgba(10,4,4,.7);
 --hw-verso:url(/assets/cartas/verso-escuro.svg) center/100% 100% no-repeat,#2A080B}
 .so-escuro{display:none}[data-theme="dark"] .so-escuro{display:inline}[data-theme="dark"] .so-claro{display:none}
+/* Papelão: só a tela Como se joga (bastidor). Iguais nos dois temas. */
+:root{--hw-papelao:#C8A27A;--hw-papelao-escuro:#8E6A45;--hw-papelao-tinta:#2A2018;--hw-papel:#FBF6EA;--hw-papel-tinta:#2A2018;--hw-papel-sombra:rgba(42,32,24,.28);--hw-fita:rgba(244,236,210,.78)}
 /* Cores fixas da arte (iguais nos dois temas): faixa dos botões de ação, moeda, feixe e sombra. Skins de cores podem redefinir. */
 :root{--hw-tom-vinho:linear-gradient(90deg,#2A080B,#5A1820);--hw-tom-vinho-faixa:#A3201A;--hw-tom-ouro:linear-gradient(90deg,#1F1606,#5C4214);--hw-tom-ouro-faixa:#8A6A2A;--hw-tom-cedula:linear-gradient(90deg,#0F1F17,#2C4A33);--hw-tom-cedula-faixa:#5E8A5A;
 --hw-faixa-fundo:#1E1512;--hw-faixa-tinta:#F4E6C4;--hw-faixa-tinta-off:#C9B48C;--hw-faixa-ouro:#B98A2E;--hw-moeda-tinta:#1E1512;--hw-feixe:#FFF6DC;--hw-sombra:rgba(0,0,0,.25)}
