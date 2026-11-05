@@ -1,12 +1,22 @@
-import { setPref, usePref } from "./prefs";
+import { motionState } from "./motion";
+import { setPref, useMedia, usePref } from "./prefs";
 
 const KEY = "hw-movimento";
+const IDLE_KEY = "hw-espera";
 
 /**
- * "Menos movimento" do menu. O prefers-reduced-motion do sistema já é tratado no CSS;
- * isto só cobre a escolha explícita do jogador (vira data-motion="reduced" na raiz).
+ * As duas chaves de movimento (Menu da sala, Lobby, Como se joga). Só o App escreve na raiz
+ * (data-motion / data-idle); componente nenhum lê isto para decidir animação.
  */
 export function useMotionPref() {
-  const reduced = usePref(KEY) === "reduzido";
-  return { reduced, setReduced: (on: boolean) => setPref(KEY, on ? "reduzido" : null) };
+  const st = motionState({
+    motion: usePref(KEY),
+    idle: usePref(IDLE_KEY),
+    systemReduced: useMedia("(prefers-reduced-motion: reduce)"),
+  });
+  return {
+    ...st,
+    setAll: (on: boolean) => setPref(KEY, on ? "ligado" : "reduzido"),
+    setIdle: (on: boolean) => setPref(IDLE_KEY, on ? null : "off"),
+  };
 }

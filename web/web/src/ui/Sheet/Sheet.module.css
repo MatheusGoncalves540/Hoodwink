@@ -38,14 +38,6 @@
     transform: translateX(100%);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .rail {
-    animation-name: m-fade;
-  }
-}
-:global([data-motion="reduced"]) .rail {
-  animation-name: m-fade;
-}
 .body {
   flex: 1 1 auto;
   min-height: 0;

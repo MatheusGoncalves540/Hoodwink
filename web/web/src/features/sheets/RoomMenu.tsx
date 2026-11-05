@@ -18,14 +18,15 @@ type ContentProps = {
   turn: number;
   sound: boolean;
   vibration: boolean;
-  motion: boolean;
+  motion: { all: boolean; idle: boolean };
   onSound(value: boolean): void;
   onVibration(value: boolean): void;
   onMotion(value: boolean): void;
+  onIdle(value: boolean): void;
   onLeave(): void;
 };
 
-export function RoomMenuContent({ code, turn, sound, vibration, motion, onSound, onVibration, onMotion, onLeave }: ContentProps) {
+export function RoomMenuContent({ code, turn, sound, vibration, motion, onSound, onVibration, onMotion, onIdle, onLeave }: ContentProps) {
   const [confirm, setConfirm] = useState(false);
   return (
     <>
@@ -45,7 +46,7 @@ export function RoomMenuContent({ code, turn, sound, vibration, motion, onSound,
       <div className={s.prefs}>
         <Toggle label={copy.sound} value={sound} onChange={onSound} />
         <Toggle label={copy.vibration} hint={copy.vibrationHint} value={vibration} onChange={onVibration} />
-        <Toggle label={copy.lessMotion} hint={copy.lessMotionHint} value={motion} onChange={onMotion} />
+        <MotionToggles motion={motion} onMotion={onMotion} onIdle={onIdle} />
       </div>
 
       <p className={s.warning}>{copy.menuWarning(code)}</p>
@@ -67,6 +68,22 @@ export function RoomMenuContent({ code, turn, sound, vibration, motion, onSound,
           {copy.leaveScene}
         </Button>
       )}
+    </>
+  );
+}
+
+/** As duas chaves de movimento (fase 3.1): sem Animações, a espera aparece desligada e travada. */
+export function MotionToggles({ motion, onMotion, onIdle }: { motion: { all: boolean; idle: boolean }; onMotion(v: boolean): void; onIdle(v: boolean): void }) {
+  return (
+    <>
+      <Toggle label={copy.motionAll} hint={copy.motionAllHint} value={motion.all} onChange={onMotion} />
+      <Toggle
+        label={copy.motionIdle}
+        hint={motion.all ? copy.motionIdleHint : copy.motionIdleOff}
+        value={motion.idle}
+        disabled={!motion.all}
+        onChange={onIdle}
+      />
     </>
   );
 }
@@ -101,10 +118,11 @@ export function RoomMenu({ view, mode, onClose }: Props) {
         turn={turn}
         sound={sound}
         vibration={vibration}
-        motion={motion.reduced}
+        motion={motion}
         onSound={(v) => setPref(SOUND_KEY, v ? "sim" : "nao")}
         onVibration={(v) => setPref(VIBRATION_KEY, v ? "sim" : "nao")}
-        onMotion={motion.setReduced}
+        onMotion={motion.setAll}
+        onIdle={motion.setIdle}
         onLeave={leave}
       />
     </Sheet>

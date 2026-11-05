@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { fixture, type FixtureName } from "../../game/fixtures";
 import { selectChat, selectSeatSheet, selectYouSheet, type GameView } from "../../game/selectors";
 import { ChatSheetBody } from "./ChatSheet";
-import { RoomMenuContent } from "./RoomMenu";
+import { MotionToggles, RoomMenuContent } from "./RoomMenu";
 import { SeatSheetBody } from "./SeatSheet";
 import { YouSheetBody } from "./YouSheet";
 
@@ -55,10 +55,11 @@ describe("menu e conversa (fumaça em Node)", () => {
         turn={4}
         sound
         vibration
-        motion={false}
+        motion={{ all: true, idle: false }}
         onSound={() => {}}
         onVibration={() => {}}
         onMotion={() => {}}
+        onIdle={() => {}}
         onLeave={() => {}}
       />,
     );
@@ -70,12 +71,21 @@ describe("menu e conversa (fumaça em Node)", () => {
     expect(out).toContain("Som");
     expect(out).toContain("Vibração");
     expect(out).toContain("quando chega a sua deixa");
-    expect(out).toContain("Menos movimento");
-    expect(out).toContain("cartas e cortinas sem animação");
+    expect(out).toContain("Animações");
+    expect(out).toContain("Todas, inclusive as transições.");
+    expect(out).toContain("Animações de espera");
+    expect(out).toContain("Desenhos tremendo, texto respirando, lâmpadas.");
     expect(out).toContain("Sair de cena");
     expect(out).toContain("Seu camarote fica na mesa e o tempo corre sem você. Para voltar, entre de novo com o código K7Q2.");
-    expect(out.match(/aria-checked="true"/g)).toHaveLength(2);
+    expect(out.match(/aria-checked="true"/g)).toHaveLength(3);
     expect(out.match(/aria-checked="false"/g)).toHaveLength(1);
+  });
+
+  it("sem Animações, a chave de espera aparece desligada e travada, com a dica", () => {
+    const out = renderToStaticMarkup(<MotionToggles motion={{ all: false, idle: false }} onMotion={() => {}} onIdle={() => {}} />);
+    expect(out).toContain('role="switch" aria-checked="false" aria-disabled="true"');
+    expect(out).toContain("Desligada junto com Animações");
+    expect(out.match(/aria-checked="false"/g)).toHaveLength(2);
   });
 
   it("conversa: falas, horas e acontecimentos", () => {

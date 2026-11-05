@@ -44,7 +44,7 @@ function usePresentation() {
 
 export function App() {
   const { theme } = useTheme();
-  const { reduced } = useMotionPref();
+  const motion = useMotionPref();
   const me = useGameStore((s) => s.me);
   const room = useGameStore((s) => s.room);
   const log = useGameStore((s) => s.log);
@@ -70,12 +70,20 @@ export function App() {
   }, [ticket, jwtToken, join, devScene]);
 
   // Na raiz do documento (não num div) para as gavetas do Radix, que vão para o body, herdarem o tema.
+  // Único lugar que escreve movimento na raiz: data-motion (Animações) e data-idle (espera; também com a aba escondida).
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.theme = theme;
-    if (reduced) root.dataset.motion = "reduced";
+    if (!motion.all) root.dataset.motion = "reduced";
     else delete root.dataset.motion;
-  }, [theme, reduced]);
+    const idle = () => {
+      if (!motion.idle || document.hidden) root.dataset.idle = "off";
+      else delete root.dataset.idle;
+    };
+    idle();
+    document.addEventListener("visibilitychange", idle);
+    return () => document.removeEventListener("visibilitychange", idle);
+  }, [theme, motion.all, motion.idle]);
 
   if (devScene === "amostras") return <Amostras />;
   const Scene = SCENES[isScene(devScene) ? devScene : selectScene({ me, room, log })];

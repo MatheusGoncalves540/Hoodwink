@@ -9,7 +9,6 @@
 @keyframes brilho{from{opacity:.7}to{opacity:1}}
 .brasa{position:absolute;border-radius:50%;background:#FFF6DC;pointer-events:none;animation:brasa 3.2s linear infinite}
 @keyframes brasa{from{transform:translateY(0);opacity:1}to{transform:translateY(-140px);opacity:0}}
-@media (prefers-reduced-motion:reduce){.quadro,.brilho,.brasa{animation:none}.quadro:first-child{opacity:1}.brasa{opacity:0}}
 /* morte súbita: cortina em chamas */
 @keyframes ms-sobe{to{transform:translateY(-46%)}}
 @keyframes ms-abre-e{to{transform:translateX(-101%)}}
@@ -27,4 +26,4 @@
 [role="alert"].m-scrim{background:rgba(10,4,4,.88)!important}
 @keyframes ms-liga{from{opacity:0}}
 .ms-holofote{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 40% 5% at 50% 74%,rgba(255,246,220,.3),transparent 70%),linear-gradient(rgba(255,246,220,.42),rgba(255,246,220,.14) 45%,transparent 74%);clip-path:polygon(46% 0,54% 0,96% 74%,4% 74%);animation:ms-liga 0s 3.45s both}
-@media (prefers-reduced-motion:reduce){.ms-cortina{display:none}}
+

@@ -40,9 +40,49 @@ button:not([aria-disabled="true"]):active{transform:scale(.97)}
 .m-tick{animation:m-tick 1s steps(1,end) infinite}
 /* SVG pequeno e raro (a cada 5 s): pinta, mas custa pouco */
 .m-wink{transform-box:fill-box;transform-origin:50% 50%;animation:m-wink 5s ease-in-out 1.2s infinite}
-@media (prefers-reduced-motion:reduce){
-.m-rise,.m-item,.m-sheet,.m-drop,.m-flip,.m-stamp,.m-bow,.m-hang,.m-slam{animation-name:m-fade}
-.m-hit,.m-wink,.m-tick{animation:none}
-.m-curtain{animation-name:m-fade-out}
-button:not([aria-disabled="true"]):active{transform:none}
-}
+/* prefers-reduced-motion entra por data-motion="reduced" (app/motion.ts), para o jogador poder religar de propósito. */
+
+/* ── Idle (fase 3.2, travas 3 a 5). Orçamento por tela: até 24 tiras, 3 contornos, ~40 blocos respirando. ── */
+@keyframes m-tira{to{transform:translateX(-100%)}}
+@keyframes m-q{0%{opacity:1}33.34%,100%{opacity:0}}
+@keyframes m-respira{0%,100%{translate:0 0;rotate:-.6deg}50%{translate:0 -4px;rotate:.6deg}}
+@keyframes m-q3{0%{translate:0 0;rotate:0deg}33.33%{translate:.5px -.3px;rotate:.15deg}66.66%{translate:-.4px .3px;rotate:-.12deg}}
+/* TIRA: glifo de tamanho fixo; o filho tem 3 desenhos lado a lado e anda em 3 passos. */
+.m-tira{display:inline-block;overflow:hidden;vertical-align:middle}
+.m-tira>*{display:flex;width:300%;height:100%;animation:m-tira var(--tira-ciclo,1.5s) steps(3) infinite}
+.m-tira>*>*{flex:1 1 0;min-width:0}
+/* CONTORNO: 3 desenhos empilhados (caixa que estica), um aceso por vez. */
+.m-contorno{position:relative}
+.m-contorno>.m-f{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;animation:m-q var(--contorno-ciclo,.6s) steps(1,end) infinite}
+.m-contorno>.m-f:nth-of-type(2){animation-delay:calc(var(--contorno-ciclo,.6s) / -3)}
+.m-contorno>.m-f:nth-of-type(3){animation-delay:calc(var(--contorno-ciclo,.6s) / -1.5)}
+/* LETREIRO: lâmpadas só na borda, 3 camadas acendendo em sequência (só no cartaz do lobby). */
+.m-letreiro>.m-f{animation:m-q .9s steps(1,end) infinite}
+.m-letreiro>.m-f:nth-of-type(2){animation-delay:-.3s}
+.m-letreiro>.m-f:nth-of-type(3){animation-delay:-.6s}
+/* RESPIRA: texto, por bloco. translate/rotate somam com a inclinação de títulos e cartas. Fora do Como se joga. */
+.m-respira{animation:m-respira 3.6s ease-in-out infinite}
+.m-respira:nth-child(3n+2){animation-delay:-1.2s}
+.m-respira:nth-child(3n){animation-delay:-2.4s}
+.m-respira .m-respira{animation:none}
+/* 3 QUADROS: só o papel do cartão (fundo e sombra no ::before); o texto fica parado. Só no Como se joga. */
+.m-q3{position:relative;isolation:isolate}
+.m-q3::before{content:"";position:absolute;inset:0;z-index:-1;animation:m-q3 var(--q3-ciclo,1.5s) steps(1,end) infinite}
+/* CANHOTO: cantos mordidos (máscara parada) + picote tracejado em contorno de 3 quadros (.m-contorno dentro). */
+.m-canhoto{--mordida:10px;-webkit-mask:radial-gradient(circle var(--mordida) at 0 0,transparent 98%,black) top left/51% 51% no-repeat,radial-gradient(circle var(--mordida) at 100% 0,transparent 98%,black) top right/51% 51% no-repeat,radial-gradient(circle var(--mordida) at 0 100%,transparent 98%,black) bottom left/51% 51% no-repeat,radial-gradient(circle var(--mordida) at 100% 100%,transparent 98%,black) bottom right/51% 51% no-repeat;mask:radial-gradient(circle var(--mordida) at 0 0,transparent 98%,black) top left/51% 51% no-repeat,radial-gradient(circle var(--mordida) at 100% 0,transparent 98%,black) top right/51% 51% no-repeat,radial-gradient(circle var(--mordida) at 0 100%,transparent 98%,black) bottom left/51% 51% no-repeat,radial-gradient(circle var(--mordida) at 100% 100%,transparent 98%,black) bottom right/51% 51% no-repeat}
+
+/* Na sua vez (data-deixa na raiz da mesa): o ambiente para; só o timer e o botão de ação (.m-deixa) tremem, mais rápido. */
+[data-deixa] :is(.m-tira>*,.m-contorno>.m-f,.m-respira){animation-play-state:paused}
+[data-deixa] .m-deixa :is(.m-tira>*,.m-contorno>.m-f){animation-play-state:running;--tira-ciclo:.75s}
+
+/* Animações de espera desligada (ou aba escondida): tudo parado no quadro 1. */
+[data-idle="off"] :is(.m-tira>*,.m-contorno>.m-f,.m-letreiro>.m-f,.m-respira,.m-q3::before,.m-canhoto .m-f){animation:none}
+[data-idle="off"] :is(.m-contorno,.m-letreiro,.m-canhoto)>.m-f:first-of-type{opacity:1}
+
+/* Animações desligada: nada se mexe. Estados finais que importam vêm logo abaixo. */
+[data-motion="reduced"] *,[data-motion="reduced"] *::before,[data-motion="reduced"] *::after{animation:none!important;transition:none!important}
+[data-motion="reduced"] :is(.m-contorno,.m-letreiro,.m-canhoto)>.m-f:first-of-type{opacity:1}
+[data-motion="reduced"] button:not([aria-disabled="true"]):active{transform:none}
+[data-motion="reduced"] :is(.m-curtain,.ms-cortina){display:none}
+[data-motion="reduced"] .quadro:first-child{opacity:1}
+[data-motion="reduced"] .brasa{opacity:0}
