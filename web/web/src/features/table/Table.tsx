@@ -6,8 +6,7 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { useLayout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
-import type { RoleId } from "../../game/protocol";
-import { ROLES } from "../../game/roles";
+import { actionDef, type ActionId } from "../../game/roles";
 import { eventKey } from "../../game/log";
 import { CLASSIC_RULES } from "../../game/rules.classic";
 import { desktopSeats, mobileSeats } from "../../game/seats";
@@ -144,17 +143,17 @@ export function TableScene() {
     return () => clearTimeout(timer);
   }, [footlights.suddenDeath, room?.id]);
 
-  const sendPlay = (role: RoleId, target?: Target) => {
+  const sendPlay = (role: ActionId, target?: Target) => {
     try {
-      send(play(role, me ?? "", target));
+      send(play(role, me ?? "", { showToAll: targeting?.showToAll, ...target }));
     } catch (e) {
       console.error(e);
     }
     setTargeting(null);
   };
 
-  const pickRole = (role: RoleId) => {
-    const def = ROLES[role];
+  const pickRole = (role: ActionId) => {
+    const def = actionDef(role);
     if (def.target === "own") {
       setTargeting({ role });
       open("you");
@@ -174,7 +173,7 @@ export function TableScene() {
 
   const onSeat = (seatId: string) => {
     if (targeting) {
-      const needsCard = targeting.role === "ASSASSIN" || targeting.role === "KAMIKAZE" || targeting.role === "CLAIRVOYANT";
+      const needsCard = ["ASSASSIN", "KAMIKAZE", "CLAIRVOYANT", "KILL_CARD"].includes(targeting.role);
       if (!needsCard) {
         sendPlay(targeting.role, { playerId: seatId });
         return;
@@ -210,7 +209,7 @@ export function TableScene() {
         mode={layout}
         onClose={closeSheet}
         backLabel={targeting ? copy.backToActions : undefined}
-        onPickCard={targeting && ROLES[targeting.role].target === "own" ? pickOwnCard : undefined}
+        onPickCard={targeting && actionDef(targeting.role).target === "own" ? pickOwnCard : undefined}
         cardDisabled={targeting ? ownCardDisabled : undefined}
       />
     ) : openSheet === "menu" ? (
@@ -224,7 +223,7 @@ export function TableScene() {
         mode={layout}
         onClose={closeSheet}
         backLabel={targeting ? copy.backToActions : undefined}
-        onPickCard={targeting && ROLES[targeting.role].target === "other" ? pickSeatCard : undefined}
+        onPickCard={targeting && actionDef(targeting.role).target === "other" ? pickSeatCard : undefined}
       />
     ) : undefined;
 
@@ -292,7 +291,15 @@ export function TableScene() {
       )}
     </>
   ) : undefined;
-  const targetBar = targeting ? <TargetBar role={targeting.role} onBack={() => setTargeting(null)} /> : undefined;
+  const targetBar = targeting ? (
+    <TargetBar
+      role={targeting.role}
+      onBack={() => setTargeting(null)}
+      onSwapBoth={targeting.role === "SWAP_CARDS" ? () => sendPlay("SWAP_CARDS", { cardIndex: 0, both: true }) : undefined}
+      showToAll={targeting.role === "CLAIRVOYANT" ? !!targeting.showToAll : undefined}
+      onShowToAll={(v) => setTargeting({ ...targeting, showToAll: v })}
+    />
+  ) : undefined;
 
   return (
     <Table

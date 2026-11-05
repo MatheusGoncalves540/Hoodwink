@@ -112,10 +112,13 @@ export const copy = {
   roleArt: (name: string) => `Faixa dos olhos de ${name} (provisória)`,
   roleDesc: (id: string, p: Price) => {
     switch (id) {
+      case "TAKE_COINS": return `Recebe ${plural(p.coins, "moeda", "moedas")}`;
+      case "KILL_CARD": return "Mata uma carta de outro jogador";
+      case "SWAP_CARDS": return "Troca uma carta sua por uma do baralho";
       case "TRILLIONAIRE": return `Recebe ${p.coins} moedas`;
       case "TRICKSTER": return p.kind === "gain" ? `Rouba ${p.steals} de alguém e fica com ${p.coins}` : "";
-      case "INVESTOR": return p.kind === "invest" ? `Investe ${p.coins}, que rende por ${p.lasts + 1} turnos` : "";
-      case "ASSASSIN": return "Mata uma carta de outro ator";
+      case "INVESTOR": return p.kind === "invest" ? `Investe ${p.coins}. A moeda volta em ${p.lasts} turnos` : "";
+      case "ASSASSIN": return "Mata uma carta de outro jogador";
       case "CLAIRVOYANT": return "Revela uma carta de alguém";
       case "KAMIKAZE": return "Sacrifica-se e leva uma carta junto";
       case "GUARDIAN": return "Protege uma carta sua";
@@ -128,6 +131,14 @@ export const copy = {
     }
   },
   priceLabel: (p: Price) => (p.kind === "gain" ? `+${p.coins}` : p.kind === "reaction" ? `${p.coins}+` : String(p.coins)),
+  basicActions: "Ações do turno",
+  needSwapCoins: (n: number) => `Precisa de ${n} moedas`,
+  swapBoth: "Trocar as duas",
+  swapBothWarn: "Custa todas as suas moedas.",
+  showToAll: "Mostrar para todos",
+  showToMe: "Desligado, só você vê a carta.",
+  killHint: "Toque no lugar de quem perde a carta.",
+  swapHint: "Escolha a carta sua que vai trocar.",
   pickTarget: "Escolha o alvo",
   pickTargetHint: (role: string) => `Toque no camarote de quem recebe o ${role}.`,
   pickCard: (name: string, state: string) => `Escolher a carta ${state} de ${name}`,
@@ -183,7 +194,7 @@ export const copy = {
       case "GUARDIAN": return `${name} paga ${price.coins} moedas e protege uma carta sua.`;
       case "GRAVEDIGGER": return `${name} paga ${price.coins} moedas e revive uma carta.`;
       case "CROUPIER": return `${name} paga ${price.coins} moedas e puxa uma carta nova.`;
-      case "INVESTOR": return `${name} investe ${price.coins}, que rende por ${price.kind === "invest" ? price.lasts + 1 : 0} turnos.`;
+      case "INVESTOR": return `${name} investe ${price.coins}. A moeda volta em ${price.kind === "invest" ? price.lasts : 0} turnos.`;
       case "TRILLIONAIRE": return `${name} recebe ${price.coins} moedas.`;
       case "POLITICAL": return `${name} sobe a taxa em 1; o preço dobra.`;
       case "REBEL": return `${name} baixa a taxa em 1; o preço dobra.`;

@@ -1,8 +1,8 @@
 import type { Layout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
-import { priceOf, type Price } from "../../game/pricing";
+import { basicPrice, canSwap, priceOf, type Price } from "../../game/pricing";
 import type { RoleId } from "../../game/protocol";
-import { ROLE_GROUPS } from "../../game/roles";
+import { BASIC_GROUP, ROLE_GROUPS, type ActionId } from "../../game/roles";
 import { CLASSIC_RULES } from "../../game/rules.classic";
 import { selectFootlights, selectYou, type GameView } from "../../game/selectors";
 import { Coin } from "../../ui/Coin/Coin";
@@ -14,10 +14,10 @@ import s from "./ActionBoard.module.css";
 type Props = {
   view: GameView;
   layout: Layout;
-  onPick(role: RoleId): void;
+  onPick(action: ActionId): void;
 };
 
-/** Seu turno (tela 6): papéis por grupo, preço de pricing.ts e o tempo da jogada no pé. */
+/** Seu turno (tela 6): ações do turno no topo, personagens por grupo, preço de pricing.ts e o tempo da jogada no pé. */
 export function ActionBoard({ view, layout, onPick }: Props) {
   const room = view.room;
   const you = selectYou(view);
@@ -25,6 +25,7 @@ export function ActionBoard({ view, layout, onPick }: Props) {
   const ev = room?.gameEvent;
   const total = footlights.suddenDeath ? CLASSIC_RULES.waitingAction.suddenDeath : CLASSIC_RULES.waitingAction.default;
   const held = (role: RoleId) => you.cards.some((c) => c.role === role && !c.dead);
+  const short = (p: Price) => (p.kind !== "gain" && p.coins > you.coins ? p.coins - you.coins : null);
 
   return (
     <div className={cx(s.screen, layout === "desktop" && s.desk)}>
@@ -40,13 +41,32 @@ export function ActionBoard({ view, layout, onPick }: Props) {
         </div>
 
         <div className={s.list}>
+          <div className={s.group}>
+            <h2 className={s.groupTitle}>{BASIC_GROUP.title}</h2>
+            {BASIC_GROUP.actions.map((action) => {
+              const price = room ? basicPrice(action, room, you.coins) : ({ kind: "cost", coins: 0 } as const);
+              const blocked = action === "SWAP_CARDS" && !canSwap(you.coins) ? copy.needSwapCoins(CLASSIC_RULES.basic.swapMinCoins) : undefined;
+              return (
+                <ActionButton
+                  key={action}
+                  role={action}
+                  price={price}
+                  held={false}
+                  offTurn={false}
+                  missing={blocked ? null : short(price)}
+                  blocked={blocked}
+                  onClick={onPick}
+                />
+              );
+            })}
+          </div>
           {ROLE_GROUPS.map((group) => (
             <div key={group.title} className={s.group}>
               <h2 className={s.groupTitle}>{group.title}</h2>
               {group.roles.map((role) => {
                 const price: Price = room ? priceOf(role, room) : { kind: "cost", coins: 0 };
                 const offTurn = !!group.offTurn;
-                const missing = !offTurn && price.kind !== "gain" && price.coins > you.coins ? price.coins - you.coins : null;
+                const missing = offTurn ? null : short(price);
                 return (
                   <ActionButton
                     key={role}

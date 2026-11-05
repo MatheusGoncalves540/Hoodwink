@@ -7,7 +7,7 @@ import { create } from "zustand";
 import { getTicket, newRoom, type NewRoomInput } from "../net/api";
 
 /** ClassicRules.yaml → General.maxPlayers e CreateRoomRequest (2..10). */
-export const DEFAULT_MAX_PLAYERS = 6;
+export const DEFAULT_MAX_PLAYERS = 10;
 
 /** Nome da sala cabe nos 30 caracteres do servidor (CreateRoomRequest.RoomName). */
 export const createInput = (username: string): NewRoomInput => ({

@@ -21,7 +21,16 @@ describe("ActionBoard", () => {
     expect(out).toContain('aria-label="Trilionário, recebe 4 moedas"');
     expect(out).toContain('aria-label="Kamikaze, custa 0"');
     expect(out).toContain("☞ na mão");
-    expect(out).toContain('aria-label="Guardiã, custa 6, faltam 1 moeda"');
+    expect(out).toContain('aria-label="Guardiã, custa 7, faltam 2 moedas"');
+  });
+
+  it("ações do turno no topo, com o mesmo botão: Pegar moeda, Matar, Trocar cartas", () => {
+    const i = out.indexOf("Ações do turno");
+    expect(i).toBeGreaterThan(-1);
+    expect(i).toBeLessThan(out.indexOf("Para ganhar moedas"));
+    expect(out).toContain('aria-label="Pegar moeda, recebe 2 moedas"'); // taxa +1
+    expect(out).toContain('aria-label="Matar, custa 6, faltam 1 moeda"');
+    expect(out).toContain('aria-label="Trocar cartas, Precisa de 6 moedas"');
   });
 
   it("Egoísta fica fora do turno, desabilitado, com 1+", () => {
