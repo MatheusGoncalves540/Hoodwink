@@ -3,10 +3,11 @@
  * Estado real (T25): ?sala= → ticket (HTTP) → GameSocket → selectScene.
  * Em desenvolvimento, ?cena=&fixture= abre uma prancha direto (T2); em produção não existe.
  */
-import { useEffect, type ComponentType } from "react";
+import { useEffect, useSyncExternalStore, type ComponentType } from "react";
 import { FIXTURE_NAMES, type FixtureName } from "../game/fixtures";
 import { selectScene } from "../game/selectors";
 import { FinaleScene } from "../features/endgame/Finale";
+import { HowTo } from "../features/howto/HowTo";
 import { Lobby } from "../features/lobby/Lobby";
 import { RoomScene } from "../features/room/WaitingRoom";
 import { TableScene } from "../features/table/Table";
@@ -26,6 +27,17 @@ const SCENES: Record<Scene, ComponentType> = { lobby: Lobby, room: RoomScene, ta
 
 const param = (name: string) => (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get(name));
 const isFixture = (s: string | null): s is FixtureName => FIXTURE_NAMES.includes(s as FixtureName);
+/** Como se joga abre pelos links #como-se-joga (Lobby e Menu); sem roteador. */
+const HOWTO_HASH = "#como-se-joga";
+const useHash = () =>
+  useSyncExternalStore(
+    (cb) => {
+      window.addEventListener("hashchange", cb);
+      return () => window.removeEventListener("hashchange", cb);
+    },
+    () => window.location.hash,
+    () => "",
+  );
 const isScene = (s: string | null): s is Scene => s === "lobby" || s === "room" || s === "table" || s === "finale";
 
 /**
@@ -51,6 +63,7 @@ export function App() {
   const ticket = useSessionStore((s) => s.ticket);
   const jwtToken = useAuthStore((s) => s.jwtToken);
   const join = useSessionStore((s) => s.join);
+  const hash = useHash();
 
   // Seletor de prancha: só em desenvolvimento, e nunca junto de uma sala de verdade.
   const devScene = import.meta.env.DEV && !ticket ? param("cena") : null;
@@ -86,7 +99,7 @@ export function App() {
   }, [theme, motion.all, motion.idle]);
 
   if (devScene === "amostras") return <Amostras />;
-  const Scene = SCENES[isScene(devScene) ? devScene : selectScene({ me, room, log })];
+  const Scene = hash === HOWTO_HASH ? HowTo : SCENES[isScene(devScene) ? devScene : selectScene({ me, room, log })];
   return (
     <>
       {ticket && <GameSocket ticket={ticket} />}
