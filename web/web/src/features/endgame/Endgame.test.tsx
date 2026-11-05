@@ -16,7 +16,7 @@ describe("fim de jogo", () => {
     const v = view("ForaDeCena");
     expect(selectDecision(v)).toEqual({ kind: "outOfScene" });
     const out = renderToStaticMarkup(<OutOfScene view={v} layout="mobile" onChat={() => {}} onLeave={() => {}} />);
-    expect(out).toContain("Fora de cena");
+    expect(out).toContain("Fora da partida");
     expect(out).toContain("Suas cartas caíram na rodada 14.");
     expect(out).toContain('aria-label="Suas duas cartas, mortas: Guardiã e Trilionário"');
     expect(out).toContain("Abrir a conversa");

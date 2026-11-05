@@ -73,7 +73,7 @@ describe("gameStore (fila de apresentação)", () => {
     s().applyRoom(contested, NOW + 10);
     expect(s().presentation.map((e) => e.type)).toEqual(["CONTEST"]);
     expect(s().log).toHaveLength(1);
-    expect(s().log[0].pred).toContain("foi contestado");
+    expect(s().log[0].pred).toContain("alguém duvidou");
   });
 });
 

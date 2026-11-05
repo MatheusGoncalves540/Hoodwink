@@ -6,7 +6,6 @@ import type { Price } from "./pricing";
 import type { RoleId } from "./protocol";
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-const NUM_WORDS = ["nenhum", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez"];
 
 export const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
 export const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -21,9 +20,9 @@ export const copy = {
   roundTax: (turn: number, tax: number) => `Rodada ${turn} · Taxa ${signed(tax)}`,
   menu: "Menu",
   chatButton: (unread: number) => (unread > 0 ? `Conversa da mesa, ${plural(unread, "nova", "novas")}` : "Conversa da mesa"),
-  seatsRegion: "Camarotes, toque para ver detalhes",
+  seatsRegion: "Lugares na mesa, toque para ver detalhes",
   seatLabel: (name: string, coins: number, out: boolean) =>
-    `Ver camarote de ${name}${out ? ", fora do jogo" : `, ${coins} moedas`}`,
+    `Ver o lugar de ${name}${out ? ", fora do jogo" : `, ${coins} moedas`}`,
   stage: "Palco",
   proso: "Proso",
   footlights: "Ribalta: estado da mesa e efeitos ativos",
@@ -32,29 +31,29 @@ export const copy = {
   deck: "baralho",
   deckLabel: (n: number) => `${plural(n, "carta", "cartas")} no baralho`,
   deckEmpty: "baralho vazio",
-  deckEmptyLabel: (s: number) => `Baralho vazio, morte súbita: cada deixa dura ${s} segundos`,
+  deckEmptyLabel: (s: number) => `Baralho vazio, morte súbita: cada vez dura ${s} segundos`,
   tax: "taxa",
   taxLabel: (t: number) => `Taxa atual: ${t}`,
   effectLabel: (role: string, times: number, rounds: number) =>
-    `${role} custa ${2 ** times} vezes mais; baixa em ${plural(rounds, "rodada", "rodadas")}`,
+    `${role} custa ${2 ** times} vezes mais. Baixa em ${plural(rounds, "rodada", "rodadas")}`,
 
   // faixa Você
   youRegion: "Você",
   limit: (n: number) => `limite ${n}`,
   investments: (n: number, next: number | null) =>
     n === 0 ? "" : `${plural(n, "investimento", "investimentos")}${next != null ? `, rende em ${next}` : ""}`,
-  turnOf: (name: string) => ({ before: "Vez de ", name, after: ". Se declarar, você reage." }),
+  turnOf: (name: string) => ({ before: "Vez de ", name, after: ". Se usar um personagem, você pode reagir." }),
   timerLabel: (name: string) => `Tempo da jogada de ${name}`,
   seconds: "s",
 
   // gavetas
   backToTable: "☜ Voltar à mesa",
-  seatSheet: (name: string) => `Camarote de ${name}`,
+  seatSheet: (name: string) => `Lugar de ${name}`,
   tableSaw: "O que a mesa já viu",
   nothingSeen: "Ainda nada. A mesa observa.",
   cardState: { dead: "morta", revealed: "revelada", protected: "protegida", hidden: "escondida" },
   inHandState: "na mão",
-  yourBox: "Seu camarote",
+  yourBox: "Seu lugar",
   overLimit: (max: number) => `Passou de ${max} moedas, perde uma carta.`,
   tableSees: (what: "protected" | "back" | "revealed" | "dead") =>
     `a mesa vê: ${{ protected: "carta protegida", back: "carta virada", revealed: "carta revelada", dead: "carta morta" }[what]}`,
@@ -62,7 +61,7 @@ export const copy = {
   investmentsLine: (n: number) => `${plural(n, "investimento", "investimentos")}, cada um rende meia moeda por rodada`,
   endsIn: "acaba em",
   endsInLabel: (r: number) => `Acaba em ${plural(r, "rodada", "rodadas")}`,
-  rolesSeen: "Papéis que a mesa já viu você usar",
+  rolesSeen: "Personagens que a mesa já viu você usar",
   roundN: (r: number) => `rodada ${r}`,
 
   // conversa
@@ -77,7 +76,7 @@ export const copy = {
   send: "Enviar",
 
   // trilho
-  sceneLog: "Diário da cena",
+  sceneLog: "Histórico da partida",
 
   // menu
   menuTitle: "Menu da sala",
@@ -85,28 +84,28 @@ export const copy = {
   roomCode: "código",
   chatShort: "Conversa",
   howToPlay: "Como se joga",
-  rolesLink: "os 12 papéis",
-  vibrationHint: "quando chega a sua deixa",
+  rolesLink: "os 12 personagens",
+  vibrationHint: "quando chega a sua vez",
   motionAll: "Animações",
   motionAllHint: "Todas, inclusive as transições.",
   motionIdle: "Animações de espera",
   motionIdleHint: "Desenhos tremendo, texto respirando, lâmpadas.",
   motionIdleOff: "Desligada junto com Animações",
   prefsTitle: "Preferências",
-  menuWarning: (code: string) => `Seu camarote fica na mesa e o tempo corre sem você. Para voltar, entre de novo com o código ${code}.`,
+  menuWarning: (code: string) => `Seu lugar fica na mesa e o tempo corre sem você. Para voltar, entre de novo com o código ${code}.`,
   prefs: "Preferências",
   sound: "Som",
   vibration: "Vibração",
   yes: "sim",
   no: "não",
-  leaveScene: "Sair de cena",
-  leaveConfirm: "Sair de cena de verdade? Suas cartas ficam na mesa.",
+  leaveScene: "Sair da partida",
+  leaveConfirm: "Quer mesmo sair? Suas cartas ficam na mesa.",
   leaveYes: "Sair",
   leaveNo: "Ficar",
 
   // turno
-  yourTurnInScene: "Sua vez em cena",
-  declareRole: "Declare um papel",
+  yourTurnInScene: "Sua vez",
+  declareRole: "Escolha uma ação",
   youHave: (n: number) => `Você tem ${n} moedas`,
   inHand: "☞ na mão",
   missing: (n: number) => `Faltam ${plural(n, "moeda", "moedas")}`,
@@ -126,10 +125,10 @@ export const copy = {
       case "CLAIRVOYANT": return "Revela uma carta de alguém";
       case "KAMIKAZE": return "Sacrifica-se e leva uma carta junto";
       case "GUARDIAN": return "Protege uma carta sua";
-      case "GRAVEDIGGER": return "Revive uma carta do baralho morto";
-      case "CROUPIER": return "Puxa uma carta nova do baralho";
-      case "POLITICAL": return "Sobe a taxa em 1; o preço dobra";
-      case "REBEL": return "Baixa a taxa em 1; o preço dobra";
+      case "GRAVEDIGGER": return "Revive uma carta sua que morreu";
+      case "CROUPIER": return "Troca uma carta sua por uma nova do baralho";
+      case "POLITICAL": return "Sobe a taxa em 1. O preço dele dobra";
+      case "REBEL": return "Baixa a taxa em 1. O preço dele dobra";
       case "SELFISH": return p.kind === "reaction" ? `Barra moedas por ${p.coins}, investimento por ${p.investment} ou troca de carta por ${p.cardChange}` : "";
       default: return "";
     }
@@ -144,7 +143,7 @@ export const copy = {
   killHint: "Toque no lugar de quem perde a carta.",
   swapHint: "Escolha a carta sua que vai trocar.",
   pickTarget: "Escolha o alvo",
-  pickTargetHint: (role: string) => `Toque no camarote de quem recebe o ${role}.`,
+  pickTargetHint: (role: string) => `Toque no lugar de quem vai sofrer o ${role}.`,
   pickCard: (name: string, state: string) => `Escolher a carta ${state} de ${name}`,
   pickOwnCard: (role: string) => `Escolher ${role}`,
   actionCost: (name: string, cost: number) => `${name}, custa ${cost}`,
@@ -154,13 +153,13 @@ export const copy = {
   backToActions: "☜ Voltar às ações",
   pickCardOf: (name: string) => `Escolha a carta de ${name}`,
 
-  // reação e contestação
+  // reação e dúvida
   claims: (name: string, role: string) => `${name} se diz ${role}`,
-  yourCue: "Sua deixa",
+  yourCue: "Sua vez de reagir",
   reactionLabel: "Reagir",
   reactionTimer: "Tempo para reagir",
   block: (role: string) => `Bloquear com ${role}`,
-  contest: "Contestar",
+  contest: "Duvidar",
   letPass: "Deixar passar",
   stampBluff: "Blefe?",
   stampTruth: "Verdade",
@@ -173,7 +172,7 @@ export const copy = {
   declaredLead: (name: string) => `${name} se diz`,
   contestedLead: (name: string) => `${name} se disse`,
   truthLead: (name: string) => `${name} era mesmo`,
-  declaredNotRevealed: "declarada, não revelada",
+  declaredNotRevealed: "dita, não mostrada",
   cardArt: (role: string) => `arte do ${role}`,
   bluffFall: (name: string) => ` A jogada não acontece e ${name} perde uma carta.`,
   truthReturn: (name: string) => ` ${name} mostra a carta, devolve ao baralho e pega outra.`,
@@ -189,7 +188,7 @@ export const copy = {
   sorteEscolhe: (s: number) => `Em ${s} s, a sorte escolhe por você.`,
   sorteEscolheOther: (name: string, s: number) => `${name} tem ${s} s. Depois, a sorte escolhe.`,
   declaredEffect: (name: string, role: RoleId, price: Price, targetsMe: boolean) => {
-    const target = targetsMe ? "uma carta sua" : "uma carta de outro ator";
+    const target = targetsMe ? "uma carta sua" : "uma carta de outro jogador";
     switch (role) {
       case "ASSASSIN": return `${name} paga ${price.coins} moedas e mira ${target}.`;
       case "CLAIRVOYANT": return `${name} paga ${price.coins} moedas e revela ${target}.`;
@@ -200,15 +199,15 @@ export const copy = {
       case "CROUPIER": return `${name} paga ${price.coins} moedas e puxa uma carta nova.`;
       case "INVESTOR": return `${name} investe ${price.coins}. A moeda volta em ${price.kind === "invest" ? price.lasts : 0} turnos.`;
       case "TRILLIONAIRE": return `${name} recebe ${price.coins} moedas.`;
-      case "POLITICAL": return `${name} sobe a taxa em 1; o preço dobra.`;
-      case "REBEL": return `${name} baixa a taxa em 1; o preço dobra.`;
+      case "POLITICAL": return `${name} sobe a taxa em 1. O preço do Político dobra.`;
+      case "REBEL": return `${name} baixa a taxa em 1. O preço do Rebelde dobra.`;
       default: return "";
     }
   },
 
   // fim de jogo
-  outOfScene: "Fora de cena",
-  outOfSceneRegion: "Você, fora de cena",
+  outOfScene: "Fora da partida",
+  outOfSceneRegion: "Você, fora da partida",
   outOfSceneAt: (round: number) => `Suas cartas caíram na rodada ${round}. Você ainda vê a mesa e pode conversar.`,
   deadCardsLabel: (names: string[]) => `Suas duas cartas, mortas: ${names.join(" e ")}`,
   openChat: "Abrir a conversa",
@@ -217,22 +216,22 @@ export const copy = {
   suddenDeath: "Morte súbita",
   suddenDeathLower: "morte súbita",
   roundSudden: (turn: number) => `Rodada ${turn},`,
-  eachCue: (s: number) => `Cada deixa dura ${s} s.`,
-  suddenTurnAfter: (s: number) => `. Agora cada deixa dura ${s} s.`,
-  playResumes: (s: number) => `A peça volta em ${s} s`,
-  suddenDeathYouLine: (s: number) => `Cada deixa dura ${s} s. Decida rápido.`,
+  eachCue: (s: number) => `Cada vez dura ${s} s.`,
+  suddenTurnAfter: (s: number) => `. Agora cada vez dura ${s} s.`,
+  playResumes: (s: number) => `A partida volta em ${s} s`,
+  suddenDeathYouLine: (s: number) => `Cada vez dura ${s} s. Decida rápido.`,
   finale: "Fim da partida",
   wonAtRound: (round: number, coins: number) => `Venceu na rodada ${round}, com ${coins} moedas.`,
   exitOrder: "Ordem de saída",
   place: (n: number) => `${n}º`,
   newRoom: "Criar outra sala",
   backToEntrance: "☜ Voltar à entrada",
-  afterShow: "Depois do espetáculo",
+  afterShow: "Depois da partida",
 
   // entrada e sala
   cartazRegion: "Cartaz",
   playRegion: "Jogar",
-  castRegion: "Elenco",
+  castRegion: "Jogadores",
   inviteRegion: "Convite",
   startRegion: "Começar",
   createRoom: "Criar sala",
@@ -244,16 +243,16 @@ export const copy = {
   backstage: "Bastidores, modo Clássico",
   roomNumber: "Sala nº",
   ready: "pronto",
-  castLineLabel: "Elenco: ",
-  startHint: "Só o anfitrião abre, com pelo menos dois atores.",
-  houseRuleInitial: (coins: number) => `Cada ator começa com ${plural(coins, "moeda", "moedas")}.`,
+  castLineLabel: "Jogadores: ",
+  startHint: "Só o anfitrião começa, com pelo menos 2 jogadores.",
+  houseRuleInitial: (coins: number) => `Cada jogador começa com ${plural(coins, "moeda", "moedas")}.`,
   houseRuleLimit: (max: number) => `Quem passar de ${max} perde uma carta.`,
   enter: "Entrar",
   nowShowing: "Em cartaz",
   epigraph: "Dê ao homem uma máscara, e ele dirá a verdade.",
   login: "Entrar com Google",
-  castLine: (count: number, max: number) => `${NUM_WORDS[count] ?? count} de ${NUM_WORDS[max] ?? max} papéis preenchidos`,
-  vacantRole: "Papel vago",
+  castLine: (count: number, max: number) => `${count} de ${max} lugares ocupados`,
+  vacantRole: "Lugar vago",
   waiting: "aguardando",
   host: "anfitrião",
   hostYou: "anfitrião, você",
@@ -264,19 +263,19 @@ export const copy = {
   roomFull: "Essa sala está cheia. Peça outro convite ou crie a sua.",
   connectionLost: "A conexão caiu. Tentando voltar à sala…",
 
-  // diário (predicados: o ator vem antes, no diário geral)
+  // histórico (predicados: o jogador vem antes, no histórico geral)
   log: {
     declared: (role: string) => `se disse ${role}.`,
-    noContest: " Ninguém contestou.",
-    contested: (role: string) => `se disse ${role}, foi contestado`,
+    noContest: " Ninguém duvidou.",
+    contested: (role: string) => `se disse ${role}, alguém duvidou`,
     lostCard: " e perdeu a carta.",
     showedCard: " e mostrou a carta.",
-    contestedBy: (target: string) => `contestou ${target}.`,
+    contestedBy: (target: string) => `duvidou de ${target}.`,
     lostACard: "perdeu uma carta.",
     revealed: (target: string) => `revelou uma carta de ${target} como Clarividente.`,
     revived: "reviveu uma carta como Coveiro.",
     changed: "puxou uma carta nova como Crupiê.",
-    changedContested: "trocou a carta revelada depois da contestação.",
+    changedContested: "trocou a carta mostrada depois da dúvida.",
     earned: (n: number, role: string) => `recebeu ${n} como ${role}.`,
     tookCoins: (n: number) => `pegou ${plural(n, "moeda", "moedas")}.`,
     killed: (name: string) => `pagou e matou uma carta de ${name}.`,
@@ -287,7 +286,7 @@ export const copy = {
     taxUp: "subiu a taxa como Político.",
     taxDown: "baixou a taxa como Rebelde.",
     denied: (target: string) => `barrou o ganho de ${target} como Egoísta.`,
-    exited: "saiu de cena.",
+    exited: "saiu da partida.",
     suddenDeath: "O baralho acabou. Morte súbita.",
   },
 };

@@ -14,8 +14,8 @@ describe("morte súbita", () => {
     expect(out).toContain("O baralho acabou.");
     expect(out).toContain("Morte");
     expect(out).toContain("súbita");
-    expect(out).toContain("Cada deixa dura 5 s.");
-    expect(out).toContain("A peça volta em 4 s");
+    expect(out).toContain("Cada vez dura 5 s.");
+    expect(out).toContain("A partida volta em 4 s");
     expect(out).toContain("ms-cortina");
   });
 

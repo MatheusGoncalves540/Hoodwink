@@ -45,11 +45,11 @@ describe("appendLog", () => {
       room(3, "STEAL_COINS", "b", { cause: "TRICKSTER", lostCoins: 3, targetPlayer: "e" }, ["d"]),
     ]);
     expect(log.map(logText)).toEqual([
-      "Carla se disse Guardiã. Ninguém contestou.",
+      "Carla se disse Guardiã. Ninguém duvidou.",
       "Ana puxou uma carta nova como Crupiê.",
-      "Bruno se disse Assassino, foi contestado e perdeu a carta.",
+      "Bruno se disse Assassino, alguém duvidou e perdeu a carta.",
       "Davi perdeu uma carta.",
-      "Davi saiu de cena.",
+      "Davi saiu da partida.",
       "Bruno roubou 3 de Eva como Trapaceiro.",
     ]);
   });
@@ -72,7 +72,7 @@ describe("appendLog", () => {
   it("guarda ator, rodada e papel; a gaveta usa o predicado", () => {
     const log = run([room(4, "CARD_PLAYED_TRILLIONAIRE", "e"), room(4, "EARN_COINS", "e", { cause: "TRILLIONAIRE", earnedCoins: 4 })]);
     expect(log).toEqual([
-      { key: "CARD_PLAYED_TRILLIONAIRE|e|4024", turn: 4, at: 0, actorId: "e", actorName: "Eva", pred: "se disse Trilionário. Ninguém contestou.", open: undefined, role: "TRILLIONAIRE" },
+      { key: "CARD_PLAYED_TRILLIONAIRE|e|4024", turn: 4, at: 0, actorId: "e", actorName: "Eva", pred: "se disse Trilionário. Ninguém duvidou.", open: undefined, role: "TRILLIONAIRE" },
       { key: "EARN_COINS|e|4010", turn: 4, at: 1, actorId: "e", actorName: "Eva", pred: "recebeu 4 como Trilionário." },
     ]);
     expect(logSelfText(log[1])).toBe("Recebeu 4 como Trilionário.");
@@ -84,7 +84,7 @@ describe("appendLog", () => {
       room(5, "CONTEST", "a", { contestedPlayer: "c" }),
       room(5, "CONTEST_PENALTY", "a", { contestedPlayer: "c", hasCard: true }),
     ]);
-    expect(log.map(logText)).toEqual(["Carla se disse Guardiã, foi contestado e mostrou a carta."]);
+    expect(log.map(logText)).toEqual(["Carla se disse Guardiã, alguém duvidou e mostrou a carta."]);
   });
 
   it("contestação perdida na reconexão ainda fecha a declaração com o desfecho", () => {
@@ -92,7 +92,7 @@ describe("appendLog", () => {
       room(6, "CARD_PLAYED_REBEL", "b"),
       room(6, "CONTEST_PENALTY", "a", { contestedPlayer: "b", hasCard: false }),
     ]);
-    expect(log.map(logText)).toEqual(["Bruno se disse Rebelde, foi contestado e perdeu a carta."]);
+    expect(log.map(logText)).toEqual(["Bruno se disse Rebelde, alguém duvidou e perdeu a carta."]);
   });
 
   it("troca de carta por contestação não se disfarça de Crupiê", () => {
@@ -101,8 +101,8 @@ describe("appendLog", () => {
       room(7, "CHANGED_CARD", "c", { cause: "CONTEST_PENALTY" }),
     ]);
     expect(log.map(logText)).toEqual([
-      "Carla se disse Crupiê. Ninguém contestou.",
-      "Carla trocou a carta revelada depois da contestação.",
+      "Carla se disse Crupiê. Ninguém duvidou.",
+      "Carla trocou a carta mostrada depois da dúvida.",
     ]);
   });
 

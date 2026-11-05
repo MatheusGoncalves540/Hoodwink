@@ -18,15 +18,15 @@ describe("Sala de espera (fumaça em Node)", () => {
     expect(out).toContain("K7Q2");
     expect(out).toContain("Copiar convite");
     expect(out).toContain("Quinta dos mentirosos");
-    expect(out).toContain("Elenco: três de seis papéis preenchidos");
+    expect(out).toContain("Jogadores: 3 de 6 lugares ocupados");
     expect(out).toContain("anfitrião, você");
     expect(out).toContain("pronto");
-    expect(out).toContain("Papel vago");
+    expect(out).toContain("Lugar vago");
     expect(out).toContain("aguardando");
-    expect(out).toContain("Cada ator começa com 3 moedas.");
+    expect(out).toContain("Cada jogador começa com 3 moedas.");
     expect(out).toContain("Quem passar de 20 perde uma carta.");
     expect(out).toContain("Abrir as cortinas");
-    expect(out).toContain("Só o anfitrião abre, com pelo menos dois atores.");
+    expect(out).toContain("Só o anfitrião começa, com pelo menos 2 jogadores.");
   });
 
   it("só o anfitrião com dois atores abre as cortinas", () => {
@@ -36,7 +36,7 @@ describe("Sala de espera (fumaça em Node)", () => {
 
   it("SalaCheia usa linhas compactas e dez lugares", () => {
     const out = html(view("SalaCheia"));
-    expect(out).toContain("Elenco: nove de dez papéis preenchidos");
+    expect(out).toContain("Jogadores: 9 de 10 lugares ocupados");
     expect(out.match(/<li/g)).toHaveLength(10);
     expect(out).toContain("tight");
   });
