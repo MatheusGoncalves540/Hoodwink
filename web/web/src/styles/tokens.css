@@ -1,6 +1,6 @@
 /* Hoodwink, tema Holofote. Tokens de cor, tipo, espaço e raio. Matinê (claro) é o padrão; data-theme="dark" liga a Estreia.
    Fonte: design-handoff (canvas v62). Não edite cores soltas: use os tokens. */
-@import url("https://fonts.googleapis.com/css2?family=Limelight&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Josefin+Sans:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Limelight&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&family=Josefin+Sans:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&display=swap");
 /* tema Holofote (zip hoodwink-holofote-ds): Matinê é o padrão; data-theme="dark" no contêiner liga a Estreia */
 :root,[data-theme="light"]{--hw-plateia:#FAF3E2;--hw-luz:#F4E6C4;--hw-tinta:#1E1512;--hw-tinta-suave:#5A4636;--hw-titulo:#5A1820;--hw-veludo:#5A1820;--hw-sobre-veludo:#FAF3E2;--hw-alerta:#A3201A;--hw-ouro:#B98A2E;--hw-ouro-texto:#7A5A1E;--hw-lampada:#FFF6DC;--hw-filete:#C9B48C;
 --hw-carta:var(--hw-veludo);--hw-carta-tinta:var(--hw-sobre-veludo);--hw-carta-rotulo:#E4D0A8;--hw-escondida-borda:2px dashed #8A6A2A;--hw-poca:rgba(185,138,46,.25);--hw-cone:rgba(185,138,46,.2);--hw-scrim:rgba(30,21,18,.55);
@@ -11,7 +11,10 @@
 :root,[data-theme="light"]{--hw-proso-filtro:grayscale(1) contrast(1.6);--hw-proso-mistura:multiply}
 [data-theme="dark"]{--hw-proso-filtro:grayscale(1) contrast(1.4) invert(.86);--hw-proso-mistura:screen}
 .so-escuro{display:none}[data-theme="dark"] .so-escuro{display:inline}[data-theme="dark"] .so-claro{display:none}
-:root{--hw-font-display:"Limelight","Bodoni Moda",Georgia,serif;--hw-font-texto:"Bodoni Moda",Georgia,serif;--hw-font-rotulo:"Josefin Sans",system-ui,sans-serif;--hw-radius-s:6px;--hw-radius-m:10px;--hw-radius-pill:999px}
+/* Cores fixas da arte (iguais nos dois temas): faixa dos botões de ação, moeda, feixe e sombra. Skins de cores podem redefinir. */
+:root{--hw-tom-vinho:linear-gradient(90deg,#2A080B,#5A1820);--hw-tom-vinho-faixa:#A3201A;--hw-tom-ouro:linear-gradient(90deg,#1F1606,#5C4214);--hw-tom-ouro-faixa:#8A6A2A;--hw-tom-cedula:linear-gradient(90deg,#0F1F17,#2C4A33);--hw-tom-cedula-faixa:#5E8A5A;
+--hw-faixa-fundo:#1E1512;--hw-faixa-tinta:#F4E6C4;--hw-faixa-tinta-off:#C9B48C;--hw-faixa-ouro:#B98A2E;--hw-moeda-tinta:#1E1512;--hw-feixe:#FFF6DC;--hw-sombra:rgba(0,0,0,.25)}
+:root{--hw-font-display:"Limelight","Bodoni Moda",Georgia,serif;--hw-font-texto:"Literata",Georgia,serif;--hw-font-cartao:"Patrick Hand","Comic Sans MS",cursive;--hw-font-rabisco:"Permanent Marker",cursive;--hw-font-rotulo:"Josefin Sans",system-ui,sans-serif;--hw-radius-s:6px;--hw-radius-m:10px;--hw-radius-pill:999px}
 :root{
   --hw-space-1: 4px;
   --hw-space-2: 8px;

@@ -13,9 +13,9 @@ function pupil(x: number, look: Look, h: number) {
 
 /**
  * Faixa de olhos provisória da prancha Acoes (arte final pendente).
- * Cores fixas da arte (iguais nos dois temas), como no desenho.
+ * Cores dos tokens --hw-faixa-tinta, --band (tom do grupo) e --hw-faixa-ouro, iguais nos dois temas.
  */
-export function RoleEyes({ look, band }: { look: Look; band: string }) {
+export function RoleEyes({ look }: { look: Look }) {
   const left = look.wink ? 1 : look.h;
   const extra =
     (look.monocle ? "M126 40a26 26 0 1 0 52 0a26 26 0 1 0 -52 0M176 50Q196 76 222 58" : "") +
@@ -29,13 +29,13 @@ export function RoleEyes({ look, band }: { look: Look; band: string }) {
     `M122 ${20 + look.tilt}L178 ${20 - look.tilt}`;
 
   return (
-    <svg aria-hidden="true" viewBox="0 0 230 76">
-      <rect x="18" y="14" width="194" height="50" rx="25" fill={band} opacity="0.55" />
-      <path d={almond(78, left)} fill="none" stroke="#F4E6C4" strokeWidth="2.5" />
-      <path d={almond(152, look.h)} fill="none" stroke="#F4E6C4" strokeWidth="2.5" />
-      <path d={pupil(78, look, left) + pupil(152, look, look.h)} fill="#F4E6C4" />
-      <path d={brows} stroke="#F4E6C4" strokeWidth="4" strokeLinecap="round" />
-      <path d={extra} fill="none" stroke="#B98A2E" strokeWidth="3" strokeLinecap="round" />
+    <svg aria-hidden="true" viewBox="0 0 230 76" style={{ color: "var(--hw-faixa-tinta)" }}>
+      <rect x="18" y="14" width="194" height="50" rx="25" style={{ fill: "var(--band)" }} opacity="0.55" />
+      <path d={almond(78, left)} fill="none" stroke="currentColor" strokeWidth="2.5" />
+      <path d={almond(152, look.h)} fill="none" stroke="currentColor" strokeWidth="2.5" />
+      <path d={pupil(78, look, left) + pupil(152, look, look.h)} fill="currentColor" />
+      <path d={brows} stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+      <path d={extra} fill="none" style={{ stroke: "var(--hw-faixa-ouro)" }} strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 }

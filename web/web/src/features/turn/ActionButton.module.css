@@ -9,7 +9,7 @@
   padding: 0;
   border-radius: var(--hw-radius-m);
   border: 2px solid var(--hw-ouro);
-  background: rgb(30, 21, 18);
+  background: var(--hw-faixa-fundo);
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -26,7 +26,7 @@
   inset: 0;
   overflow: hidden;
   background:
-    repeating-linear-gradient(115deg, rgba(244, 230, 196, 0.08) 0 2px, #0000 2px 10px),
+    repeating-linear-gradient(115deg, color-mix(in srgb, var(--hw-faixa-tinta) 8%, transparent) 0 2px, transparent 2px 10px),
     var(--tone);
 }
 .art svg {
@@ -42,7 +42,7 @@
 .fade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(30, 21, 18, 0.95) 0, rgba(30, 21, 18, 0.82) 40%, rgba(30, 21, 18, 0.35) 62%, rgba(30, 21, 18, 0) 80%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--hw-faixa-fundo) 95%, transparent) 0, color-mix(in srgb, var(--hw-faixa-fundo) 82%, transparent) 40%, color-mix(in srgb, var(--hw-faixa-fundo) 35%, transparent) 62%, transparent 80%);
 }
 .text {
   position: relative;
@@ -53,11 +53,11 @@
   align-items: flex-start;
   gap: 2px;
   text-align: left;
-  color: rgb(244, 230, 196);
+  color: var(--hw-faixa-tinta);
 }
 .textOff {
   /* cor fixa da arte desabilitada na prancha (não é o filete do tema escuro) */
-  color: rgb(201, 180, 140);
+  color: var(--hw-faixa-tinta-off);
 }
 .nameRow {
   display: flex;
@@ -92,7 +92,7 @@
   font-family: var(--hw-font-display);
   font-variant-numeric: tabular-nums;
   font-size: 22px;
-  color: rgb(30, 21, 18);
+  color: var(--hw-moeda-tinta);
   background: var(--hw-ouro);
 }
 .gain {

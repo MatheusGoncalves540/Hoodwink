@@ -79,7 +79,7 @@
 .deadCard {
   border-color: var(--hw-filete);
   background:
-    linear-gradient(to top right, #0000 47%, var(--hw-alerta) 47% 53%, #0000 53%),
+    linear-gradient(to top right, transparent 47%, var(--hw-alerta) 47% 53%, transparent 53%),
     var(--hw-filete);
   color: var(--hw-tinta-suave);
 }
