@@ -166,7 +166,7 @@ function Primitivos() {
 
 export function Amostras() {
   const { theme, override, setOverride } = useTheme();
-  const { reduced, setReduced } = useMotionPref();
+  const motion = useMotionPref();
   const [take, setTake] = useState(0);
   const temas: [Theme | null, string][] = [[null, "Sistema"], ["light", "Matinê"], ["dark", "Estreia"]];
 
@@ -180,8 +180,11 @@ export function Amostras() {
             {nome}
           </button>
         ))}
-        <button type="button" className="am-botao" aria-pressed={reduced} onClick={() => setReduced(!reduced)}>
-          Menos movimento
+        <button type="button" className="am-botao" aria-pressed={motion.all} onClick={() => motion.setAll(!motion.all)}>
+          Animações
+        </button>
+        <button type="button" className="am-botao" aria-pressed={motion.idle} onClick={() => motion.setIdle(!motion.idle)}>
+          Animações de espera
         </button>
         <button type="button" className="am-botao" onClick={() => setTake((n) => n + 1)}>
           Repetir movimentos

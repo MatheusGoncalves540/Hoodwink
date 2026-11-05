@@ -4,9 +4,11 @@
  */
 import { useMemo, useState } from "react";
 import { useLayout } from "../../app/useLayout";
+import { useMotionPref } from "../../app/useMotionPref";
 import LoginModal from "../../componentsTSX/loginModal";
 import { copy } from "../../game/copy";
 import { useAuthStore } from "../../store/authStore";
+import { MotionToggles } from "../sheets/RoomMenu";
 import { createInput, roomCodeFromSearch, useSessionStore, usernameFromToken } from "../../store/sessionStore";
 import { Button } from "../../ui/Button/Button";
 import { Label } from "../../ui/Label/Label";
@@ -47,6 +49,7 @@ export function Lobby() {
   const joinRoom = useSessionStore((st) => st.join);
   const username = useMemo(() => usernameFromToken(jwtToken), [jwtToken]);
   const [mask, truth] = copy.epigraph.split(" e ele ");
+  const motion = useMotionPref();
 
   const trimmed = code.trim();
   const valid = trimmed.length >= MIN_CODE;
@@ -139,6 +142,11 @@ export function Lobby() {
         <a className={s.how} href="#como-se-joga">
           ☞ {copy.howToPlay}
         </a>
+
+        <details className={s.prefs}>
+          <summary>{copy.prefsTitle}</summary>
+          <MotionToggles motion={motion} onMotion={motion.setAll} onIdle={motion.setIdle} />
+        </details>
       </section>
 
       <LoginModal />
