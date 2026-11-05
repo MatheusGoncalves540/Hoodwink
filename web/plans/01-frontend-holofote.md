@@ -1,5 +1,5 @@
 # PLANO 01: frontend Holofote a partir do design-handoff
-Status: pendente
+Status: concluído
 Objetivo: implementar em `web/` as 23 telas do canvas Hoodwink v62 (mobile/desktop, Matinê/Estreia) seguindo `design-handoff/`, ligadas ao servidor de jogo.
 Fora do escopo: mudanças no servidor (`Hoodwink-server`); arte final das cartas e do Proso; regras completas de "Como se joga" além do que está desenhado; Playwright/screenshot automatizado.
 Premissas e decisões:
