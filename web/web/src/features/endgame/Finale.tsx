@@ -9,6 +9,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useGameStore } from "../../store/gameStore";
 import { Button } from "../../ui/Button/Button";
 import { Ticket } from "../../ui/Ticket/Ticket";
+import { Moldura } from "../../ui/Moldura/Moldura";
 import { cx } from "../../ui/cx";
 import s from "./Finale.module.css";
 
@@ -26,7 +27,7 @@ export function Finale({ vm, layout, onNewRoom, onLobby }: Props) {
 
   return (
     <main className={cx(s.screen, desktop && s.desk)}>
-      <section aria-label={copy.finaleCart} className={cx("m-hang", s.cartaz)}>
+      <Moldura lugar="fim" as="section" aria-label={copy.finaleCart} className={cx("m-hang", s.cartaz)}>
         <p className={s.label}>{copy.finale}</p>
         <h1 className="m-bow" style={{ fontSize: size }}>
           {vm.winnerName}
@@ -47,7 +48,7 @@ export function Finale({ vm, layout, onNewRoom, onLobby }: Props) {
             </li>
           ))}
         </ol>
-      </section>
+      </Moldura>
 
       <section aria-label={copy.afterShow} className={cx("m-rise", s.actions)}>
         <Ticket size="l" onClick={onNewRoom}>

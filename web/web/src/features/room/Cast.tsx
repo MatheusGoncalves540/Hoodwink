@@ -6,6 +6,7 @@ import type { Layout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
 import { CLASSIC_RULES } from "../../game/rules.classic";
 import type { selectWaitingRoom } from "../../game/selectors";
+import { Moldura } from "../../ui/Moldura/Moldura";
 import { cx } from "../../ui/cx";
 import s from "./Cast.module.css";
 
@@ -15,7 +16,9 @@ type Props = { vm: WaitingRoomVM; layout: Layout; className?: string };
 
 export function Cast({ vm, layout, className }: Props) {
   return (
-    <section
+    <Moldura
+      lugar="elenco"
+      as="section"
       aria-label={copy.castRegion}
       className={cx("m-hang", s.cast, layout === "desktop" && s.desk, className)}
     >
@@ -38,6 +41,6 @@ export function Cast({ vm, layout, className }: Props) {
         <br />
         {copy.houseRuleLimit(CLASSIC_RULES.general.maxCoins)}
       </p>
-    </section>
+    </Moldura>
   );
 }

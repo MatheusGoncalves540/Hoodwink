@@ -24,9 +24,9 @@
   flex-direction: column;
   border: 14px solid transparent;
   border-radius: 6px;
+  /* as lâmpadas saíram (trava 3: só no lobby); o contorno vem da Moldura (lugar fim) */
   background:
     radial-gradient(ellipse at 50% 100%, var(--hw-luz) 0 35%, var(--hw-plateia) 75%) padding-box,
-    radial-gradient(circle, var(--hw-lampada) 0 2.5px, color-mix(in srgb, var(--hw-ouro) 60%, transparent) 3.5px, transparent 5px) 1px 1px / 16px 16px border-box,
     linear-gradient(var(--hw-veludo), var(--hw-veludo)) border-box;
   box-shadow: inset 0 0 0 2px var(--hw-ouro), 0 18px 40px var(--hw-sombra);
 }

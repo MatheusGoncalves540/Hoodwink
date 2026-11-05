@@ -12,7 +12,7 @@ import { Coin } from "../ui/Coin/Coin";
 import { CountdownDots } from "../ui/CountdownDots/CountdownDots";
 import { Timer } from "../ui/Timer/Timer";
 import { Label } from "../ui/Label/Label";
-import { Marquee } from "../ui/Marquee/Marquee";
+import { Moldura } from "../ui/Moldura/Moldura";
 import { ProsoLine } from "../ui/ProsoLine/ProsoLine";
 import { Sheet } from "../ui/Sheet/Sheet";
 import { Stamp } from "../ui/Stamp/Stamp";
@@ -78,7 +78,7 @@ function Primitivos() {
         <Label tone="suave">Para ganhar moedas</Label>
       </div>
 
-      <Marquee className="am-letreiro">Carla</Marquee>
+      <Moldura lugar="lobby" className="am-letreiro">Carla</Moldura>
       <ProsoLine text="Quem mente melhor fica em cena." />
       <ProsoLine text="" />
 
@@ -207,14 +207,14 @@ export function Amostras() {
 
             <div className="am-fontes">
               <span className="am-display">Hoodwink</span>
-              <span className="am-texto">Bodoni Moda: quem mente melhor fica em cena.</span>
+              <span className="am-texto">Literata: quem mente melhor fica na mesa.</span>
               <span className="hw-rotulo">Josefin Sans · rótulo</span>
               <span className="hw-num am-texto">0123456789 · 20 moedas</span>
             </div>
 
             <div className="am-linha">
               <button type="button" className="ticket am-ticket">Entrar em cena</button>
-              <span className="hw-letreiro am-letreiro">Sala K7Q2</span>
+              <Moldura lugar="aviso" className="am-letreiro">Sala K7Q2</Moldura>
             </div>
 
             <div className="am-linha">
