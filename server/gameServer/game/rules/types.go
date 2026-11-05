@@ -31,6 +31,7 @@ type CardRules struct {
 	FutureProtectionTaxMinimum *int `yaml:"futureProtectionTaxMinimum,omitempty"` // Guardiã: custo mínimo ao proteger contra ataque futuro
 	FutureProtectionSurcharge  *int `yaml:"futureProtectionSurcharge,omitempty"`  // Guardiã: acréscimo ao proteger contra ataque futuro
 	ClairvoyantBlockDiscount   *int `yaml:"clairvoyantBlockDiscount,omitempty"`   // Guardiã: desconto ao bloquear o Clarividente
+	ClairvoyantBlockTaxMinimum *int `yaml:"clairvoyantBlockTaxMinimum,omitempty"` // Guardiã: custo mínimo ao bloquear o Clarividente
 }
 
 // TimeoutsTypes representa os diferentes tipos de timeout configuráveis para cada sala

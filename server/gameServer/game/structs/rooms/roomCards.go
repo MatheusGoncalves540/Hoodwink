@@ -180,9 +180,9 @@ func (r *Room) GetCardValue(registryRules *rules.Registry, card structs.TypePlay
 }
 
 // GetGuardianValue retorna o custo da Guardiã de acordo com o tipo de proteção.
-// - "sight": bloqueio do Clarividente (valor reduzido e limitado pelo mínimo da carta)
+// - "sight": bloqueio do Clarividente (valor reduzido e mínimo próprios)
 // - "future": proteção contra um ataque futuro (acréscimo e mínimo próprios)
-// - demais: defesa imediata de uma carta
+// - demais: defesa imediata de uma carta (mínimo da própria carta)
 func (r *Room) GetGuardianValue(registryRules *rules.Registry, protectedFrom string) (int, error) {
 	cardRules, err := r.GetCardRules(registryRules, string(structs.PlayGuardianCard))
 	if err != nil {
@@ -197,23 +197,22 @@ func (r *Room) GetGuardianValue(registryRules *rules.Registry, protectedFrom str
 		value += r.Tax
 	}
 
+	minimum := cardRules.TaxMinimum
 	switch protectedFrom {
 	case "sight":
 		if cardRules.ClairvoyantBlockDiscount != nil {
 			value -= *cardRules.ClairvoyantBlockDiscount
 		}
+		minimum = cardRules.ClairvoyantBlockTaxMinimum
 	case "future":
 		if cardRules.FutureProtectionSurcharge != nil {
 			value += *cardRules.FutureProtectionSurcharge
 		}
+		minimum = cardRules.FutureProtectionTaxMinimum
 	}
 
-	if protectedFrom == "future" && cardRules.FutureProtectionTaxMinimum != nil {
-		if value < *cardRules.FutureProtectionTaxMinimum {
-			value = *cardRules.FutureProtectionTaxMinimum
-		}
-	} else if cardRules.TaxMinimum != nil && value < *cardRules.TaxMinimum {
-		value = *cardRules.TaxMinimum
+	if minimum != nil && value < *minimum {
+		value = *minimum
 	}
 
 	if cardRules.TaxMaximum != nil && value > *cardRules.TaxMaximum {

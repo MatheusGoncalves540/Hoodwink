@@ -69,5 +69,5 @@ Status: em andamento
 
 - [x] Fase 1. Preço do Matar
 - [x] Fase 2. Sala até 10
-- [ ] Fase 3. Conferir contra o 02 §3 e corrigir o que divergir
+- [x] Fase 3. Conferir contra o 02 §3 e corrigir o que divergir
 - [ ] Fase 4. Eventos para o front

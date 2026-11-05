@@ -38,10 +38,11 @@ Cards:
 
   GUARDIAN:
     value: 5
-    taxMinimum: 2
-    futureProtectionTaxMinimum: 4
+    taxMinimum: 4
+    futureProtectionTaxMinimum: 5
     futureProtectionSurcharge: 1
     clairvoyantBlockDiscount: 1
+    clairvoyantBlockTaxMinimum: 2
     canDefendClairvoyant: true
     affectedByTaxes: true
 

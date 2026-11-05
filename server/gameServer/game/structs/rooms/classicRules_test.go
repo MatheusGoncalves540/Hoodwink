@@ -82,35 +82,78 @@ func TestCardValueRespectsTaxLimits(t *testing.T) {
 	registry := loadClassicRegistry(t)
 	room := newClassicRoom()
 
-	room.Tax = -5
-	value, err := room.GetCardValue(registry, structs.PlayAssassinCard, 0)
+	cases := []struct {
+		tax  int
+		role structs.TypePlayerPlays
+		want int
+	}{
+		{-5, structs.PlayAssassinCard, 2},
+		{5, structs.PlayAssassinCard, 8},
+		{-5, structs.PlayGravediggerCard, 3},
+		{0, structs.PlayGravediggerCard, 5},
+		{5, structs.PlayGravediggerCard, 10},
+		{-5, structs.PlayCroupierCard, 4},
+		{0, structs.PlayCroupierCard, 6},
+		{5, structs.PlayCroupierCard, 11},
+		{-5, structs.PlaySelfishCard, 3},
+		{5, structs.PlaySelfishCard, 8},
+		{-5, structs.PlayClairvoyantCard, 2},
+		{0, structs.PlayClairvoyantCard, 4},
+		{-5, structs.PlayTrillionaireCard, 1},
+		{0, structs.PlayTrillionaireCard, 3},
+		{5, structs.PlayTricksterCard, 5},
+		{-5, structs.PlayInvestorCard, 2},
+		{5, structs.PlayInvestorCard, 6},
+	}
+
+	for _, tc := range cases {
+		room.Tax = tc.tax
+		value, err := room.GetCardValue(registry, tc.role, 0)
+		if err != nil {
+			t.Fatalf("%s com tax %+d: %v", tc.role, tc.tax, err)
+		}
+		if value != tc.want {
+			t.Fatalf("%s com tax %+d = %d, quer %d", tc.role, tc.tax, value, tc.want)
+		}
+	}
+}
+
+func TestTaxImmuneRoles(t *testing.T) {
+	registry := loadClassicRegistry(t)
+	room := newClassicRoom()
+
+	immune := []structs.TypePlayerPlays{
+		structs.PlayPoliticalCard,
+		structs.PlayRebelCard,
+	}
+
+	for _, role := range immune {
+		for _, tax := range []int{-5, 0, 5} {
+			room.Tax = tax
+			value, err := room.GetCardValue(registry, role, 0)
+			if err != nil {
+				t.Fatalf("%s com tax %+d: %v", role, tax, err)
+			}
+			if value != 2 {
+				t.Fatalf("%s com tax %+d = %d, quer 2 (imune à taxa)", role, tax, value)
+			}
+		}
+	}
+}
+
+func TestInvestorGracePeriodIsSixTurns(t *testing.T) {
+	registry := loadClassicRegistry(t)
+	room := newClassicRoom()
+
+	cardRules, err := room.GetCardRules(registry, string(structs.PlayInvestorCard))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if value != 2 {
-		t.Fatalf("Assassino com tax -5 = %d, quer 2", value)
+	if cardRules.GracePeriod == nil {
+		t.Fatal("gracePeriod não configurado para o Investidor")
 	}
-
-	room.Tax = 5
-	value, _ = room.GetCardValue(registry, structs.PlayAssassinCard, 0)
-	if value != 8 {
-		t.Fatalf("Assassino com tax +5 = %d, quer 8", value)
-	}
-
-	value, _ = room.GetCardValue(registry, structs.PlayTricksterCard, 0)
-	if value != 5 {
-		t.Fatalf("Trapaceiro com tax +5 = %d, quer 5", value)
-	}
-
-	value, _ = room.GetCardValue(registry, structs.PlayInvestorCard, 0)
-	if value != 6 {
-		t.Fatalf("Investidor com tax +5 = %d, quer 6", value)
-	}
-
-	room.Tax = -5
-	value, _ = room.GetCardValue(registry, structs.PlayInvestorCard, 0)
-	if value != 2 {
-		t.Fatalf("Investidor com tax -5 = %d, quer 2", value)
+	if *cardRules.GracePeriod != 6 {
+		t.Fatalf("gracePeriod = %d, quer 6", *cardRules.GracePeriod)
 	}
 }
 
@@ -118,39 +161,28 @@ func TestGuardianPrices(t *testing.T) {
 	registry := loadClassicRegistry(t)
 	room := newClassicRoom()
 
-	death, _ := room.GetGuardianValue(registry, "death")
-	if death != 5 {
-		t.Fatalf("Guardiã imediata = %d, quer 5", death)
+	cases := []struct {
+		tax    int
+		death  int
+		sight  int
+		future int
+	}{
+		{-5, 4, 2, 5},
+		{0, 5, 4, 6},
+		{5, 10, 9, 11},
 	}
 
-	sight, _ := room.GetGuardianValue(registry, "sight")
-	if sight != 4 {
-		t.Fatalf("Guardiã contra Clairvoyant = %d, quer 4", sight)
-	}
+	for _, tc := range cases {
+		room.Tax = tc.tax
 
-	future, _ := room.GetGuardianValue(registry, "future")
-	if future != 6 {
-		t.Fatalf("Guardiã futura = %d, quer 6", future)
-	}
-
-	room.Tax = -5
-	future, _ = room.GetGuardianValue(registry, "future")
-	if future != 4 {
-		t.Fatalf("Guardiã futura com tax -5 = %d, quer 4", future)
-	}
-
-	death, _ = room.GetGuardianValue(registry, "death")
-	if death != 2 {
-		t.Fatalf("Guardiã imediata com tax -5 = %d, quer 2", death)
-	}
-
-	room.Tax = 5
-	death, _ = room.GetGuardianValue(registry, "death")
-	if death != 10 {
-		t.Fatalf("Guardiã imediata com tax +5 = %d, quer 10", death)
-	}
-	sight, _ = room.GetGuardianValue(registry, "sight")
-	if sight != 9 {
-		t.Fatalf("Guardiã contra Clairvoyant com tax +5 = %d, quer 9", sight)
+		if got, _ := room.GetGuardianValue(registry, "death"); got != tc.death {
+			t.Fatalf("Guardiã imediata com tax %+d = %d, quer %d", tc.tax, got, tc.death)
+		}
+		if got, _ := room.GetGuardianValue(registry, "sight"); got != tc.sight {
+			t.Fatalf("Guardiã contra Clairvoyant com tax %+d = %d, quer %d", tc.tax, got, tc.sight)
+		}
+		if got, _ := room.GetGuardianValue(registry, "future"); got != tc.future {
+			t.Fatalf("Guardiã futura com tax %+d = %d, quer %d", tc.tax, got, tc.future)
+		}
 	}
 }

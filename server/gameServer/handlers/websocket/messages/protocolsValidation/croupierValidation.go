@@ -32,5 +32,30 @@ func ValidateCroupierProtocol(roomData *rooms.Room, registryRules *rules.Registr
 		return false
 	}
 
+	croupierPayload, ok := playerPlay.Payload.(structs.CroupierPayload)
+	if !ok {
+		utils.LogInvldPlyrReq("payload does not match CroupierPayload structure", playerPlay.PlayerId)
+		return false
+	}
+
+	if croupierPayload.TargetPlayer == nil || *croupierPayload.TargetPlayer != playerPlay.PlayerId {
+		utils.LogInvldPlyrReq("Croupier só pode trocar uma carta do próprio jogador", playerPlay.PlayerId)
+		return false
+	}
+	if croupierPayload.TargetCardIndex == nil {
+		utils.LogInvldPlyrReq("targetCardIndex é obrigatório", playerPlay.PlayerId)
+		return false
+	}
+	if croupierPayload.UseOnTwoCards != nil && *croupierPayload.UseOnTwoCards {
+		utils.LogInvldPlyrReq("Croupier só troca uma carta por vez", playerPlay.PlayerId)
+		return false
+	}
+
+	// O Croupier pode descartar uma carta viva ou morta da própria mão
+	if _, err := sourcePlayer.GetCardByIndex(*croupierPayload.TargetCardIndex); err != nil {
+		utils.LogInvldPlyrReq("Índice de carta inválido para o Croupier", playerPlay.PlayerId)
+		return false
+	}
+
 	return true
 }
