@@ -1,0 +1,14 @@
+import { connect, jwt, newRoom, ticketJwt } from "./lib.mjs";
+const run = Date.now().toString(36);
+const room = await newRoom(jwt(`host-${run}`, "Host"), { roomName: "Start teste" });
+const roomId = room.json.RoomId;
+const host = connect(ticketJwt(`host-${run}`, "Host", roomId));
+const guest = connect(ticketJwt(`guest-${run}`, "Guest", roomId));
+await host.waitOpen; await guest.waitOpen;
+await host.waitFor((m) => m?.players && Object.keys(m.players).length === 2, 10000);
+console.log("antes", { players: Object.keys([...host.messages].reverse().find((m) => m?.players).players), startTime: [...host.messages].reverse().find((m) => m?.players).startTime });
+guest.send({ type: "COMMAND_START_GAME", payload: {} });
+await new Promise((r) => setTimeout(r, 2500));
+const latest = [...host.messages].reverse().find((m) => m?.players);
+console.log("depois", { startTime: latest.startTime, currentPlayer: latest.currentPlayer, evento: latest.gameEvent, guestEstado: guest.ws.readyState, hostMsgs: host.messages.length });
+host.close(); guest.close();

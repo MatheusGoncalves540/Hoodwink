@@ -1,0 +1,167 @@
+/* Cartas.dc.html, Mesa6/Voce/ContestaBlefe.dc.html. A face usa .hw-carta (components.css). */
+.face,
+.card {
+  box-sizing: border-box;
+  border-radius: var(--hw-radius-m);
+  font-family: var(--hw-font-texto);
+}
+button.face,
+button.card {
+  cursor: pointer;
+}
+
+/* tamanhos */
+.s { width: 78px; height: 110px; }
+.m { width: 100%; height: 96px; }
+.l { width: 100%; height: 150px; }
+.xl { width: 132px; height: 186px; }
+
+/* face */
+.face.art {
+  background: var(--arte) center / cover no-repeat !important;
+}
+.face.protected {
+  box-shadow: 0 0 0 3px var(--hw-luz), 0 0 0 6px var(--hw-ouro);
+}
+.face.xl.protected {
+  box-shadow: 0 0 0 6px var(--hw-plateia), 0 0 0 9px var(--hw-ouro);
+}
+/* nome longo na carta s (78 px) quebra com hífen em vez de ser cortado como na prancha Mesa6 */
+.name {
+  max-width: 100%;
+  font-family: var(--hw-font-display);
+  line-height: 1.05;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+.note {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--hw-carta-rotulo);
+}
+.bottom {
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.25;
+}
+.withCost {
+  padding-top: 22px !important;
+  font-style: normal;
+}
+.cost {
+  position: absolute;
+  left: 50%;
+  top: -15px;
+  translate: -50% 0;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--hw-carta);
+  box-shadow: 0 0 0 1.5px var(--hw-ouro);
+  background: var(--hw-ouro);
+  color: #1e1512; /* cor fixa da moeda */
+  font-family: var(--hw-font-display);
+  font-size: 14px;
+  font-style: normal;
+}
+.diamond {
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  transform: rotate(45deg);
+  background: var(--hw-ouro);
+  box-shadow: 0 0 0 2.5px var(--hw-carta);
+}
+.s .name { font-size: 14px; }
+.s .bottom { font-size: 12px; }
+.m .name { font-size: 20px; }
+.l .name { font-size: 22px; }
+.xl .name { font-size: 20px; }
+.xl .bottom.withCost { font-size: 12.5px; }
+
+/* verso */
+.back {
+  background: var(--hw-verso);
+  border: 3px solid var(--hw-ouro);
+}
+.s.back { border-width: 2px; }
+
+/* escondida */
+.hidden {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hw-space-1);
+  border: var(--hw-escondida-borda);
+  background: radial-gradient(ellipse at 50% 90%, var(--hw-poca) 0 30%, transparent 70%);
+  color: var(--hw-titulo);
+}
+.hiddenLabel {
+  font-size: 14px;
+  font-style: italic;
+}
+.ask {
+  font-family: var(--hw-font-display);
+  line-height: 1;
+}
+.s .ask { font-size: 40px; }
+.m .ask { font-size: 48px; }
+.l .ask { font-size: 64px; }
+.xl .ask { font-size: 84px; }
+
+/* morta */
+.dead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--hw-space-2);
+  background: linear-gradient(to top right, transparent 48%, var(--hw-alerta) 48% 52%, transparent 52%), var(--hw-filete);
+  color: var(--hw-tinta-suave);
+}
+.deadName {
+  max-width: 100%;
+  font-family: var(--hw-font-display);
+  font-size: 12px;
+  text-align: center;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+.xl .deadName { font-size: 16px; }
+
+/* miniaturas do camarote (Mesa6/Mesa6Desk.dc.html) */
+.mini {
+  flex-shrink: 0;
+  display: inline-block;
+  box-sizing: border-box;
+  border-radius: 3px;
+  border: 1.5px solid var(--hw-ouro);
+  background: var(--hw-verso);
+}
+.mini-l { width: 20px; height: 28px; }
+.mini-s { width: 15px; height: 21px; }
+.mini-desk-l { width: 28px; height: 39px; }
+.mini-desk-s { width: 22px; height: 31px; }
+.mini-revealed { background: var(--hw-carta); }
+.mini-protected { box-shadow: 0 0 0 2px var(--hw-luz), 0 0 0 3.5px var(--hw-ouro); }
+.mini-dead {
+  border-color: var(--hw-filete);
+  background: linear-gradient(to top right, transparent 44%, var(--hw-alerta) 44% 56%, transparent 56%), var(--hw-filete);
+}
+
+/* Mesa6Desk.dc.html → cartas da faixa Você em 104×144 */
+.d { width: 104px; height: 144px; }
+.d .name { font-size: 15px; }
+.d .bottom { font-size: 14px; }
+
+/* gaveta: carta escondida protegida (anel de ouro) */
+.card.protected {
+  box-shadow: 0 0 0 3px var(--hw-luz), 0 0 0 6px var(--hw-ouro);
+}

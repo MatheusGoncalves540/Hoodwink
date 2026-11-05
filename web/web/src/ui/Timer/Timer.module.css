@@ -1,0 +1,55 @@
+/* Mesa6.dc.html (faixa Você) e Main.dc.html (restam 7?) */
+.timer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--hw-space-2);
+}
+.end {
+  justify-content: flex-end;
+}
+.caption {
+  font-size: 16px;
+}
+.secs {
+  flex-shrink: 0;
+  font-size: 15px;
+  font-style: italic;
+}
+.secs b {
+  font-size: 20px;
+  font-weight: 400;
+  font-style: normal;
+}
+.decision {
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.decision b {
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.ask {
+  color: var(--hw-alerta);
+}
+.track {
+  height: 6px;
+  border-radius: var(--hw-radius-pill);
+  overflow: hidden;
+  background: var(--hw-filete);
+}
+.fill {
+  border-radius: var(--hw-radius-pill);
+}
+.tinta {
+  background: var(--hw-tinta);
+}
+.alerta {
+  background: var(--hw-alerta);
+}

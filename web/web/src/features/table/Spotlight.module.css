@@ -1,0 +1,7 @@
+.cone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(transparent, var(--hw-cone));
+  z-index: 0;
+}

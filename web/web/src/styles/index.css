@@ -1,0 +1,39 @@
+/* Entrada dos estilos Holofote. Os quatro arquivos são cópia de design-handoff/codigo/styles, sem alteração. */
+@import "./tokens.css";
+@import "./components.css";
+@import "./motion.css";
+@import "./sudden-death.css";
+
+html,
+body {
+  margin: 0;
+  background: var(--hw-plateia);
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+}
+
+/* "Menos movimento" do menu: mesmas regras de prefers-reduced-motion de motion.css e sudden-death.css */
+[data-motion="reduced"] :is(.m-rise, .m-item, .m-sheet, .m-drop, .m-flip, .m-stamp, .m-bow, .m-hang, .m-slam) {
+  animation-name: m-fade;
+}
+[data-motion="reduced"] :is(.m-hit, .m-wink, .m-tick) {
+  animation: none;
+}
+[data-motion="reduced"] .m-curtain {
+  animation-name: m-fade-out;
+}
+[data-motion="reduced"] button:not([aria-disabled="true"]):active {
+  transform: none;
+}
+[data-motion="reduced"] :is(.quadro, .brilho, .brasa) {
+  animation: none;
+}
+[data-motion="reduced"] .quadro:first-child {
+  opacity: 1;
+}
+[data-motion="reduced"] .brasa {
+  opacity: 0;
+}
+[data-motion="reduced"] .ms-cortina {
+  display: none;
+}

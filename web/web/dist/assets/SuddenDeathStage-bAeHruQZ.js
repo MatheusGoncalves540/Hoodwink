@@ -1,0 +1,1 @@
+import{j as a,c as n}from"./index-CCnkYp_I.js";import{S as o,a as r}from"./sudden-BlMbkGMQ.js";const d="_stage_1ml11_1",t={stage:d};function c({layout:s}){const e=s==="desktop"?o:r;return a.jsx("div",{"aria-hidden":"true",className:n(t.stage,s==="desktop"&&t.desk),dangerouslySetInnerHTML:{__html:e}})}export{c as SuddenDeathStage};

@@ -1,0 +1,94 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sheet {
+  background: var(--hw-luz);
+  color: var(--hw-tinta);
+  border-top: 3px double var(--hw-tinta);
+  padding: 16px 16px 22px;
+}
+.deskPanel {
+  gap: 12px;
+}
+.title {
+  margin: 0;
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.05;
+}
+.hint {
+  margin: 0;
+  font-size: 15px;
+  font-style: italic;
+}
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.card {
+  width: 100%;
+  height: 150px;
+  box-sizing: border-box;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  font-family: inherit;
+  border-radius: var(--hw-radius-m);
+  border: 2px solid var(--hw-ouro);
+  background: var(--hw-carta);
+  color: var(--hw-carta-tinta);
+  cursor: default;
+}
+.pickable {
+  cursor: pointer;
+}
+.faceCard {
+  outline: 1px solid var(--hw-ouro);
+  outline-offset: 3px;
+}
+.card .state {
+  font-size: 14px;
+  font-style: italic;
+}
+.cardName {
+  font-family: var(--hw-font-display);
+  font-size: 22px;
+  line-height: 1;
+}
+.note {
+  align-self: stretch;
+  font-size: 12px;
+  font-style: italic;
+  text-align: left;
+}
+.hiddenCard {
+  border: var(--hw-escondida-borda);
+  background: radial-gradient(ellipse at 50% 90%, var(--hw-poca) 0 30%, transparent 70%);
+  color: var(--hw-titulo);
+}
+.hiddenCard .cardName {
+  align-self: flex-start;
+  margin-top: auto;
+}
+.deadCard {
+  border-color: var(--hw-filete);
+  background:
+    linear-gradient(to top right, #0000 47%, var(--hw-alerta) 47% 53%, #0000 53%),
+    var(--hw-filete);
+  color: var(--hw-tinta-suave);
+}
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.footText {
+  font-size: 15px;
+  font-style: italic;
+}

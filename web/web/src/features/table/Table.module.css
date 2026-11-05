@@ -1,0 +1,70 @@
+/* Mesa6.dc.html: o palco é absoluto dentro do aparelho; a faixa Você fica no pé. */
+.screen {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+  height: 100dvh;
+  margin: 0 auto;
+  background: var(--hw-plateia);
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+  overflow: hidden;
+}
+.desk {
+  max-width: none;
+}
+.tableArea {
+  position: absolute;
+  inset: 0;
+}
+.scenery {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.stageOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.stageOverlay > * {
+  pointer-events: auto;
+}
+.bottomPanel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+}
+
+/* Desktop (Mesa6Desk.dc.html): palco de 1020 px + trilho de 420 px */
+.desk .tableArea {
+  right: 420px;
+}
+.rail {
+  position: absolute;
+  top: 64px;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  box-sizing: border-box;
+  background: var(--hw-luz);
+  color: var(--hw-tinta);
+  border-left: 3px double var(--hw-tinta);
+  padding: 26px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 1;
+}
+
+/* Camada de tela inteira (ações, aviso de morte súbita): cobre cabeçalho e trilho. */
+.screenOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+}

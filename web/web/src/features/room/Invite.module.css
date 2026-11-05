@@ -1,0 +1,44 @@
+/* Sala.dc.html → ingresso escuro; SalaDesk.dc.html → padding 22/32 e código 64 px */
+.invite {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 28px;
+}
+.room {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.label {
+  font-family: var(--hw-font-texto) !important;
+  font-size: 14px;
+  font-style: italic;
+}
+.code {
+  font-family: var(--hw-font-display);
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.invite .copy {
+  flex-shrink: 0;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 0;
+  border-color: currentColor;
+  color: inherit;
+  font-family: var(--hw-font-texto) !important;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.desk.invite {
+  padding: 22px 32px;
+}
+.desk .code {
+  font-size: 64px;
+}

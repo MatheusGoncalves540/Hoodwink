@@ -1,0 +1,80 @@
+/* Mesa6.dc.html → faixa Você de 236 px; Mesa6Desk → linha de 196 px (T17) */
+.bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 236px;
+  box-sizing: border-box;
+  background: var(--hw-luz);
+  color: var(--hw-tinta);
+  border-top: 3px double var(--hw-tinta);
+  padding: 14px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 2;
+}
+.top {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+.cards {
+  display: flex;
+  align-items: flex-end;
+}
+.card {
+  margin: 6px;
+  flex-shrink: 0;
+}
+.money {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+.meta {
+  font-size: 14px;
+  font-style: italic;
+  text-align: right;
+  line-height: 1.2;
+  max-width: 150px;
+}
+
+/* Desktop: linha de 196 px ao lado do trilho, cartas 104×144 */
+.desk.bar {
+  right: 420px;
+  height: 196px;
+  flex-direction: row;
+  align-items: center;
+  gap: 44px;
+  padding: 14px 40px 18px;
+}
+.desk .top {
+  flex: none;
+  gap: 14px;
+}
+.desk .cards {
+  gap: 14px;
+}
+.desk .card {
+  margin: 0;
+}
+.desk .money {
+  margin-left: 18px;
+}
+.desk .meta {
+  font-size: 16px;
+  max-width: 240px;
+}
+.desk > div:last-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.sudden {
+  border-top-color: var(--hw-alerta);
+}
