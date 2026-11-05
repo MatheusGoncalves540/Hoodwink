@@ -7,13 +7,13 @@
  */
 import { create } from "zustand";
 import type { OpenSheet } from "../game/fixtures";
-import type { RoleId } from "../game/protocol";
+import type { ActionId } from "../game/roles";
 
 export type UiState = {
   openSheet: OpenSheet;
   chatDraft: string;
   chatSeen: number;
-  targeting: { role: RoleId; target?: { playerId: string; cardIndex: number } } | null;
+  targeting: { role: ActionId; target?: { playerId: string; cardIndex: number }; showToAll?: boolean } | null;
   suddenDeathShown: string | null;
   open(sheet: OpenSheet): void;
   close(): void;

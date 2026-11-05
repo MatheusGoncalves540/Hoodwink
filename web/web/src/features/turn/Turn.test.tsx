@@ -5,6 +5,7 @@ import { selectDecision, type Decision, type GameView } from "../../game/selecto
 import { ContestPick } from "./ContestPick";
 import { DeclaredCard } from "./DeclaredCard";
 import { ReactionPanel } from "./ReactionPanel";
+import { TargetBar } from "./TargetBar";
 
 const NOW = Date.UTC(2026, 10, 4, 21, 41);
 const view = (name: FixtureName): GameView => {
@@ -92,6 +93,22 @@ describe("reação com bloqueio", () => {
       <ReactionPanel view={v} decision={decision} layout="mobile" onContest={() => {}} onBlock={() => {}} onPass={() => {}} />,
     );
     expect(out).toContain("Bloquear com Guardiã");
-    expect(out).toContain("por 6 moedas");
+    expect(out).toContain("por 5 moedas");
+  });
+});
+
+describe("barra de alvo (regras v2)", () => {
+  it("Trocar cartas oferece trocar as duas, com o aviso de custo", () => {
+    const out = html(<TargetBar role="SWAP_CARDS" onBack={() => {}} onSwapBoth={() => {}} />);
+    expect(out).toContain("Trocar as duas");
+    expect(out).toContain("Custa todas as suas moedas.");
+    expect(out).toContain("Escolha a carta sua que vai trocar.");
+  });
+
+  it("Clarividente escolhe se a carta aparece para todos; os outros não têm a chave", () => {
+    expect(html(<TargetBar role="CLAIRVOYANT" onBack={() => {}} showToAll={false} onShowToAll={() => {}} />)).toContain(
+      'role="switch" aria-checked="false"',
+    );
+    expect(html(<TargetBar role="KILL_CARD" onBack={() => {}} />)).not.toContain('role="switch"');
   });
 });

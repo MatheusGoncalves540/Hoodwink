@@ -61,4 +61,19 @@ describe("actions", () => {
     expect(() => play("GUARDIAN", me)).toThrow("targetCardIndex");
     expect(() => play("TRICKSTER", me)).toThrow("targetPlayer");
   });
+
+  it("ações do turno com os nomes oficiais do servidor (02 §6)", () => {
+    expect(play("TAKE_COINS", me)).toEqual(legacyPlay("TAKE_COINS", {}));
+    expect(play("KILL_CARD", me, { playerId: targetPlayer, cardIndex: 1 })).toEqual(legacyPlay("KILL_CARD", { targetPlayer, targetCardIndex: 1 }));
+    expect(play("SWAP_CARDS", me, { cardIndex: 0 })).toEqual(legacyPlay("SWAP_CARDS", { targetCardIndex: 0 }));
+    expect(play("SWAP_CARDS", me, { cardIndex: 0, both: true })).toEqual(legacyPlay("SWAP_CARDS", { targetCardIndex: 0, useOnTwoCards: true }));
+    expect(play("CLAIRVOYANT", me, { playerId: targetPlayer, cardIndex: 0, showToAll: true })).toEqual(
+      legacyPlay("CLAIRVOYANT", { targetPlayer, targetCardIndex: 0, showToAllPlayers: true }),
+    );
+  });
+
+  it("ação do turno sem alvo lança antes de enviar", () => {
+    expect(() => play("KILL_CARD", me, { cardIndex: 0 })).toThrow("targetPlayer");
+    expect(() => play("SWAP_CARDS", me)).toThrow("targetCardIndex");
+  });
 });

@@ -4,6 +4,7 @@
  * - `look`: o par de olhos provisório da faixa de arte das ações, até chegar a arte final.
  * As descrições com número (preço) são montadas em copy.ts a partir de pricing.ts.
  */
+import type { BasicAction } from "./pricing";
 import type { RoleId } from "./protocol";
 
 export type Tone = "vinho" | "ouro" | "cedula";
@@ -34,7 +35,19 @@ export const ROLE_GROUPS: RoleGroup[] = [
   { title: "Fora do seu turno", tone: "vinho", offTurn: true, roles: ["SELFISH"] },
 ];
 
-export const roleName = (id: RoleId | undefined) => (id ? ROLES[id].name : "?");
+/** Ações do turno (02 §2): mesmo botão dos personagens, sem contestação. */
+export type ActionId = RoleId | BasicAction;
+export type ActionDef = { id: ActionId; name: string; target: Role["target"]; look: Look };
+export const BASIC: Record<BasicAction, ActionDef> = {
+  TAKE_COINS: { id: "TAKE_COINS", name: "Pegar moeda", target: null, look: { h: 10, tilt: 0, small: true } },
+  KILL_CARD: { id: "KILL_CARD", name: "Matar", target: "other", look: { h: 6, tilt: 6 } },
+  SWAP_CARDS: { id: "SWAP_CARDS", name: "Trocar cartas", target: "own", look: { h: 12, tilt: -3, side: 6 } },
+};
+export const BASIC_GROUP = { title: "Ações do turno", tone: "cedula" as Tone, actions: ["TAKE_COINS", "KILL_CARD", "SWAP_CARDS"] as BasicAction[] };
+
+export const isBasic = (id: ActionId): id is BasicAction => id in BASIC;
+export const actionDef = (id: ActionId): ActionDef => (isBasic(id) ? BASIC[id] : ROLES[id]);
+export const roleName = (id: ActionId | undefined) => (id ? actionDef(id).name : "?");
 
 /** Papel declarado por um evento `CARD_PLAYED_<PAPEL>`, ou null. */
 export function declaredRole(eventType: string | undefined): RoleId | null {

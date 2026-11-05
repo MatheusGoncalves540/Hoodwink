@@ -76,7 +76,7 @@ describe("selectDecision", () => {
     expect(selectDecision(view("Main"))).toEqual({ kind: "react", actorId: "ana", role: "ASSASSIN", canContest: true, block: null, targetsMe: true });
     expect(selectDecision(view("Main", "ana"))).toEqual({ kind: "waitOther", actorId: "ana" });
     expect(selectDecision(withEvent(base, "CARD_PLAYED_CLAIRVOYANT", "ana", { targetPlayer: "me" }))).toEqual({
-      kind: "react", actorId: "ana", role: "CLAIRVOYANT", canContest: true, block: { role: "GUARDIAN", cost: 6, payload: "guardian" }, targetsMe: true,
+      kind: "react", actorId: "ana", role: "CLAIRVOYANT", canContest: true, block: { role: "GUARDIAN", cost: 5, payload: "guardian" }, targetsMe: true,
     });
   });
 
@@ -100,13 +100,16 @@ describe("selectDecision", () => {
 
   it("ganho de outro: Egoísta pode barrar, com o preço de cada caso", () => {
     expect(selectDecision(withEvent(base, "EARN_COINS", "ana"))).toMatchObject({ kind: "react", block: { role: "SELFISH", cost: 1 } });
-    expect(selectDecision(withEvent(base, "INVESTMENT", "ana"))).toMatchObject({ block: { cost: 2 } });
-    expect(selectDecision(withEvent(base, "CHANGED_CARD", "ana"))).toMatchObject({ block: { cost: 7 } });
+    expect(selectDecision(withEvent(base, "INVESTMENT", "ana"))).toMatchObject({ block: { cost: 1 } });
+    expect(selectDecision(withEvent(base, "CHANGED_CARD", "ana"))).toMatchObject({ block: { cost: 6 } });
     expect(selectDecision(withEvent(base, "EARN_COINS", "me"))).toEqual({ kind: "none" });
   });
 
-  it("Egoísta não aparece em roubo pequeno (lostCoins/2 <= 1)", () => {
-    expect(selectDecision(withEvent(base, "STEAL_COINS", "ana", { lostCoins: 3, targetPlayer: "me" }))).toEqual({ kind: "none" });
+  it("Egoísta não aparece em roubo pequeno (ganho ⌈lostCoins/2⌉ <= 1) nem em ganho abaixo de 2 + t", () => {
+    expect(selectDecision(withEvent(base, "STEAL_COINS", "ana", { lostCoins: 2, targetPlayer: "me" }))).toEqual({ kind: "none" });
+    expect(selectDecision(withEvent(base, "STEAL_COINS", "ana", { lostCoins: 3, targetPlayer: "me" }))).toMatchObject({ block: { role: "SELFISH" } });
+    expect(selectDecision(withEvent(base, "EARN_COINS", "ana", { earnedCoins: 2 }))).toEqual({ kind: "none" }); // taxa +1: limiar 3
+    expect(selectDecision(withEvent(base, "EARN_COINS", "ana", { earnedCoins: 3 }))).toMatchObject({ block: { role: "SELFISH", cost: 1 } });
     expect(selectDecision(withEvent(base, "STEAL_COINS", "ana", { lostCoins: 6, targetPlayer: "me" }))).toMatchObject({
       kind: "react", block: { role: "SELFISH" },
     });

@@ -24,7 +24,7 @@
 import { copy, firstName } from "./copy";
 import { exitsOf, logSelfText, logText, type LogEntry } from "./log";
 import { playOrder, type PublicCard, type PublicRoom, type RoleId } from "./protocol";
-import { cardValue } from "./pricing";
+import { cardValue, guardianPrice } from "./pricing";
 import { declaredRole, roleName, ROLES } from "./roles";
 import { CLASSIC_RULES } from "./rules.classic";
 
@@ -172,15 +172,15 @@ export function selectDecision(v: GameView): Decision {
   const p = payload(v);
   const mine = ev.playerId === me.id;
   const role = declaredRole(ev.type);
-  const aliveCards = me.cards.filter((c) => !c.dead).length;
-  const guardian = (): Block => ({ role: "GUARDIAN", cost: cardValue("GUARDIAN", r, CLASSIC_RULES, aliveCards === 1 ? 1 : 0), payload: "guardian" });
+  // Guardiã: reação a ataque 5 + t (mín 4); contra Clarividente 4 + t (mín 2). 02 §3.
+  const guardian = (when: "reaction" | "clairvoyant"): Block => ({ role: "GUARDIAN", cost: guardianPrice(when, r), payload: "guardian" });
 
   if (ev.type === "WAITING_FIRST_ACTION") return mine ? { kind: "myTurn" } : { kind: "none" };
   if (role) {
     if (mine) return { kind: "waitOther", actorId: me.id };
     const targetsMe = p.targetPlayer === me.id;
     // Guardiã bloqueia Clarividente (guardianValidation.go: CanDefendClairvoyant)
-    const block = role === "CLAIRVOYANT" && targetsMe ? guardian() : null;
+    const block = role === "CLAIRVOYANT" && targetsMe ? guardian("clairvoyant") : null;
     return { kind: "react", actorId: ev.playerId, role, canContest: true, block, targetsMe };
   }
   if (ev.type === "CONTEST_PENALTY") {
@@ -194,11 +194,12 @@ export function selectDecision(v: GameView): Decision {
     return { kind: "waitOther", actorId: chooser };
   }
   if (ev.type === "CARD_KILLED" && p.targetPlayer === me.id && p.cause !== "CONTEST_PENALTY" && p.cause !== "KAMIKAZE") {
-    return { kind: "react", actorId: ev.playerId, role: null, canContest: false, block: guardian(), targetsMe: true };
+    return { kind: "react", actorId: ev.playerId, role: null, canContest: false, block: guardian("reaction"), targetsMe: true };
   }
   if (!mine && ["EARN_COINS", "STEAL_COINS", "INVESTMENT", "CHANGED_CARD"].includes(ev.type)) {
-    // selfishValidation.go: roubo cujo quociente por 2 não passa de 1 não pode ser barrado
-    if (ev.type === "STEAL_COINS" && Math.floor(Number(p.lostCoins ?? 0) / 2) <= 1) return { kind: "none" };
+    // 02 §3: Egoísta barra o Trapaceiro só se o ganho (⌈tirado/2⌉) passar de 1, e moedas só a partir de 2 + t
+    if (ev.type === "STEAL_COINS" && Math.ceil(Number(p.lostCoins ?? 0) / 2) <= 1) return { kind: "none" };
+    if (ev.type === "EARN_COINS" && p.earnedCoins != null && Number(p.earnedCoins) < CLASSIC_RULES.selfishThreshold + r.tax) return { kind: "none" };
     const variant = ev.type === "INVESTMENT" ? 5 : 0;
     const cost = ev.type === "CHANGED_CARD" || ev.type === "INVESTMENT" ? cardValue("SELFISH", r, CLASSIC_RULES, variant) : CLASSIC_RULES.cards.SELFISH.fixedValue ?? 1;
     return { kind: "react", actorId: ev.playerId, role: null, canContest: false, block: { role: "SELFISH", cost, payload: "selfish" }, targetsMe: false };
