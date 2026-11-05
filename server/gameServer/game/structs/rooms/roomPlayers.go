@@ -22,6 +22,11 @@ func (r *Room) GetPlayer(playerId string) (*players.Player, error) {
 	return player, nil
 }
 
+// IsFull indica se a sala já atingiu o número máximo de jogadores configurado.
+func (r *Room) IsFull() bool {
+	return r.MaxPlayers > 0 && len(r.Players) >= r.MaxPlayers
+}
+
 // AddPlayerInRoom adiciona um jogador à sala caso ele ainda não exista na estrutura da sala
 func (r *Room) AddPlayerInRoom(ctx context.Context, rdb *redis.Client, rulesRegistry *rules.Registry, playerId string, username string) error {
 	// Verifica se o jogador já existe
@@ -29,6 +34,10 @@ func (r *Room) AddPlayerInRoom(ctx context.Context, rdb *redis.Client, rulesRegi
 	if err == nil && player != nil {
 		// Jogador já existe, nada a fazer
 		return nil
+	}
+
+	if r.IsFull() {
+		return fmt.Errorf("sala %s está cheia: %d jogadores (máximo %d)", r.ID, len(r.Players), r.MaxPlayers)
 	}
 
 	generalRules, err := r.GetGeneralRules(rulesRegistry)
@@ -197,4 +206,32 @@ func (r *Room) VerifyIfPlayerDead(player *players.Player) {
 		}
 	}
 	player.Alive = false
+	player.ClearInvestments()
+
+	r.UpdateGameOver()
+}
+
+// UpdateGameOver recalcula o estado de fim de jogo. O vencedor é o último jogador
+// com cartas vivas; se ninguém restar, a partida termina sem vencedor.
+func (r *Room) UpdateGameOver() {
+	// Não define fim de jogo antes da partida começar
+	if r.StartTime.IsZero() {
+		return
+	}
+
+	aliveCount := 0
+	winnerID := ""
+	for _, player := range r.Players {
+		if player.Alive {
+			aliveCount++
+			winnerID = player.Id
+		}
+	}
+
+	r.GameOver = aliveCount <= 1
+	if r.GameOver && aliveCount == 1 {
+		r.WinnerID = winnerID
+	} else {
+		r.WinnerID = ""
+	}
 }

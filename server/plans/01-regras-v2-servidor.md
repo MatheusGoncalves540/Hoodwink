@@ -68,6 +68,6 @@ D1 (quinta ação básica), D2 (mínimo de 1 ao pegar moeda com taxa negativa; h
 Status: em andamento
 
 - [x] Fase 1. Preço do Matar
-- [ ] Fase 2. Sala até 10
+- [x] Fase 2. Sala até 10
 - [ ] Fase 3. Conferir contra o 02 §3 e corrigir o que divergir
 - [ ] Fase 4. Eventos para o front

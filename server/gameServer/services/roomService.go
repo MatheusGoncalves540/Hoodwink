@@ -107,7 +107,7 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 
 	player, _ := roomData.GetPlayer(playerId)
 
-	if player == nil && len(roomData.Players) >= roomData.MaxPlayers {
+	if player == nil && roomData.IsFull() {
 		return false, fmt.Errorf("Sala está cheia")
 	}
 

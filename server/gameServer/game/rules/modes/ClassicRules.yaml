@@ -91,7 +91,7 @@ General:
   randomTaxesChanges: 0
   copysOfEachCard: 2
   initialCoins: 3
-  maxPlayers: 6
+  maxPlayers: 10
   maxCoins: 20
   maxTax: 5
   minTax: -5
