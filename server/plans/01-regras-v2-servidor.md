@@ -65,9 +65,33 @@ D1 (quinta ação básica), D2 (mínimo de 1 ao pegar moeda com taxa negativa; h
 
 ## Status
 
-Status: em andamento
+Status: concluído
 
 - [x] Fase 1. Preço do Matar
 - [x] Fase 2. Sala até 10
 - [x] Fase 3. Conferir contra o 02 §3 e corrigir o que divergir
-- [ ] Fase 4. Eventos para o front
+- [x] Fase 4. Eventos para o front
+
+## Resultado
+
+### Já batia (conferido no código, com teste onde valia)
+
+- Coveiro revive a **mesma** carta morta do próprio ator: `ValidateGravediggerProtocol` exige alvo próprio, índice explícito e carta morta; `ReviveCardEffect` faz `ReviveCard(index)`. Preço `5 + t`, mín 3, no YAML.
+- Egoísta: limiar `2 + t` (`selfishValidation.go` soma a taxa), bloqueio de carta `5 + t` mín 3 máx 8.
+- Investidor: teto `clamp(4 + t, 2, 6)`, `gracePeriod: 6`, excedente descartado sem devolução (`TrimInvestments`) em `EnforceInvestorMaxInvestments`.
+- Limite de 20 moedas: `AddCoins` descarta o excedente e devolve `breakLimit`; ganho de moedas, roubo e rendimento tratam a perda de carta.
+- Imunes à taxa: `KAMIKAZE`, `POLITICAL` e `REBEL` já tinham `affectedByTaxes: false`.
+- Taxa −5..+5, troca com `⌈moedas/2⌉`, Trapaceiro com `⌈X/2⌉`, Clarividente para todos.
+
+### Corrigido
+
+- Fase 1: custo do Matar agora é `6 + (t > 0 ? ⌊t/2⌋ : t)` com piso `3` (`basicKillCardMinimum: 3` no YAML).
+- Fase 2: `maxPlayers: 10`; lotação centralizada em `Room.IsFull`, usada na entrada HTTP (`ValidatePlayerEntry`) e no websocket (`AddPlayerInRoom`). Não havia outro limite 6 fixo no servidor.
+- Guardiã: três mínimos — reação `4`, contra Clarividente `2` (`clairvoyantBlockTaxMinimum` novo), no próprio turno `5`; `taxMinimum: 4` e `futureProtectionTaxMinimum: 5` no YAML.
+- Crupiê: validação aceita carta **viva ou morta** (antes exigia morta), mantendo preço `6 + t` mín 4.
+- Fase 4: nomes reais dos eventos escritos na seção 6 do `Hoodwink-Web/plans/02-regras-v2.md`. `COIN_TAKEN` = `EARN_COINS`/`TAKE_COINS`, `CARD_KILLED_PAID` = `CARD_KILLED`/`KILL_CARD`, `CARDS_SWAPPED` = `CHANGED_CARD`/`SWAP_CARDS`, `GREED_LIMIT` = `CARD_KILLED`/`GREED`.
+
+### Lacunas registradas
+
+- `INVESTMENT_RETURNED` e `INVESTMENT_DISCARDED` não são emitidos como evento: o front deriva da variação de `investments`. A perda de carta por limite disparada por rendimento/devolução do Investidor também é silenciosa (as rotas de carta e roubo emitem `CARD_KILLED`/`GREED`).
+- D1, D2, D4, D5, D7, D8 e D9 continuam esperando o autor. D3 e D6 aplicados conforme o 02.
