@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import handleCredentialResponse from "../auth/handleCredentialResponse";
+import handleCredentialResponse from "../Auth/handleCredentialResponse";
 import { useAuthStore } from "../store/authStore";
 import { ENV } from "../config/envs";
-import isTokenExpired from "../auth/isTokenExpired";
+import isTokenExpired from "../Auth/isTokenExpired";
 
 function GoogleAuth() {
   const { jwtToken, closeLogin, setAuth } = useAuthStore();

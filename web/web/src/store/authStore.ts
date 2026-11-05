@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import isTokenExpired from "../Auth/isTokenExpired";
 
 interface AuthState {
   jwtToken: string;
@@ -10,14 +12,30 @@ interface AuthState {
   closeLogin: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  jwtToken: "",
-  playerId: "",
-  isLoginOpen: false,
+/** O que sobrevive ao reload; o modal de login sempre começa fechado. */
+type PersistedAuth = Pick<AuthState, "jwtToken" | "playerId">;
 
-  setAuth: (jwtToken, playerId) => set({ jwtToken: jwtToken, playerId }),
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      jwtToken: "",
+      playerId: "",
+      isLoginOpen: false,
 
-  openLogin: () => set({ isLoginOpen: true }),
+      setAuth: (jwtToken, playerId) => set({ jwtToken: jwtToken, playerId }),
 
-  closeLogin: () => set({ isLoginOpen: false }),
-}));
+      openLogin: () => set({ isLoginOpen: true }),
+
+      closeLogin: () => set({ isLoginOpen: false }),
+    }),
+    {
+      name: "hoodwink-auth",
+      partialize: ({ jwtToken, playerId }): PersistedAuth => ({ jwtToken, playerId }),
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<PersistedAuth> | undefined;
+        if (!saved?.jwtToken || isTokenExpired(saved.jwtToken)) return current;
+        return { ...current, jwtToken: saved.jwtToken, playerId: saved.playerId ?? "" };
+      },
+    },
+  ),
+);
