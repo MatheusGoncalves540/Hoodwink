@@ -28,10 +28,10 @@ describe("reação e contestação", () => {
     expect(out).toContain("Ana se diz");
     expect(out).toContain(">Assassino<");
     expect(out).toContain("Ana paga 4 moedas e mira uma carta sua.");
-    expect(out).toContain("declarada, não revelada");
-    expect(out).toContain("Sua deixa");
+    expect(out).toContain("dita, não mostrada");
+    expect(out).toContain("Sua vez de reagir");
     expect(out).toContain("Na mão: Guardiã e Trilionário");
-    expect(out).toContain("Contestar");
+    expect(out).toContain("Duvidar");
     expect(out).toContain("Deixar passar");
     expect(out).toContain('role="progressbar" aria-label="Tempo para reagir"');
   });

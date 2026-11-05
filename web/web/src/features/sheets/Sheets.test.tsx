@@ -24,7 +24,7 @@ describe("gavetas (fumaça em Node)", () => {
     expect(out).toContain("O que a mesa já viu");
     expect(out).toContain("Roubou 3 de Eva como Trapaceiro.");
     expect(out).toContain("Recebeu 4 como Trilionário.");
-    expect(out).toContain("Se disse Assassino, foi contestado e perdeu a carta.");
+    expect(out).toContain("Se disse Assassino, alguém duvidou e perdeu a carta.");
   });
 
   it("CamaroteLongo traz as 14 linhas do diário", () => {
@@ -40,7 +40,7 @@ describe("gavetas (fumaça em Node)", () => {
     expect(out).toContain("a mesa vê: carta virada");
     expect(out).toContain("1 investimento, cada um rende meia moeda por rodada");
     expect(out).toContain("Acaba em 2 rodadas");
-    expect(out).toContain("Papéis que a mesa já viu você usar");
+    expect(out).toContain("Personagens que a mesa já viu você usar");
     expect(out).toContain("Guardiã");
     expect(out).toContain("rodada 2");
     expect(out).toContain("Protegeu uma carta.");
@@ -67,16 +67,16 @@ describe("menu e conversa (fumaça em Node)", () => {
     expect(out).toContain("K7Q2");
     expect(out).toContain("rodada 4");
     expect(out).toContain("Como se joga");
-    expect(out).toContain("os 12 papéis");
+    expect(out).toContain("os 12 personagens");
     expect(out).toContain("Som");
     expect(out).toContain("Vibração");
-    expect(out).toContain("quando chega a sua deixa");
+    expect(out).toContain("quando chega a sua vez");
     expect(out).toContain("Animações");
     expect(out).toContain("Todas, inclusive as transições.");
     expect(out).toContain("Animações de espera");
     expect(out).toContain("Desenhos tremendo, texto respirando, lâmpadas.");
-    expect(out).toContain("Sair de cena");
-    expect(out).toContain("Seu camarote fica na mesa e o tempo corre sem você. Para voltar, entre de novo com o código K7Q2.");
+    expect(out).toContain("Sair da partida");
+    expect(out).toContain("Seu lugar fica na mesa e o tempo corre sem você. Para voltar, entre de novo com o código K7Q2.");
     expect(out.match(/aria-checked="true"/g)).toHaveLength(3);
     expect(out.match(/aria-checked="false"/g)).toHaveLength(1);
   });

@@ -21,11 +21,11 @@ describe("Mesa6", () => {
 
   it("camarotes na ordem de jogo, com estados das miniaturas", () => {
     expect(selectSeats(v)).toEqual([
-      { id: "ana", name: "Ana", short: "Ana", coins: 7, cards: [{ state: "revealed", role: "CROUPIER" }, { state: "back" }], inScene: false, out: false, hasMore: true, label: "Ver camarote de Ana, 7 moedas" },
-      { id: "carla", name: "Carla", short: "Carla", coins: 11, cards: [{ state: "protected" }, { state: "back" }], inScene: true, out: false, hasMore: true, label: "Ver camarote de Carla, 11 moedas" },
-      { id: "bruno", name: "Bruno", short: "Bruno", coins: 2, cards: [{ state: "dead", role: "ASSASSIN" }, { state: "back" }], inScene: false, out: false, hasMore: true, label: "Ver camarote de Bruno, 2 moedas" },
-      { id: "davi", name: "Davi", short: "Davi", coins: 0, cards: [{ state: "dead", role: "TRICKSTER" }, { state: "dead", role: "GRAVEDIGGER" }], inScene: false, out: true, hasMore: false, label: "Ver camarote de Davi, fora do jogo" },
-      { id: "eva", name: "Eva", short: "Eva", coins: 4, cards: [{ state: "back" }, { state: "back" }], inScene: false, out: false, hasMore: true, label: "Ver camarote de Eva, 4 moedas" },
+      { id: "ana", name: "Ana", short: "Ana", coins: 7, cards: [{ state: "revealed", role: "CROUPIER" }, { state: "back" }], inScene: false, out: false, hasMore: true, label: "Ver o lugar de Ana, 7 moedas" },
+      { id: "carla", name: "Carla", short: "Carla", coins: 11, cards: [{ state: "protected" }, { state: "back" }], inScene: true, out: false, hasMore: true, label: "Ver o lugar de Carla, 11 moedas" },
+      { id: "bruno", name: "Bruno", short: "Bruno", coins: 2, cards: [{ state: "dead", role: "ASSASSIN" }, { state: "back" }], inScene: false, out: false, hasMore: true, label: "Ver o lugar de Bruno, 2 moedas" },
+      { id: "davi", name: "Davi", short: "Davi", coins: 0, cards: [{ state: "dead", role: "TRICKSTER" }, { state: "dead", role: "GRAVEDIGGER" }], inScene: false, out: true, hasMore: false, label: "Ver o lugar de Davi, fora do jogo" },
+      { id: "eva", name: "Eva", short: "Eva", coins: 4, cards: [{ state: "back" }, { state: "back" }], inScene: false, out: false, hasMore: true, label: "Ver o lugar de Eva, 4 moedas" },
     ]);
   });
 
@@ -36,8 +36,8 @@ describe("Mesa6", () => {
       tax: 1,
       suddenDeath: false,
       effects: [
-        { role: "POLITICAL", name: "Político", times: 1, rounds: 3, label: "Político custa 2 vezes mais; baixa em 3 rodadas" },
-        { role: "REBEL", name: "Rebelde", times: 2, rounds: 1, label: "Rebelde custa 4 vezes mais; baixa em 1 rodada" },
+        { role: "POLITICAL", name: "Político", times: 1, rounds: 3, label: "Político custa 2 vezes mais. Baixa em 3 rodadas" },
+        { role: "REBEL", name: "Rebelde", times: 2, rounds: 1, label: "Rebelde custa 4 vezes mais. Baixa em 1 rodada" },
       ],
     });
     expect(selectYou(v)).toEqual({
@@ -57,7 +57,7 @@ describe("Mesa6", () => {
 
   it("diário do ator, do mais novo ao mais velho", () => {
     expect(selectLog(v, "bruno").map((l) => [l.turn, l.text])).toEqual([
-      [3, "Se disse Assassino, foi contestado e perdeu a carta."],
+      [3, "Se disse Assassino, alguém duvidou e perdeu a carta."],
       [2, "Roubou 3 de Eva como Trapaceiro."],
       [1, "Recebeu 4 como Trilionário."],
     ]);
@@ -123,7 +123,7 @@ describe("selectDecision", () => {
     });
   });
 
-  it("fora de cena, fim e sem sala", () => {
+  it("fora da partida, fim e sem sala", () => {
     expect(selectDecision(view("ForaDeCena"))).toEqual({ kind: "outOfScene" });
     expect(selectDecision(view("Fim"))).toEqual({ kind: "finale" });
     expect(selectDecision(view("Lobby"))).toEqual({ kind: "none" });
@@ -175,7 +175,7 @@ describe("outras telas", () => {
     expect(selectChat(view("Conversa")).map((c) => (c.kind === "line" ? `${c.name}: ${c.text}` : c.text))).toEqual([
       "Carla: Ninguém aqui tem Guardiã, né?",
       "Ana: Esse Crupiê é meu, juro pela cortina.",
-      "(Bruno se disse Assassino, foi contestado e perdeu a carta.)",
+      "(Bruno se disse Assassino, alguém duvidou e perdeu a carta.)",
       "Bruno: Isso foi pessoal.",
       "Você: Foi teatro, Bruno.",
       "Eva: Alguém conta as moedas da Carla, por favor.",
@@ -202,9 +202,9 @@ describe("outras telas", () => {
 
   it("sala de espera: lugares vagos e anfitrião", () => {
     const s = selectWaitingRoom(view("Sala"));
-    expect(s).toMatchObject({ code: "K7Q2", name: "Quinta dos mentirosos", max: 6, count: 3, castLine: "três de seis papéis preenchidos", isHost: true });
+    expect(s).toMatchObject({ code: "K7Q2", name: "Quinta dos mentirosos", max: 6, count: 3, castLine: "3 de 6 lugares ocupados", isHost: true });
     expect(s.seats.map((x) => [x.name, x.tag])).toEqual([
-      ["Matheus", "anfitrião, você"], ["Ana", "pronto"], ["Bruno", "pronto"], ["Papel vago", "aguardando"], ["Papel vago", "aguardando"], ["Papel vago", "aguardando"],
+      ["Matheus", "anfitrião, você"], ["Ana", "pronto"], ["Bruno", "pronto"], ["Lugar vago", "aguardando"], ["Lugar vago", "aguardando"], ["Lugar vago", "aguardando"],
     ]);
     expect(s.tight).toBe(false);
     expect(selectWaitingRoom(view("SalaCheia", "p1")).isHost).toBe(false);
@@ -227,7 +227,7 @@ describe("gavetas", () => {
       { state: "back", index: 1 },
     ]);
     expect(seat.log.map((l) => [l.turn, l.text])).toEqual([
-      [3, "Se disse Assassino, foi contestado e perdeu a carta."],
+      [3, "Se disse Assassino, alguém duvidou e perdeu a carta."],
       [2, "Roubou 3 de Eva como Trapaceiro."],
       [1, "Recebeu 4 como Trilionário."],
     ]);

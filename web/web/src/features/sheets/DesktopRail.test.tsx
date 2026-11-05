@@ -13,7 +13,7 @@ const view = (name: FixtureName): GameView => {
 describe("trilho do desktop (fumaça em Node)", () => {
   it("mostra o diário, a conversa e o campo", () => {
     const out = renderToStaticMarkup(<DesktopRail view={view("Mesa6")} />);
-    expect(out).toContain("Diário da cena");
+    expect(out).toContain("Histórico da partida");
     expect(out).toContain("rodada 4");
     expect(out).toContain("Bruno roubou 3 de Eva como Trapaceiro.");
     expect(out).toContain("Conversa");

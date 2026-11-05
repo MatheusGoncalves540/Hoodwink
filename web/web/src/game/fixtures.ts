@@ -60,7 +60,7 @@ const entry = (actorId: string, turn: number, pred: string, at: number, extra: P
 const BRUNO_LOG = [
   entry("bruno", 1, "recebeu 4 como Trilionário.", local(21, 30), { role: "TRILLIONAIRE" }),
   entry("bruno", 2, "roubou 3 de Eva como Trapaceiro.", local(21, 34)),
-  entry("bruno", 3, "se disse Assassino, foi contestado e perdeu a carta.", local(21, 39) + 30_000, { role: "ASSASSIN", chat: true }),
+  entry("bruno", 3, "se disse Assassino, alguém duvidou e perdeu a carta.", local(21, 39) + 30_000, { role: "ASSASSIN", chat: true }),
 ];
 
 // CamaroteLongo.dc.html → logs de Maximiliano, 14 jogadas
@@ -70,8 +70,8 @@ const MAX_LOG: [number, string, RoleId?][] = [
   [5, "recebeu 4 como Trilionário.", "TRILLIONAIRE"], [6, "trocou uma carta como Crupiê.", "CROUPIER"],
   [7, "investiu como Investidor.", "INVESTOR"], [8, "recebeu 2 como Trapaceiro.", "TRICKSTER"],
   [9, "deixou passar o Assassino de Iracema."], [10, "protegeu uma carta como Guardiã.", "GUARDIAN"],
-  [11, "foi contestada como Guardiã e mostrou a carta.", "GUARDIAN"], [12, "investiu como Investidor.", "INVESTOR"],
-  [13, "recebeu 4 como Trilionário.", "TRILLIONAIRE"], [14, "contestado ao se dizer Político. Perdeu a carta.", "POLITICAL"],
+  [11, "se disse Guardiã, alguém duvidou e mostrou a carta.", "GUARDIAN"], [12, "investiu como Investidor.", "INVESTOR"],
+  [13, "recebeu 4 como Trilionário.", "TRILLIONAIRE"], [14, "se disse Político, alguém duvidou e perdeu a carta.", "POLITICAL"],
 ];
 
 // Voce.dc.html → "Papéis que a mesa já viu você usar"
@@ -82,7 +82,7 @@ const MY_LOG = [
 // VoceLongo.dc.html
 const MY_LONG_LOG: [number, string, RoleId][] = [
   [3, "mexeu na taxa.", "POLITICAL"], [4, "bloqueou as moedas de Jô.", "SELFISH"], [6, "trocou uma carta.", "CROUPIER"],
-  [8, "recebeu 2 moedas.", "TRICKSTER"], [10, "contestada, mostrou a carta; protegeu 2 vezes.", "GUARDIAN"],
+  [8, "recebeu 2 moedas.", "TRICKSTER"], [10, "alguém duvidou e mostrou a carta. Protegeu 2 vezes.", "GUARDIAN"],
   [11, "investiu 2 vezes.", "INVESTOR"], [13, "recebeu 12 moedas.", "TRILLIONAIRE"],
 ];
 
@@ -198,7 +198,7 @@ export function fixture(name: FixtureName, now: number): Fixture {
         .filter((i) => (i + 4) % 7 !== 0)
         .map((i) => ({ playerName: LONG_LINES[i % 7][0], timestamp: iso(22, 10 + i), message: LONG_LINES[i % 7][1] }));
       const flo = [3, 10, 17, 24].map((i, k) =>
-        entry("flo", 5 + k, "se disse Rebelde, foi contestado e perdeu a carta.", local(22, 10 + i), { role: "REBEL", chat: true, key: `fx|flo|${k}` }),
+        entry("flo", 5 + k, "se disse Rebelde, alguém duvidou e perdeu a carta.", local(22, 10 + i), { role: "REBEL", chat: true, key: `fx|flo|${k}` }),
       );
       return { ...base, room: { ...table(now, { n: 10, active: "carla" }), chat }, log: flo, ui: ui("chat", chat.length) };
     }
@@ -233,7 +233,7 @@ export function fixture(name: FixtureName, now: number): Fixture {
       return {
         ...base,
         room: table(now, { n: 6, active: "carla", me: out }),
-        log: [...BRUNO_LOG, entry("me", 14, "saiu de cena.", local(21, 42), { key: "EXIT|me", chat: true })],
+        log: [...BRUNO_LOG, entry("me", 14, "saiu da partida.", local(21, 42), { key: "EXIT|me", chat: true })],
       };
     }
     case "MorteSubita":
@@ -246,7 +246,7 @@ export function fixture(name: FixtureName, now: number): Fixture {
       return {
         ...base,
         room: table(now, { n: 6, active: "carla", roster, me: dead(ME), turn: 17, gameOver: true }),
-        log: exits.map(([id, t], i) => entry(id, t, "saiu de cena.", local(22, i), { key: `EXIT|${id}`, chat: true })),
+        log: exits.map(([id, t], i) => entry(id, t, "saiu da partida.", local(22, i), { key: `EXIT|${id}`, chat: true })),
       };
     }
   }

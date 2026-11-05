@@ -9,9 +9,9 @@ const out = renderToStaticMarkup(<ActionBoard view={{ me: f.me, room: f.room, lo
 
 describe("ActionBoard", () => {
   it("mostra a rodada, a taxa e suas moedas", () => {
-    expect(out).toContain("Sua vez em cena");
+    expect(out).toContain("Sua vez");
     expect(out).toContain("Rodada 4 · Taxa +1");
-    expect(out).toContain("Declare um papel");
+    expect(out).toContain("Escolha uma ação");
     expect(out).toContain('aria-label="Você tem 5 moedas"');
     expect(out).toContain('role="progressbar" aria-label="Tempo da jogada"');
   });
