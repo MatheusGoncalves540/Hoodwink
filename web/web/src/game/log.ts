@@ -78,7 +78,9 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
         }
         case "CARD_KILLED":
           // morte por contestação já está na linha da declaração (effects.go: EffectContestPenalty)
-          if (!["CONTEST", "CONTEST_PENALTY"].includes(str(p.cause))) push(str(p.targetPlayer) || ev.playerId, copy.log.lostACard);
+          if (str(p.cause) === "KILL_CARD") push(ev.playerId, copy.log.killed(fname(str(p.targetPlayer))));
+          else if (str(p.cause) === "GREED") push(str(p.targetPlayer) || ev.playerId, copy.log.greed);
+          else if (!["CONTEST", "CONTEST_PENALTY"].includes(str(p.cause))) push(str(p.targetPlayer) || ev.playerId, copy.log.lostACard);
           break;
         case "REVEALED_CARD":
           push(ev.playerId, copy.log.revealed(fname(str(p.targetPlayer))));
@@ -88,10 +90,12 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
           break;
         case "CHANGED_CARD":
           // troca da carta revelada pela contestação não é jogada de Crupiê
-          push(ev.playerId, str(p.cause) === "CONTEST_PENALTY" ? copy.log.changedContested : copy.log.changed);
+          push(ev.playerId, str(p.cause) === "CONTEST_PENALTY" ? copy.log.changedContested : str(p.cause) === "SWAP_CARDS" ? copy.log.swapped : copy.log.changed);
           break;
         case "EARN_COINS":
-          push(ev.playerId, copy.log.earned(num(p.earnedCoins), roleName(declaredRole(`CARD_PLAYED_${str(p.cause)}`) ?? "TRILLIONAIRE")));
+          // ação do turno (02 §6): EARN_COINS com cause TAKE_COINS
+          if (str(p.cause) === "TAKE_COINS") push(ev.playerId, copy.log.tookCoins(num(p.earnedCoins)));
+          else push(ev.playerId, copy.log.earned(num(p.earnedCoins), roleName(declaredRole(`CARD_PLAYED_${str(p.cause)}`) ?? "TRILLIONAIRE")));
           break;
         case "STEAL_COINS":
           push(ev.playerId, copy.log.stole(num(p.lostCoins), fname(str(p.targetPlayer))));

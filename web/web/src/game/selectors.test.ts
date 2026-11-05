@@ -115,6 +115,14 @@ describe("selectDecision", () => {
     });
   });
 
+  it("ações do turno: ninguém barra Pegar moeda nem Trocar; Matar aceita Guardiã", () => {
+    expect(selectDecision(withEvent(base, "EARN_COINS", "ana", { cause: "TAKE_COINS", earnedCoins: 5 }))).toEqual({ kind: "none" });
+    expect(selectDecision(withEvent(base, "CHANGED_CARD", "ana", { cause: "SWAP_CARDS" }))).toEqual({ kind: "none" });
+    expect(selectDecision(withEvent(base, "CARD_KILLED", "ana", { cause: "KILL_CARD", targetPlayer: "me" }))).toMatchObject({
+      kind: "react", block: { role: "GUARDIAN", cost: 6 },
+    });
+  });
+
   it("fora de cena, fim e sem sala", () => {
     expect(selectDecision(view("ForaDeCena"))).toEqual({ kind: "outOfScene" });
     expect(selectDecision(view("Fim"))).toEqual({ kind: "finale" });

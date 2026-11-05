@@ -196,7 +196,9 @@ export function selectDecision(v: GameView): Decision {
   if (ev.type === "CARD_KILLED" && p.targetPlayer === me.id && p.cause !== "CONTEST_PENALTY" && p.cause !== "KAMIKAZE") {
     return { kind: "react", actorId: ev.playerId, role: null, canContest: false, block: guardian("reaction"), targetsMe: true };
   }
-  if (!mine && ["EARN_COINS", "STEAL_COINS", "INVESTMENT", "CHANGED_CARD"].includes(ev.type)) {
+  // ações do turno (Pegar moeda, Trocar cartas) ninguém impede (02 §2)
+  const basic = p.cause === "TAKE_COINS" || p.cause === "SWAP_CARDS";
+  if (!mine && !basic && ["EARN_COINS", "STEAL_COINS", "INVESTMENT", "CHANGED_CARD"].includes(ev.type)) {
     // 02 §3: Egoísta barra o Trapaceiro só se o ganho (⌈tirado/2⌉) passar de 1, e moedas só a partir de 2 + t
     if (ev.type === "STEAL_COINS" && Math.ceil(Number(p.lostCoins ?? 0) / 2) <= 1) return { kind: "none" };
     if (ev.type === "EARN_COINS" && p.earnedCoins != null && Number(p.earnedCoins) < CLASSIC_RULES.selfishThreshold + r.tax) return { kind: "none" };

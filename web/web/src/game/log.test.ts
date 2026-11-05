@@ -54,6 +54,21 @@ describe("appendLog", () => {
     ]);
   });
 
+  it("ações do turno e limite de 20, com os nomes reais do servidor (02 §6)", () => {
+    const log = run([
+      room(6, "EARN_COINS", "a", { cause: "TAKE_COINS", earnedCoins: 2 }),
+      room(6, "CARD_KILLED", "b", { cause: "KILL_CARD", targetPlayer: "c", targetCardIndex: 0 }),
+      room(6, "CHANGED_CARD", "d", { cause: "SWAP_CARDS" }),
+      room(7, "CARD_KILLED", "e", { cause: "GREED", targetPlayer: "e", targetCardIndex: 1 }),
+    ]);
+    expect(log.map(logText)).toEqual([
+      "Ana pegou 2 moedas.",
+      "Bruno pagou e matou uma carta de Carla.",
+      "Davi trocou uma carta com o baralho.",
+      "Eva passou de 20 moedas e perdeu uma carta.",
+    ]);
+  });
+
   it("guarda ator, rodada e papel; a gaveta usa o predicado", () => {
     const log = run([room(4, "CARD_PLAYED_TRILLIONAIRE", "e"), room(4, "EARN_COINS", "e", { cause: "TRILLIONAIRE", earnedCoins: 4 })]);
     expect(log).toEqual([
