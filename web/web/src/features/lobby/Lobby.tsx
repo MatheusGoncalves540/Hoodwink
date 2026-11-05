@@ -12,6 +12,7 @@ import { MotionToggles } from "../sheets/RoomMenu";
 import { createInput, roomCodeFromSearch, useSessionStore, usernameFromToken } from "../../store/sessionStore";
 import { Button } from "../../ui/Button/Button";
 import { Label } from "../../ui/Label/Label";
+import { Moldura } from "../../ui/Moldura/Moldura";
 import { TextField } from "../../ui/TextField/TextField";
 import { Ticket } from "../../ui/Ticket/Ticket";
 import { cx } from "../../ui/cx";
@@ -84,12 +85,27 @@ export function Lobby() {
 
   return (
     <main className={cx(s.screen, layout === "desktop" && s.desk)}>
-      <section aria-label={copy.cartazRegion} className={cx("m-hang", s.cartaz)}>
+      <Moldura lugar="lobby" as="section" aria-label={copy.cartazRegion} className={cx("m-hang", s.cartaz)}>
         <div className={s.profileRow}>
           <Profile signedIn={!!jwtToken} name={username} onLogin={openLogin} />
         </div>
 
-        <img className={s.proso} src="/assets/proso.webp" alt={copy.prosoAlt} />
+        {/* Proso em placeholder até a arte nova: moldura tracejada em contorno + "?" em tira */}
+        <div role="img" aria-label={copy.prosoAlt} className={cx("m-contorno", s.proso)}>
+          {[0, 1, 2].map((i) => (
+            <svg key={i} aria-hidden="true" className={cx("m-f", s.prosoFrame)} preserveAspectRatio="none" viewBox="0 0 100 100">
+              <rect x="1" y="1" width="98" height="98" rx={4 + i} vectorEffect="non-scaling-stroke" />
+            </svg>
+          ))}
+          <span aria-hidden="true" className={cx("m-tira", s.prosoAsk)}>
+            <span>
+              <i>?</i>
+              <i>?</i>
+              <i>?</i>
+            </span>
+          </span>
+          <span aria-hidden="true" className={s.prosoNote}>{copy.prosoPlaceholder}</span>
+        </div>
 
         <Label tone="ouro" className={s.nowShowing}>
           {copy.nowShowing}
@@ -112,7 +128,7 @@ export function Lobby() {
         <p className={s.epigraph}>
           <i>{truth ? <>“{mask}<br />e ele {truth}”</> : <>“{copy.epigraph}”</>}</i>&nbsp;
         </p>
-      </section>
+      </Moldura>
 
       <section aria-label={copy.playRegion} className={cx("m-rise", s.actions)}>
         <Ticket size="l" disabled={busy} onClick={onCreate}>

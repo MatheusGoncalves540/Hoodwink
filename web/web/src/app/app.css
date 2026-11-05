@@ -83,7 +83,9 @@
 }
 .am-letreiro {
   padding: var(--hw-space-3) var(--hw-space-5);
-  color: var(--hw-sobre-veludo);
+  border: 14px solid transparent;
+  border-radius: var(--hw-radius-s);
+  background: var(--hw-luz) padding-box;
   font-family: var(--hw-font-display);
   font-size: 24px;
 }
