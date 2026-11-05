@@ -16,7 +16,10 @@ func (r *Room) GetCardRules(registryRules *rules.Registry, card string) (*rules.
 	if err != nil {
 		return nil, err
 	}
-	cardRules := rules.CardRules(gameRules.Cards[card])
+	cardRules, ok := gameRules.Cards[card]
+	if !ok {
+		return nil, fmt.Errorf("regras da carta '%s' não encontradas no modo %s", card, r.Rules)
+	}
 	return &cardRules, nil
 }
 
@@ -79,12 +82,15 @@ func (r *Room) MarkCardValueAsDoubled(registryRules *rules.Registry, card struct
 		return
 	}
 
-	if timesDoubledCardConf.TimesValueDoubled < *cardRules.MaxDoubled {
+	if cardRules.MaxDoubled != nil && timesDoubledCardConf.TimesValueDoubled < *cardRules.MaxDoubled {
 		// ainda pode dobrar o preço
 		timesDoubledCardConf.TimesValueDoubled++
-		timesDoubledCardConf.RoundsUntilDecrease = *cardRules.RoundsUntilDecrease
 	} else {
-		// já atingiu o máximo de vezes que pode ser dobrado, apenas reseta o contador de rounds
+		// já atingiu o máximo de vezes que pode ser dobrado
+		timesDoubledCardConf.TimesValueDoubled = maxDoubledValue(cardRules)
+	}
+
+	if cardRules.RoundsUntilDecrease != nil {
 		timesDoubledCardConf.RoundsUntilDecrease = *cardRules.RoundsUntilDecrease
 	}
 
@@ -93,27 +99,44 @@ func (r *Room) MarkCardValueAsDoubled(registryRules *rules.Registry, card struct
 	r.DoubledCardValues[card] = timesDoubledCardConf
 }
 
-// DecreaseDoubledCardValuesRounds decrementa o contador de rounds para redução do preço dobrado das cartas e abaixa o preço se o contador estiver em 0
-func (r *Room) DecreaseDoubledCardValuesRounds() {
+// DecreaseDoubledCardValuesRounds decrementa o contador de turnos sem uso das cartas
+// com valor dobrado. A cada N turnos sem uso (roundsUntilDecrease), o preço cai pela metade.
+func (r *Room) DecreaseDoubledCardValuesRounds(registryRules *rules.Registry) {
 	for cardType, timesDoubledCardConf := range r.DoubledCardValues {
-		// decrementa o contador de rounds
-		if !timesDoubledCardConf.UsedThisTurn {
-			if timesDoubledCardConf.RoundsUntilDecrease > 0 {
-				timesDoubledCardConf.RoundsUntilDecrease--
-				r.DoubledCardValues[cardType] = timesDoubledCardConf
-			} else {
-				// diminui o preço dobrado em 1, se possível
-				if timesDoubledCardConf.TimesValueDoubled > 0 {
-					timesDoubledCardConf.TimesValueDoubled--
-					r.DoubledCardValues[cardType] = timesDoubledCardConf
-				}
-			}
-		} else {
+		if timesDoubledCardConf.UsedThisTurn {
 			// reseta o flag de uso nesta rodada
 			timesDoubledCardConf.UsedThisTurn = false
 			r.DoubledCardValues[cardType] = timesDoubledCardConf
+			continue
 		}
+
+		decreaseInterval := 3
+		if cardRules, err := r.GetCardRules(registryRules, string(cardType)); err == nil && cardRules.RoundsUntilDecrease != nil {
+			decreaseInterval = *cardRules.RoundsUntilDecrease
+		}
+
+		if timesDoubledCardConf.RoundsUntilDecrease > 0 {
+			timesDoubledCardConf.RoundsUntilDecrease--
+		} else {
+			timesDoubledCardConf.RoundsUntilDecrease = decreaseInterval
+		}
+
+		// Atingiu o intervalo sem uso: reduz o valor dobrado pela metade
+		if timesDoubledCardConf.RoundsUntilDecrease == 0 && timesDoubledCardConf.TimesValueDoubled > 0 {
+			timesDoubledCardConf.TimesValueDoubled--
+			timesDoubledCardConf.RoundsUntilDecrease = decreaseInterval
+		}
+
+		r.DoubledCardValues[cardType] = timesDoubledCardConf
 	}
+}
+
+// maxDoubledValue retorna o número máximo de vezes que a carta pode ter o valor dobrado
+func maxDoubledValue(cardRules *rules.CardRules) int {
+	if cardRules.MaxDoubled == nil {
+		return 0
+	}
+	return *cardRules.MaxDoubled
 }
 
 // GetCardValue retorna o value atual da carta, considerando se está dobrado ou não, taxas e limites.
@@ -122,6 +145,9 @@ func (r *Room) GetCardValue(registryRules *rules.Registry, card structs.TypePlay
 	cardRules, err := r.GetCardRules(registryRules, string(card))
 	if err != nil {
 		return 0, err
+	}
+	if cardRules.Value == nil {
+		return 0, fmt.Errorf("carta %s não possui value configurado", card)
 	}
 
 	value := *cardRules.Value
@@ -134,15 +160,13 @@ func (r *Room) GetCardValue(registryRules *rules.Registry, card structs.TypePlay
 
 	// se a carta for afetada por taxas, aplica a taxa
 	if cardRules.AffectedByTaxes != nil && *cardRules.AffectedByTaxes {
-		if value+r.Tax > *cardRules.TaxMaximum {
-			// se a taxa ultrapassar os limites, aplica os limites
+		value += r.Tax
+
+		if cardRules.TaxMaximum != nil && value > *cardRules.TaxMaximum {
 			value = *cardRules.TaxMaximum
-		} else if value+r.Tax < *cardRules.TaxMinimum {
-			// se a taxa for menor que o mínimo, aplica o mínimo
+		}
+		if cardRules.TaxMinimum != nil && value < *cardRules.TaxMinimum {
 			value = *cardRules.TaxMinimum
-		} else {
-			// caso contrário, aplica a taxa normalmente
-			value += r.Tax
 		}
 	}
 
@@ -155,11 +179,132 @@ func (r *Room) GetCardValue(registryRules *rules.Registry, card structs.TypePlay
 	return value, nil
 }
 
+// GetGuardianValue retorna o custo da Guardiã de acordo com o tipo de proteção.
+// - "sight": bloqueio do Clarividente (valor reduzido e limitado pelo mínimo da carta)
+// - "future": proteção contra um ataque futuro (acréscimo e mínimo próprios)
+// - demais: defesa imediata de uma carta
+func (r *Room) GetGuardianValue(registryRules *rules.Registry, protectedFrom string) (int, error) {
+	cardRules, err := r.GetCardRules(registryRules, string(structs.PlayGuardianCard))
+	if err != nil {
+		return 0, err
+	}
+	if cardRules.Value == nil {
+		return 0, fmt.Errorf("carta GUARDIAN não possui value configurado")
+	}
+
+	value := *cardRules.Value
+	if cardRules.AffectedByTaxes != nil && *cardRules.AffectedByTaxes {
+		value += r.Tax
+	}
+
+	switch protectedFrom {
+	case "sight":
+		if cardRules.ClairvoyantBlockDiscount != nil {
+			value -= *cardRules.ClairvoyantBlockDiscount
+		}
+	case "future":
+		if cardRules.FutureProtectionSurcharge != nil {
+			value += *cardRules.FutureProtectionSurcharge
+		}
+	}
+
+	if protectedFrom == "future" && cardRules.FutureProtectionTaxMinimum != nil {
+		if value < *cardRules.FutureProtectionTaxMinimum {
+			value = *cardRules.FutureProtectionTaxMinimum
+		}
+	} else if cardRules.TaxMinimum != nil && value < *cardRules.TaxMinimum {
+		value = *cardRules.TaxMinimum
+	}
+
+	if cardRules.TaxMaximum != nil && value > *cardRules.TaxMaximum {
+		value = *cardRules.TaxMaximum
+	}
+
+	if value < 0 {
+		value = 0
+	}
+	return value, nil
+}
+
+// GetBasicTakeCoinsAmount retorna quantas moedas a ação básica de coletar concede (1 + taxas).
+func (r *Room) GetBasicTakeCoinsAmount(registryRules *rules.Registry) (int, error) {
+	generalRules, err := r.GetGeneralRules(registryRules)
+	if err != nil {
+		return 0, err
+	}
+	base := 1
+	if generalRules.BasicTakeCoins != nil {
+		base = *generalRules.BasicTakeCoins
+	}
+
+	amount := base + r.Tax
+	if amount < 0 {
+		amount = 0
+	}
+	return amount, nil
+}
+
+// GetBasicKillCardCost retorna o custo da ação básica de matar uma carta.
+// A metade da taxa só é aplicada quando ela é positiva; com taxa zero ou negativa
+// a taxa entra inteira. O custo nunca fica abaixo do mínimo configurado (3).
+func (r *Room) GetBasicKillCardCost(registryRules *rules.Registry) (int, error) {
+	generalRules, err := r.GetGeneralRules(registryRules)
+	if err != nil {
+		return 0, err
+	}
+	base := 6
+	if generalRules.BasicKillCardCost != nil {
+		base = *generalRules.BasicKillCardCost
+	}
+	minimum := 3
+	if generalRules.BasicKillCardMinimum != nil {
+		minimum = *generalRules.BasicKillCardMinimum
+	}
+
+	cost := base
+	if r.Tax > 0 {
+		cost += utils.FloorDiv(r.Tax, 2)
+	} else {
+		cost += r.Tax
+	}
+	if cost < minimum {
+		cost = minimum
+	}
+	return cost, nil
+}
+
+// GetBasicSwapCost retorna o custo da ação básica de trocar cartas com o baralho.
+// Trocar uma carta custa metade das moedas arredondada para cima; trocar as duas custa todas as moedas.
+func (r *Room) GetBasicSwapCost(coins int, twoCards bool) int {
+	if twoCards {
+		return coins
+	}
+	return utils.CeilDiv(coins, 2)
+}
+
+// EnforceInvestorMaxInvestments descarta investimentos excedentes de todos os jogadores
+// quando o limite máximo de investimentos (afetado pelas taxas) diminui.
+func (r *Room) EnforceInvestorMaxInvestments(registryRules *rules.Registry) {
+	maxInvestments, err := r.GetCardValue(registryRules, structs.PlayInvestorCard, 0)
+	if err != nil {
+		utils.LogError(err)
+		return
+	}
+
+	for _, player := range r.Players {
+		player.TrimInvestments(maxInvestments)
+	}
+}
+
 // ChangeCard troca a carta do index por uma nova carta (marca a carta como viva)
 func (r *Room) ChangeCard(player *players.Player, index int) error {
 	card, err := player.GetCardByIndex(index)
 	if err != nil {
 		return err
+	}
+
+	if len(r.Deck) == 0 {
+		return fmt.Errorf("baralho vazio: não é possível trocar a carta %d do jogador %s", index, player.Id)
 	}
 
 	// troca a carta pelo topo do deck
@@ -170,6 +315,7 @@ func (r *Room) ChangeCard(player *players.Player, index int) error {
 	// carta sempre vem como viva e virada para baixo
 	card.Dead = false
 	card.RevealedToAll = false
+	card.Protected = false
 	return nil
 }
 

@@ -3,7 +3,6 @@
 Cards:
   ASSASSIN:
     value: 3
-    taxMaximum: 9
     taxMinimum: 2
     affectedByTaxes: true
 
@@ -30,20 +29,20 @@ Cards:
   TRILLIONAIRE:
     value: 3
     taxMinimum: 1
-    taxMaximum: 13
     affectedByTaxes: true
 
   CLAIRVOYANT:
     value: 4
-    taxMaximum: 12
     taxMinimum: 2
     affectedByTaxes: true
 
   GUARDIAN:
     value: 5
+    taxMinimum: 2
+    futureProtectionTaxMinimum: 4
+    futureProtectionSurcharge: 1
+    clairvoyantBlockDiscount: 1
     canDefendClairvoyant: true
-    taxMaximum: 15
-    taxMinimum: 3
     affectedByTaxes: true
 
   TRICKSTER:
@@ -53,29 +52,28 @@ Cards:
     affectedByTaxes: true
 
   GRAVEDIGGER:
-    value: 6
-    taxMaximum: 16
+    value: 5
     taxMinimum: 3
     affectedByTaxes: true
 
   CROUPIER:
     value: 6
-    taxMaximum: 16
-    taxMinimum: 3
+    taxMinimum: 4
     affectedByTaxes: true
 
   INVESTOR:
-    fixedValue: 3
     value: 4
     taxMinimum: 2
     taxMaximum: 6
+    gracePeriod: 6
     affectedByTaxes: true
 
   SELFISH:
     fixedValue: 1
-    value: 6
+    value: 5
     taxMinimum: 3
-    taxMaximum: 9
+    taxMaximum: 8
+    coinDenialThreshold: 2
     affectedByTaxes: true
 
 Timeouts:
@@ -89,10 +87,17 @@ Timeouts:
     waitingAction: 5
 
 General:
-  randomTaxesChanges: 5
+  # As taxas só mudam por efeito de cartas (Político/Rebelde) no modo clássico.
+  randomTaxesChanges: 0
   copysOfEachCard: 2
   initialCoins: 3
   maxPlayers: 6
   maxCoins: 20
-  maxTax: 10
-  minTax: -3
+  maxTax: 5
+  minTax: -5
+
+  # Ações básicas
+  basicTakeCoins: 1
+  basicKillCardCost: 6
+  basicKillCardMinimum: 3
+  basicSwapMinCoins: 6

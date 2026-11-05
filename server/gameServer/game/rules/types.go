@@ -24,6 +24,13 @@ type CardRules struct {
 	MaxDoubled           *int  `yaml:"maxDoubled,omitempty"`
 	AffectedByTaxes      *bool `yaml:"affectedByTaxes,omitempty"`
 	RoundsUntilDecrease  *int  `yaml:"roundsUntilDecrease,omitempty"`
+
+	// Regras específicas de algumas cartas
+	GracePeriod                *int `yaml:"gracePeriod,omitempty"`                // Investidor: turnos que uma moeda fica investida
+	CoinDenialThreshold        *int `yaml:"coinDenialThreshold,omitempty"`        // Egoísta: valor base (somado às taxas) que pode ser impedido
+	FutureProtectionTaxMinimum *int `yaml:"futureProtectionTaxMinimum,omitempty"` // Guardiã: custo mínimo ao proteger contra ataque futuro
+	FutureProtectionSurcharge  *int `yaml:"futureProtectionSurcharge,omitempty"`  // Guardiã: acréscimo ao proteger contra ataque futuro
+	ClairvoyantBlockDiscount   *int `yaml:"clairvoyantBlockDiscount,omitempty"`   // Guardiã: desconto ao bloquear o Clarividente
 }
 
 // TimeoutsTypes representa os diferentes tipos de timeout configuráveis para cada sala
@@ -66,4 +73,10 @@ type Generals struct {
 	MinTax             *int `yaml:"minTax"`
 	CopysOfEachCard    *int `yaml:"copysOfEachCard"`
 	RandomTaxesChanges *int `yaml:"randomTaxesChanges"`
+
+	// Ações básicas do turno
+	BasicTakeCoins       *int `yaml:"basicTakeCoins"`
+	BasicKillCardCost    *int `yaml:"basicKillCardCost"`
+	BasicKillCardMinimum *int `yaml:"basicKillCardMinimum"`
+	BasicSwapMinCoins    *int `yaml:"basicSwapMinCoins"`
 }
