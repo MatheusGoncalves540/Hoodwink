@@ -129,6 +129,11 @@ export function TableScene() {
   const evKey = room?.gameEvent ? eventKey(room.gameEvent) : "";
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
 
+  // evento novo (inclusive o fim da deixa) fecha o fluxo de alvo: a jogada antiga não vale mais
+  useEffect(() => {
+    if (useUiStore.getState().targeting) setTargeting(null);
+  }, [evKey, setTargeting]);
+
   useEffect(() => {
     if (!footlights.suddenDeath || !room) return;
     const ui = useUiStore.getState();
