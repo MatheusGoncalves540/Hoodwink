@@ -4,6 +4,13 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 )
 
+// cloneInvestments garante que o estado público nunca serialize investments como null
+func cloneInvestments(investments []int) []int {
+	clone := make([]int, len(investments))
+	copy(clone, investments)
+	return clone
+}
+
 // GetPublicPlayerForUpdates retorna a versão pública do jogador para updates
 func (p *Player) GetPublicPlayerForUpdates() PublicPlayerForUpdates {
 	PublicCardInfos := make([]structs.PublicCardForUpdates, len(p.Cards))
@@ -16,11 +23,14 @@ func (p *Player) GetPublicPlayerForUpdates() PublicPlayerForUpdates {
 	}
 
 	return PublicPlayerForUpdates{
-		Id:    p.Id,
-		Name:  p.Name,
-		Cards: PublicCardInfos,
-		Coins: p.Coins,
-		Alive: p.Alive,
+		Id:                    p.Id,
+		Name:                  p.Name,
+		MoveTime:              p.MoveTime,
+		Cards:                 PublicCardInfos,
+		Coins:                 p.Coins,
+		Investments:           cloneInvestments(p.Investments),
+		PendingInvestmentCoin: p.PendingInvestmentCoin,
+		Alive:                 p.Alive,
 	}
 }
 
@@ -37,10 +47,13 @@ func (p *Player) GetPrivatePlayerForPublicUpdates() PublicPlayerForUpdates {
 	}
 
 	return PublicPlayerForUpdates{
-		Id:    p.Id,
-		Name:  p.Name,
-		Cards: privateCardInfos,
-		Coins: p.Coins,
-		Alive: p.Alive,
+		Id:                    p.Id,
+		Name:                  p.Name,
+		MoveTime:              p.MoveTime,
+		Cards:                 privateCardInfos,
+		Coins:                 p.Coins,
+		Investments:           cloneInvestments(p.Investments),
+		PendingInvestmentCoin: p.PendingInvestmentCoin,
+		Alive:                 p.Alive,
 	}
 }
