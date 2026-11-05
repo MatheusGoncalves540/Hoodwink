@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { conePolygon, desktopSeats, mobileSeats, type SeatBox } from "./seats";
+import { spotShape, desktopSeats, mobileSeats, type SeatBox } from "./seats";
 
 const overlap = (a: SeatBox, b: SeatBox) =>
   a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
@@ -55,6 +55,13 @@ describe("desktopSeats", () => {
   });
 });
 
-it("conePolygon sai da origem e abraça o camarote com 6 px de folga", () => {
-  expect(conePolygon({ x: 107, y: 60, w: 96, h: 104 }, 195)).toBe("polygon(195px 0px, 101px 164px, 209px 164px)");
+it("holofote: cone sai da origem e abraça o camarote com 6 px de folga; a poça fica centrada na base", () => {
+  expect(spotShape({ x: 107, y: 60, w: 96, h: 104 }, 195)).toEqual({
+    cone: "195,0 101,164 209,164",
+    pool: { cx: 155, cy: 164, rx: 54, ry: 11 },
+  });
+  // só a ponta de cima mexe entre os quadros; base e poça ficam presas ao camarote
+  const a = spotShape({ x: 10, y: 20, w: 80, h: 90 }, 200, 0, 3);
+  expect(a.cone).toBe("203,0 4,110 96,110");
+  expect(a.pool).toEqual(spotShape({ x: 10, y: 20, w: 80, h: 90 }, 200).pool);
 });

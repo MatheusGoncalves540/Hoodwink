@@ -38,7 +38,8 @@ describe("primitivos de ui/ (fumaça em Node)", () => {
     vi.useRealTimers();
     expect(out).toContain('role="progressbar" aria-label="Tempo para reagir" aria-valuemin="0" aria-valuemax="10" aria-valuenow="8"');
     expect(out).toContain("--de:0.75;animation-duration:7500ms");
-    expect(out).toMatch(/restam <b class="hw-num">8<span[^>]*>\?<\/span><\/b>/);
+    // o "?" virou tira de 3 desenhos (fase 4); o número continua parado
+    expect(out).toMatch(/restam <b class="hw-num">8<span class="m-tira [^"]*"><span><i>\?<\/i><i>\?<\/i><i>\?<\/i><\/span><\/span><\/b>/);
   });
 
   it("timer vencido para em zero", () => {

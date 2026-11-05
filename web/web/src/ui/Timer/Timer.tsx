@@ -30,7 +30,7 @@ export function Timer({ expiresAt, total, label, tone = "tinta", decision, capti
   }, [expiresAt, total]);
 
   return (
-    <div className={s.timer}>
+    <div className={cx("m-deixa", s.timer)}>
       <div className={cx(s.row, !caption && s.end)}>
         {caption && <span className={s.caption}>{caption}</span>}
         {decision ? (
@@ -38,7 +38,14 @@ export function Timer({ expiresAt, total, label, tone = "tinta", decision, capti
             {copy.left}{" "}
             <b className="hw-num">
               {left}
-              <span className={s.ask}>?</span>
+              {/* o "?" treme (tira rápida, 3 desenhos); o número não treme */}
+              <span className={cx("m-tira", s.ask)}>
+                <span>
+                  <i>?</i>
+                  <i>?</i>
+                  <i>?</i>
+                </span>
+              </span>
             </b>
           </span>
         ) : (

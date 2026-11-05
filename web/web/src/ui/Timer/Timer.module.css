@@ -35,8 +35,25 @@
   font-weight: 400;
   letter-spacing: 0;
 }
+/* "?" em tira rápida (0,75 s): glifo de tamanho fixo, 3 desenhos levemente diferentes. */
 .ask {
+  --tira-ciclo: 0.75s;
+  width: 0.62em;
+  height: 1.15em;
   color: var(--hw-alerta);
+}
+.ask i {
+  font-style: normal;
+  text-align: center;
+  line-height: 1.15em;
+}
+.ask i:nth-child(2) {
+  rotate: 7deg;
+  translate: 0.5px -1px;
+}
+.ask i:nth-child(3) {
+  rotate: -5deg;
+  translate: -0.5px 0.5px;
 }
 .track {
   height: 6px;
