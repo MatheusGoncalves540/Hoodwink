@@ -158,3 +158,32 @@ Faça um commit por fase, com `npm test` verde em cada um.
 - Não usar `transform` na respiração e nos 3 quadros (apaga a inclinação dos cartões). Use `translate`/`rotate`.
 - Não usar `filter` ou `feTurbulence` animados.
 - Não mudar a faixa de arte do `ActionButton` sem atualizar a trava 1.
+
+---
+
+## Status
+
+Status: concluído (com premissas abaixo, à espera do design)
+
+- [x] Fase 0 · Preparar (skill `texto-claro` copiada para `.claude/skills/`, `.gitignore` liberado)
+- [x] Fase 1 · Tokens e letras
+- [x] Fase 2 · Regras v2 (preços, ações do turno, histórico com os nomes reais do servidor)
+- [x] Fase 3 · Sistema de movimento
+- [x] Fase 4 · Mesa e Sua vez (holofote, `?` do timer, `data-deixa`)
+- [x] Fase 5 · Lobby, Sala e Fim (`Moldura`, Proso em placeholder)
+- [x] Fase 6 · Texto
+- [x] Fase 7 · Como se joga
+- [x] Fase 8 · Skins e Camarim
+
+## Premissas (decididas sem o canvas, que não estava acessível)
+
+- Canvas "Refino v2" não abriu para o agente. Valores das peças de skin (cores, fontes, molduras, botões, versos), textos do Como se joga e o mapa de tremor de camarotes/moedas/versos foram feitos de forma conservadora; trocar pelos da prancha.
+- Fase 4: camarotes, moedas e versos ainda não tremem (falta o mapa da prancha de sistema).
+- Moldura do Elenco e do Fim: opção B (filete fervendo), provisória (decisão em aberto 1).
+- Pegar moeda com taxa negativa dá 0 (como o servidor); D2 continua em aberto.
+- Egoísta barrando investimento: `5 + t` com desconto 5, como o servidor (o 02 não dá o preço).
+- Ações do turno usam o tom `cedula` na faixa de arte.
+- Lobby: as duas chaves de movimento ficam num `<details>` "Preferências" (não havia configurações no Lobby).
+- Peças de `cores` não mexem nas cores da carta (`--hw-carta*` é da categoria `cartas`).
+- Molduras e botões de skin valem só no contêiner `data-sk-*` mais próximo, para as prévias do Camarim não herdarem a peça vestida.
+- Sem typecheck no projeto (`typescript` e `@types/react` não estão instalados); a verificação foi `npm test` + `vite build`.

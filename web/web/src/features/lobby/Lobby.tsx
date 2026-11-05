@@ -87,6 +87,9 @@ export function Lobby() {
     <main className={cx(s.screen, layout === "desktop" && s.desk)}>
       <Moldura lugar="lobby" as="section" aria-label={copy.cartazRegion} className={cx("m-hang", s.cartaz)}>
         <div className={s.profileRow}>
+          <a className={s.camarim} href="#camarim">
+            ☞ {copy.camarim.title}
+          </a>
           <Profile signedIn={!!jwtToken} name={username} onLogin={openLogin} />
         </div>
 

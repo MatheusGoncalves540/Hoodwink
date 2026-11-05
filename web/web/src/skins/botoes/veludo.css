@@ -1,0 +1,3 @@
+/* Peça de botões "veludo": almofada de veludo com filete de ouro. */
+[data-sk-botoes="veludo"] .ticket:not([data-sk-botoes="veludo"] [data-sk-botoes]:not([data-sk-botoes="veludo"]) .ticket){border-radius:14px;background:var(--hw-veludo)!important;color:var(--hw-sobre-veludo)!important;box-shadow:inset 0 0 0 2px var(--hw-ouro),0 4px 10px var(--hw-sombra)}
+[data-sk-botoes="veludo"] .hw-botao2:not([data-sk-botoes="veludo"] [data-sk-botoes]:not([data-sk-botoes="veludo"]) .hw-botao2){border:1.5px solid var(--hw-veludo);border-radius:14px;color:var(--hw-veludo)}

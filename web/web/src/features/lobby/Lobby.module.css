@@ -178,3 +178,10 @@
   font-size: 13px;
   color: var(--hw-ouro-texto);
 }
+.camarim {
+  margin-right: auto;
+  align-self: center;
+  color: var(--hw-tinta);
+  font-style: italic;
+  text-decoration: none;
+}

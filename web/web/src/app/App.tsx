@@ -7,6 +7,7 @@ import { useEffect, useSyncExternalStore, type ComponentType } from "react";
 import { FIXTURE_NAMES, type FixtureName } from "../game/fixtures";
 import { selectScene } from "../game/selectors";
 import { FinaleScene } from "../features/endgame/Finale";
+import { Camarim } from "../features/camarim/Camarim";
 import { HowTo } from "../features/howto/HowTo";
 import { Lobby } from "../features/lobby/Lobby";
 import { RoomScene } from "../features/room/WaitingRoom";
@@ -27,8 +28,8 @@ const SCENES: Record<Scene, ComponentType> = { lobby: Lobby, room: RoomScene, ta
 
 const param = (name: string) => (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get(name));
 const isFixture = (s: string | null): s is FixtureName => FIXTURE_NAMES.includes(s as FixtureName);
-/** Como se joga abre pelos links #como-se-joga (Lobby e Menu); sem roteador. */
-const HOWTO_HASH = "#como-se-joga";
+/** Telas por âncora (sem roteador): Como se joga e Camarim, abertas do Lobby e do Menu. */
+const HASH_SCENES: Record<string, ComponentType> = { "#como-se-joga": HowTo, "#camarim": Camarim };
 const useHash = () =>
   useSyncExternalStore(
     (cb) => {
@@ -99,7 +100,7 @@ export function App() {
   }, [theme, motion.all, motion.idle]);
 
   if (devScene === "amostras") return <Amostras />;
-  const Scene = hash === HOWTO_HASH ? HowTo : SCENES[isScene(devScene) ? devScene : selectScene({ me, room, log })];
+  const Scene = HASH_SCENES[hash] ?? SCENES[isScene(devScene) ? devScene : selectScene({ me, room, log })];
   return (
     <>
       {ticket && <GameSocket ticket={ticket} />}
