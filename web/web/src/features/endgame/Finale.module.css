@@ -26,9 +26,9 @@
   border-radius: 6px;
   background:
     radial-gradient(ellipse at 50% 100%, var(--hw-luz) 0 35%, var(--hw-plateia) 75%) padding-box,
-    radial-gradient(circle, var(--hw-lampada) 0 2.5px, rgba(185, 138, 46, 0.6) 3.5px, transparent 5px) 1px 1px / 16px 16px border-box,
+    radial-gradient(circle, var(--hw-lampada) 0 2.5px, color-mix(in srgb, var(--hw-ouro) 60%, transparent) 3.5px, transparent 5px) 1px 1px / 16px 16px border-box,
     linear-gradient(var(--hw-veludo), var(--hw-veludo)) border-box;
-  box-shadow: inset 0 0 0 2px var(--hw-ouro), 0 18px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 0 0 2px var(--hw-ouro), 0 18px 40px var(--hw-sombra);
 }
 .label {
   margin: 0;

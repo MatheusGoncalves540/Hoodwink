@@ -46,7 +46,7 @@
 .art {
   flex: 1;
   border-radius: 6px;
-  border: 1px solid rgba(185, 138, 46, 0.6);
+  border: 1px solid color-mix(in srgb, var(--hw-ouro) 60%, transparent);
   background: radial-gradient(ellipse at 50% 90%, var(--hw-poca) 0 30%, transparent 70%);
   display: flex;
   align-items: center;

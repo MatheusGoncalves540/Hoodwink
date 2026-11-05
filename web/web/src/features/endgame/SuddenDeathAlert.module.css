@@ -27,7 +27,7 @@
   font-size: 72px;
   line-height: 0.95;
   color: var(--hw-lampada);
-  text-shadow: 0 0 28px rgba(185, 138, 46, 0.6);
+  text-shadow: 0 0 28px color-mix(in srgb, var(--hw-ouro) 60%, transparent);
 }
 .each {
   margin: 6px 0 0;
@@ -66,6 +66,6 @@
 .deskHolofote {
   clip-path: polygon(48% 0, 52% 0, 74% 74%, 26% 74%);
   background:
-    radial-gradient(ellipse 24% 6% at 50% 74%, rgba(255, 246, 220, 0.3), transparent 70%),
-    linear-gradient(rgba(255, 246, 220, 0.42), rgba(255, 246, 220, 0.14) 45%, transparent 74%);
+    radial-gradient(ellipse 24% 6% at 50% 74%, color-mix(in srgb, var(--hw-feixe) 30%, transparent), transparent 70%),
+    linear-gradient(color-mix(in srgb, var(--hw-feixe) 42%, transparent), color-mix(in srgb, var(--hw-feixe) 14%, transparent) 45%, transparent 74%);
 }

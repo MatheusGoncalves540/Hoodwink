@@ -14,7 +14,7 @@
 .hw-carta [style*="tinta-suave"]{color:var(--hw-carta-rotulo)!important}
 .hw-carta .hw-rotulo{color:var(--hw-carta-rotulo)}
 /* letreiro: moldura de veludo com lâmpadas acesas */
-.hw-letreiro{background-color:var(--hw-veludo)!important;background-image:radial-gradient(circle,var(--hw-lampada) 0 3px,rgba(185,138,46,.6) 4px,transparent 6px)!important;background-size:22px 22px!important;background-position:3px 3px!important;border-radius:var(--hw-radius-s)}
+.hw-letreiro{background-color:var(--hw-veludo)!important;background-image:radial-gradient(circle,var(--hw-lampada) 0 3px,color-mix(in srgb,var(--hw-ouro) 60%,transparent) 4px,transparent 6px)!important;background-size:22px 22px!important;background-position:3px 3px!important;border-radius:var(--hw-radius-s)}
 ::-webkit-scrollbar{width:9px;height:9px}
 ::-webkit-scrollbar-track{background:radial-gradient(circle,currentColor 1px,#0000 1.5px) center/9px 6px repeat-y}
 ::-webkit-scrollbar-track:horizontal{background-size:6px 9px;background-repeat:repeat-x}

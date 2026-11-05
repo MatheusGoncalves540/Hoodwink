@@ -63,7 +63,7 @@ button.card {
   border: 2px solid var(--hw-carta);
   box-shadow: 0 0 0 1.5px var(--hw-ouro);
   background: var(--hw-ouro);
-  color: #1e1512; /* cor fixa da moeda */
+  color: var(--hw-moeda-tinta);
   font-family: var(--hw-font-display);
   font-size: 14px;
   font-style: normal;
