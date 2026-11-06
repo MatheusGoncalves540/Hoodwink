@@ -36,7 +36,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .hw-moldura[data-lugar="lobby"]>.hw-moldura-f:nth-of-type(2){--p0:24px 8px;--p1:8px 24px;--p2:40px 40px}
 .hw-moldura[data-lugar="lobby"]>.hw-moldura-f:nth-of-type(3){--p0:40px 8px;--p1:24px 24px;--p2:8px 40px}
 /* Elenco, fim, aviso: filete fervendo (opção B, provisória até o design escolher entre B e E). */
-.hw-moldura:not([data-lugar="lobby"])>.hw-moldura-f{inset:5px;width:auto;height:auto;border:1.5px solid var(--hw-ouro);border-radius:7px 5px 8px 6px}
+.hw-moldura:not([data-lugar="lobby"])>.hw-moldura-f{inset:5px;width:auto;height:auto;border:1.5px solid var(--hw-ouro);border-radius:7px 5px 8px 6px;outline:1px solid var(--hw-ouro);outline-offset:-7px}
 .hw-moldura:not([data-lugar="lobby"])>.hw-moldura-f:nth-of-type(2){border-radius:5px 8px 6px 7px;translate:.6px -.4px;rotate:.2deg}
 .hw-moldura:not([data-lugar="lobby"])>.hw-moldura-f:nth-of-type(3){border-radius:8px 6px 5px 8px;translate:-.5px .5px;rotate:-.18deg}
 /* Botão secundário (slot de skin "botoes"): outline padrão do Holofote. */

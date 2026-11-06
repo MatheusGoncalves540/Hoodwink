@@ -93,21 +93,21 @@ export function Lobby() {
           <Profile signedIn={!!jwtToken} name={username} onLogin={openLogin} />
         </div>
 
-        {/* Proso em placeholder até a arte nova: moldura tracejada em contorno + "?" em tira */}
+        {/* Proso em placeholder até a arte nova: moldura tracejada em contorno + "?" com holofote */}
         <div role="img" aria-label={copy.prosoAlt} className={cx("m-contorno", s.proso)}>
           {[0, 1, 2].map((i) => (
             <svg key={i} aria-hidden="true" className={cx("m-f", s.prosoFrame)} preserveAspectRatio="none" viewBox="0 0 100 100">
               <rect x="1" y="1" width="98" height="98" rx={4 + i} vectorEffect="non-scaling-stroke" />
             </svg>
           ))}
-          <span aria-hidden="true" className={cx("m-tira", s.prosoAsk)}>
-            <span>
-              <i>?</i>
-              <i>?</i>
-              <i>?</i>
-            </span>
-          </span>
-          <span aria-hidden="true" className={s.prosoNote}>{copy.prosoPlaceholder}</span>
+          <svg aria-hidden="true" viewBox="0 0 100 160" className={s.prosoAsk}>
+            <polygon points="52,104 18,152 86,152" fill="color-mix(in srgb, var(--hw-ouro) 22%, transparent)" />
+            <path d="M20 50 C14 22 34 8 52 8 C72 8 82 24 80 42 C78 62 52 66 52 90 L52 104" fill="none" stroke="var(--hw-tinta-suave)" strokeWidth="14" strokeLinecap="round" />
+            <ellipse cx="52" cy="150" rx="34" ry="8" fill="var(--hw-ouro)" />
+            <ellipse cx="52" cy="150" rx="18" ry="4" fill="var(--hw-lampada)" />
+          </svg>
+          <span aria-hidden="true" className={s.prosoName}>{copy.prosoPlaceholder}</span>
+          <span aria-hidden="true" className={s.prosoNote}>{copy.prosoCaption}</span>
         </div>
 
         <Label tone="ouro" className={s.nowShowing}>

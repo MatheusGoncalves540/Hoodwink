@@ -5,9 +5,8 @@
   margin: 20px 6px 6px;
   background: var(--hw-luz);
   color: var(--hw-tinta);
-  border: 3px double var(--hw-tinta);
-  outline: 6px solid var(--hw-luz);
-  padding: 18px 18px 14px;
+  /* o contorno é só o da Moldura (skin): sem borda própria por cima dele */
+  padding: 22px 22px 18px;
   display: flex;
   flex-direction: column;
   animation-delay: 0.1s;

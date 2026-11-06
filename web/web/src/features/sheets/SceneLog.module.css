@@ -13,9 +13,15 @@
   margin: 0;
   font-family: var(--hw-font-texto);
   font-style: italic;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 28px;
   line-height: 1.1;
+  color: var(--hw-titulo);
+}
+/* "RODADA 4" não quebra embaixo do título */
+.head > :last-child {
+  flex: none;
+  white-space: nowrap;
 }
 .rows {
   list-style: none;

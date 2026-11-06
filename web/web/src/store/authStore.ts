@@ -22,7 +22,8 @@ export const useAuthStore = create<AuthState>()(
       playerId: "",
       isLoginOpen: false,
 
-      setAuth: (jwtToken, playerId) => set({ jwtToken: jwtToken, playerId }),
+      // login concluído fecha a bilheteria
+      setAuth: (jwtToken, playerId) => set({ jwtToken, playerId, isLoginOpen: false }),
 
       openLogin: () => set({ isLoginOpen: true }),
 

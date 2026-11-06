@@ -24,10 +24,18 @@ const c = copy.camarim;
 const same = (a: Equip, b: Equip) => SLOTS.every((k) => a[k] === b[k]);
 
 /** Amostra: o pedaço do jogo que a categoria muda. */
-function Sample({ tab }: { tab: Tab }) {
+function Sample({ tab, name }: { tab: Tab; name: string }) {
+  if (tab === "pacotes")
+    return (
+      <span className={s.pack} aria-hidden="true">
+        <b>{name}</b>
+        <i />
+        <i />
+      </span>
+    );
   if (tab === "cartas") return <CardBack size="s" />;
   if (tab === "botoes") return <span className={cx("ticket", s.miniTicket)}>{c.previewButton}</span>;
-  if (tab === "molduras" || tab === "pacotes") return <Moldura lugar="elenco" className={s.miniMoldura}>{c.previewCast}</Moldura>;
+  if (tab === "molduras") return <Moldura lugar="elenco" className={s.miniMoldura}>{c.previewCast}</Moldura>;
   if (tab === "letras") return <span className={s.letras}>Aa</span>;
   return (
     <span className={s.cores} aria-hidden="true">
@@ -49,41 +57,50 @@ export function CamarimBody({ layout, theme, equip, tab, onTab, onEquip }: BodyP
       : itemsOf(tab).map((i) => ({ key: i.id, name: i.name, next: equipItem(equip, i), worn: equip[tab] === i.id }));
   return (
     <main className={cx(s.screen, layout === "desktop" && s.desk)}>
-      <header>
-        <a className={s.back} href="#">
-          {copy.howto.back}
-        </a>
-        <h1 className={s.title}>{c.title}</h1>
-        <p className={s.lead}>{c.lead}</p>
-      </header>
+      <div className={s.side}>
+        <header>
+          <a className={s.back} href="#">
+            {c.back}
+          </a>
+          <h1 className={s.title}>{c.title}</h1>
+        </header>
 
-      <section aria-label={c.preview} className={s.preview} data-theme={theme} {...skinAttrs(equip)}>
-        <Moldura lugar="elenco" className={s.previewCast}>
-          {c.previewCast}
-        </Moldura>
-        <CardBack size="m" />
-        <Ticket>{c.previewButton}</Ticket>
-      </section>
-
-      <div role="tablist" aria-label={c.title} className={s.tabs}>
-        {TABS.map((t) => (
-          <button key={t} type="button" role="tab" aria-selected={t === tab} className={s.tab} onClick={() => onTab(t)}>
-            {c.tabs[t]}
-          </button>
-        ))}
+        <section aria-label={c.preview} className={s.preview} data-theme={theme} {...skinAttrs(equip)}>
+          <Moldura lugar="elenco" className={s.previewCast}>
+            <span className={s.previewRoom}>{c.previewRoom}</span>
+            <b>{c.previewCast}</b>
+            <span className={s.previewCount}>{c.previewCount}</span>
+          </Moldura>
+          <div className={s.previewCards}>
+            <CardBack size="s" />
+            <CardBack size="s" />
+          </div>
+          <Ticket className={s.previewTicket}>{c.previewButton}</Ticket>
+        </section>
       </div>
-      <p className={s.tabLead}>{c.tabLead[tab]}</p>
 
-      <div role="tabpanel" aria-label={c.tabs[tab]} className={s.grid}>
-        {tiles.map((t) => (
-          <button key={t.key} type="button" aria-pressed={t.worn} className={s.tile} onClick={() => onEquip(t.next)}>
-            <span className={s.sample} data-theme={theme} data-idle="off" {...skinAttrs(t.next)}>
-              <Sample tab={tab} />
-            </span>
-            <span className={s.tileName}>{t.name}</span>
-            {t.worn && <span className={s.worn}>{c.worn}</span>}
-          </button>
-        ))}
+      <div className={s.main}>
+        <p className={s.lead}>{c.lead}</p>
+        <div role="tablist" aria-label={c.title} className={s.tabs}>
+          {TABS.map((t) => (
+            <button key={t} type="button" role="tab" aria-selected={t === tab} className={s.tab} onClick={() => onTab(t)}>
+              {c.tabs[t]}
+            </button>
+          ))}
+        </div>
+        <p className={s.tabLead}>{c.tabLead[tab]}</p>
+
+        <div role="tabpanel" aria-label={c.tabs[tab]} className={s.grid}>
+          {tiles.map((t) => (
+            <button key={t.key} type="button" aria-pressed={t.worn} className={s.tile} onClick={() => onEquip(t.next)}>
+              <span className={s.sample} data-theme={theme} data-idle="off" {...skinAttrs(t.next)}>
+                <Sample tab={tab} name={t.name} />
+              </span>
+              <span className={s.tileName}>{t.name}</span>
+              {t.worn && <span className={s.worn}>{c.worn}</span>}
+            </button>
+          ))}
+        </div>
       </div>
     </main>
   );

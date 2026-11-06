@@ -1,15 +1,24 @@
-/* Como se joga: bastidor em papelão (trava 5). Só o papel dos cartões se mexe (.m-q3 no ::before). */
+/* Como se joga: bastidor em papelão (canvas Refino v2). Paleta própria, clara e escura (papelão escuro). */
 .screen {
-  box-sizing: border-box;
+  --pp: var(--hw-bastidor-papelao);
+  --pp2: var(--hw-bastidor-papelao-2);
+  --onda: var(--hw-bastidor-onda);
+  --folha: var(--hw-bastidor-folha);
+  --tinta: var(--hw-bastidor-tinta);
+  --suave: var(--hw-bastidor-suave);
+  --titulo: var(--hw-bastidor-titulo);
+  --alerta: var(--hw-bastidor-alerta);
+  --ouro: var(--hw-bastidor-ouro);
+  --filete: var(--hw-bastidor-filete);
+  --durex: var(--hw-bastidor-durex);
+  --durex-borda: var(--hw-bastidor-durex-borda);
+  --sombra-c: var(--hw-bastidor-sombra);
+  --q3-ciclo: 1.5s;
   min-height: 100dvh;
-  background:
-    repeating-linear-gradient(90deg, color-mix(in srgb, var(--hw-papelao-escuro) 18%, transparent) 0 1px, transparent 1px 7px),
-    var(--hw-papelao);
-  color: var(--hw-papelao-tinta);
-  font-family: var(--hw-font-cartao);
-  font-size: 18px;
-  line-height: 1.35;
-  padding: 0 16px 40px;
+  overflow-x: clip; /* durex e etiquetas saem da borda */
+  background: repeating-linear-gradient(90deg, var(--onda) 0 2px, transparent 2px 7px), var(--pp);
+  color: var(--tinta);
+  font-family: var(--hw-font-texto);
 }
 /* chave Movimento desligada: nada se mexe nesta tela */
 .pausa :global(*),
@@ -19,201 +28,804 @@
 .pausa :global(.m-f):first-of-type {
   opacity: 1;
 }
+.screen a {
+  color: var(--titulo);
+}
+.screen a:hover {
+  color: var(--alerta);
+}
+.screen section {
+  scroll-margin-top: 80px;
+}
+
+/* barra fixa */
 .barra {
   position: sticky;
   top: 0;
-  z-index: 2;
-  margin: 0 -16px 16px;
-  padding: 10px 16px;
+  z-index: 5;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  background: var(--hw-papelao-escuro);
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--hw-papelao-tinta) 30%, transparent);
+  justify-content: space-between;
+  gap: 4px 24px;
+  padding: 6px 16px;
+  background: repeating-linear-gradient(90deg, var(--onda) 0 2px, transparent 2px 7px), var(--pp);
+  box-shadow: 0 3px 0 var(--sombra-c);
 }
-.back {
-  color: var(--hw-papel);
-  font-family: var(--hw-font-cartao);
+.desk .barra {
+  padding: 10px max(24px, calc((100% - 1152px) / 2));
+}
+.back,
+.nav a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.screen .back {
+  color: var(--tinta);
   text-decoration: none;
 }
-.placa {
-  margin: 0;
-  flex: 1;
-  font-family: var(--hw-font-rabisco);
-  font-weight: 400;
-  font-size: 26px;
-  color: var(--hw-papel);
-  rotate: -1deg;
+.nav {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0 20px;
 }
-.roles .placa {
-  display: inline-block;
-  padding: 4px 14px;
-  background: var(--hw-papelao-escuro);
-  clip-path: polygon(2% 6%, 99% 0, 97% 94%, 0 100%);
+.screen .nav a {
+  color: var(--tinta);
+}
+.desk .nav {
+  display: flex;
 }
 .chave {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border: 2px solid var(--hw-papelao-tinta);
-  border-radius: var(--hw-radius-pill);
-  background: var(--hw-papelao);
-  color: var(--hw-papelao-tinta);
-  font-family: var(--hw-font-cartao);
-  font-size: 16px;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px 14px 6px 12px;
+  border: 0;
   cursor: pointer;
+  color: var(--tinta);
+  background: repeating-linear-gradient(90deg, var(--onda) 0 2px, transparent 2px 6px), var(--pp2);
+  clip-path: polygon(0 8%, 6% 0, 52% 4%, 100% 0, 98% 50%, 100% 100%, 48% 96%, 4% 100%, 2% 50%);
+  font-family: var(--hw-font-rabisco);
+  font-size: 14px;
+  line-height: 1;
 }
-.knob {
-  width: 30px;
-  height: 16px;
-  border-radius: var(--hw-radius-pill);
-  background: var(--hw-papelao-escuro);
+.chave:focus-visible {
+  outline: 3px solid var(--titulo);
+  outline-offset: 3px;
+}
+.trilho {
   position: relative;
+  width: 46px;
+  height: 24px;
+  flex: none;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 2px dashed var(--tinta);
+  background: var(--pp);
 }
-.knob::after {
-  content: "";
+.pino {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: var(--hw-papel);
+  background: var(--folha);
+  box-shadow: 1px 2px 0 var(--sombra-c);
 }
-.chave[aria-checked="true"] .knob::after {
-  left: 16px;
+.chave[aria-checked="true"] .trilho {
+  background: var(--folha);
 }
-.grid {
-  display: grid;
-  gap: 22px;
+.chave[aria-checked="true"] .pino {
+  left: 24px;
+  background: var(--hw-veludo);
 }
-.desk .grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  max-width: 1200px;
+
+/* página */
+.page {
+  max-width: 1152px;
   margin: 0 auto;
+  padding: 32px 16px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
 }
-.desk .roles {
-  grid-column: 1 / -1;
+.desk .page {
+  padding: 56px 24px 96px;
+  gap: 64px;
 }
-/* cartão de papel: o fundo e a sombra moram no ::before, que é o que se mexe */
-.folha {
-  position: relative;
-  padding: 18px 18px 14px;
-  color: var(--hw-papel-tinta);
-  rotate: -0.6deg;
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
-.folha:nth-child(even) {
-  rotate: 0.7deg;
+.headRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
-.folha::before {
-  background: var(--hw-papel);
-  box-shadow: 0 6px 12px var(--hw-papel-sombra);
+.split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px 48px;
+  align-items: flex-start;
 }
-.folha p {
-  margin: 0 0 8px;
+.center {
+  align-items: center;
 }
-.cardTitle {
-  margin: 0 0 8px;
-  font-family: var(--hw-font-cartao);
-  font-size: 24px;
-  font-weight: 400;
-  text-decoration: underline wavy color-mix(in srgb, var(--hw-papel-tinta) 40%, transparent);
+.splitText {
+  flex: 1 1 340px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
-.fita {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  translate: -50% 0;
-  rotate: -3deg;
-  padding: 2px 14px;
-  background: var(--hw-fita);
-  font-size: 15px;
+.center .splitText {
+  flex: 999 1 520px;
 }
-.list {
+.splitText p {
   margin: 0;
-  padding-left: 20px;
+  font-size: 17px;
+  line-height: 1.6;
 }
-.list li {
-  margin-bottom: 6px;
+.splitText .lead2 {
+  font-size: 19px;
+  font-weight: 500;
 }
-.canhoto {
-  --mordida: 12px;
-  padding: 24px 28px 20px;
+
+/* placa de papelão (títulos) */
+.sombra {
+  align-self: flex-start;
+  filter: drop-shadow(3px 4px 0 var(--sombra-c));
 }
-.picote {
-  fill: none;
-  stroke: var(--hw-papel-tinta);
-  stroke-width: 1.5px;
-  stroke-dasharray: 5 4;
-  overflow: visible;
+.placa {
+  margin: 0;
+  padding: 10px 22px 12px;
+  background: repeating-linear-gradient(90deg, var(--onda) 0 2px, transparent 2px 6px), var(--pp2);
+  clip-path: polygon(0 6%, 4% 0, 38% 3%, 70% 0, 100% 5%, 98% 52%, 100% 96%, 62% 100%, 30% 97%, 3% 100%, 1% 50%);
+  color: var(--titulo);
+  font-family: var(--hw-font-rabisco);
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.2;
 }
-.taxa {
-  display: grid;
-  gap: 4px;
-  margin-top: 8px;
+.desk .placa {
+  font-size: 36px;
 }
-.taxa input {
-  accent-color: var(--hw-papelao-escuro);
+.titulo {
+  font-size: 44px;
+  line-height: 1;
+  padding: 14px 24px 18px;
+  rotate: -1.5deg;
 }
-.marcador {
+.desk .titulo {
+  font-size: clamp(52px, 7vw, 92px);
+  padding: 18px 36px 22px;
+}
+.marker {
+  margin: 0;
   font-family: var(--hw-font-rabisco);
   font-weight: 400;
   font-size: 22px;
+  color: var(--titulo);
+}
+.fita {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 6px 16px;
+  background: var(--durex);
+  border-inline: 1px dashed var(--durex-borda);
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--tinta);
+  rotate: -2deg;
 }
 .rabisco {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
   margin: 0;
-  align-self: center;
+  max-width: 46ch;
   font-family: var(--hw-font-rabisco);
+  font-size: 16px;
+  line-height: 1.3;
+  rotate: -1deg;
+}
+.desk .rabisco {
   font-size: 20px;
-  rotate: -3deg;
 }
 .arrow {
-  width: 48px;
-  height: 28px;
+  width: 54px;
+  height: 36px;
+  flex: none;
+  color: var(--titulo);
 }
 .arrow svg {
   fill: none;
-  stroke: var(--hw-papelao-tinta);
-  stroke-width: 2.5;
+  stroke: currentColor;
+  stroke-width: 3.5;
   stroke-linecap: round;
+  stroke-linejoin: round;
 }
-.etiquetas {
+
+/* folha de papel: o fundo e a sombra no ::before (o que se mexe) */
+.folha {
+  position: relative;
+  color: var(--tinta);
+  font-family: var(--hw-font-cartao);
+}
+.folha::before {
+  background: var(--folha);
+  box-shadow: 3px 4px 0 var(--sombra-c);
+}
+.folha:nth-child(3n + 2)::before {
+  animation-delay: calc(var(--q3-ciclo) / -3);
+}
+.folha:nth-child(3n)::before {
+  animation-delay: calc(var(--q3-ciclo) * -2 / 3);
+}
+.folha h3 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.15;
+}
+.folha p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.5;
+}
+.durex {
+  position: absolute;
+  z-index: 1;
+  width: 86px;
+  height: 26px;
+  background: var(--durex);
+  border-inline: 1px dashed var(--durex-borda);
+  pointer-events: none;
+}
+.e {
+  top: -12px;
+  left: -18px;
+  rotate: -32deg;
+}
+.d {
+  top: -12px;
+  right: -18px;
+  rotate: 30deg;
+}
+.c {
+  top: -13px;
+  left: calc(50% - 43px);
+  rotate: -3deg;
+}
+
+/* topo */
+.hero {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 12px 0 16px;
+  gap: 40px 56px;
+  align-items: center;
 }
-.etiqueta {
-  padding: 4px 12px;
-  border: 1.5px solid var(--hw-papelao-tinta);
-  border-radius: var(--hw-radius-s);
-  background: var(--hw-papel);
-  color: var(--hw-papel-tinta);
-  font-family: var(--hw-font-cartao);
+.heroText {
+  flex: 999 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.lead {
+  margin: 0;
+  max-width: 44ch;
   font-size: 17px;
-  cursor: pointer;
+  line-height: 1.55;
+  font-weight: 500;
 }
-.etiqueta[aria-pressed="true"] {
-  background: var(--hw-papelao-escuro);
-  color: var(--hw-papel);
+.desk .lead {
+  font-size: 21px;
 }
-.ficha {
+.resumo {
+  flex: 1 1 300px;
+  min-width: 0;
+  padding: 28px 28px 16px;
+  rotate: 1.2deg;
+}
+.resumo dl {
+  margin: 8px 0 0;
   display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: auto 1fr;
+  gap: 0 18px;
+  font-size: 17px;
+  line-height: 34px;
 }
-.arte {
-  aspect-ratio: 4 / 5;
-  border: 2px dashed var(--hw-papel-tinta);
-  border-radius: var(--hw-radius-s);
+.resumo dl > div {
+  display: contents;
+}
+.resumo dt {
+  font-family: var(--hw-font-cartao);
+  font-size: 19px;
+  color: var(--titulo);
+}
+.resumo dd {
+  margin: 0;
+  border-bottom: 1px dashed var(--filete);
+}
+.resumo dl > div:last-child dd {
+  border-bottom: 0;
+}
+
+/* grade de folhas */
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 32px 24px;
+}
+.step,
+.action {
+  padding: 24px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cards > :nth-child(odd) {
+  rotate: -0.8deg;
+}
+.cards > :nth-child(even) {
+  rotate: 0.7deg;
+}
+.stepN {
+  font-family: var(--hw-font-rabisco);
+  font-size: 34px;
+  line-height: 1;
+  color: var(--ouro);
+}
+.actionHead {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.num {
+  font-family: var(--hw-font-cartao);
+  font-size: 30px;
+  color: var(--titulo);
+}
+.killTax {
+  margin: 0;
+  padding: 8px 0 0;
+  list-style: none;
+  border-top: 1.5px dashed var(--filete);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.canhoto {
+  --mordida: 12px;
+  padding: 28px 24px 24px;
+}
+.picote {
+  position: absolute;
+  inset: 9px;
+  pointer-events: none;
+  color: var(--suave);
+}
+.picote svg {
+  overflow: visible;
+}
+.picote path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-dasharray: 7 6;
+}
+
+/* duvidar */
+.doubtCards {
+  flex: 999 1 560px;
+  min-width: 0;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.doubt {
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.carimbo {
+  align-self: flex-start;
+  border: 3px solid currentColor;
+  border-radius: 6px;
+  padding: 2px 12px;
+  font-family: var(--hw-font-cartao);
+  font-size: 30px;
+  line-height: 1.2;
+}
+.blefe {
+  color: var(--alerta);
+  rotate: -8deg;
+}
+.verdade {
+  color: var(--ouro);
+  rotate: -4deg;
+}
+
+/* taxa */
+.taxa {
+  flex: 1 1 300px;
+  min-width: 0;
+  padding: 28px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  rotate: 1.5deg;
+}
+.taxaNum {
+  font-family: var(--hw-font-cartao);
+  font-size: 64px;
+  line-height: 1;
+  color: var(--titulo);
+  font-variant-numeric: tabular-nums;
+}
+.taxa input {
+  width: 100%;
+  min-height: 44px;
+  accent-color: var(--hw-veludo);
+}
+.hint {
+  font-size: 15px;
+  color: var(--suave);
+}
+
+/* elenco: etiquetas à esquerda, ficha à direita (no celular, etiquetas roláveis em cima) */
+.elenco {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.desk .elenco {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 32px;
+}
+.lista {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 -16px;
+  padding: 4px 16px 8px;
+  scroll-snap-type: x proximity;
+}
+.desk .lista {
+  flex: 0 0 240px;
+  flex-direction: column;
+  gap: 22px;
+  overflow: visible;
+  margin: 0;
+  padding: 0;
+}
+.grupo {
+  display: contents;
+}
+.desk .grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.grupoTitle {
+  display: none;
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.desk .grupoTitle {
+  display: block;
+}
+.etiqueta {
+  flex: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 26px 0 14px;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  scroll-snap-align: start;
+  background: var(--folha);
+  color: var(--tinta);
+  font-family: var(--hw-font-texto);
+  font-size: 17px;
+  clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
+}
+.desk .etiqueta {
+  width: 100%;
+  clip-path: polygon(0 0, 92% 0, 100% 50%, 92% 100%, 0 100%);
+}
+.etiqueta[aria-pressed="true"] {
+  background: var(--hw-veludo);
+  color: var(--hw-sobre-veludo);
+  font-weight: 700;
+}
+.etiqueta:focus-visible {
+  outline: 3px solid var(--titulo);
+  outline-offset: -3px;
+}
+.furo {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--pp);
+  box-shadow: inset 1px 1px 0 var(--sombra-c);
+}
+.etiquetaNome {
+  flex: 1;
+}
+.etiquetaPreco {
+  font-family: var(--hw-font-display);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.ficha {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 24px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 32px;
+}
+.desk .ficha {
+  padding: 28px;
+}
+.figura {
+  flex: 1 1 300px;
+  max-width: 340px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.figura figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--hw-font-rotulo);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+.quadro {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  padding: 18px;
+  box-sizing: border-box;
+  background: repeating-linear-gradient(90deg, var(--onda) 0 2px, transparent 2px 6px), var(--pp2);
+  clip-path: polygon(0 1%, 3% 0, 50% 1%, 97% 0, 100% 2%, 99% 50%, 100% 98%, 96% 100%, 50% 99%, 2% 100%, 0 97%, 1% 50%);
+}
+.tacha {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--hw-ouro);
+  box-shadow: inset -2px -2px 0 color-mix(in srgb, var(--hw-moeda-tinta) 35%, transparent), 1px 2px 0 var(--sombra-c);
+}
+.tela {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background: var(--folha);
+  border: 2px dashed var(--filete);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  text-align: center;
+  gap: 14px;
+}
+.ask {
+  width: 110px;
+  height: 176px;
+}
+.ask path {
+  fill: none;
+  stroke: var(--suave);
+  stroke-linecap: round;
+}
+.ask ellipse {
+  fill: var(--hw-ouro);
 }
 .arteNota {
-  font-size: 15px;
-  rotate: -4deg;
+  font-family: var(--hw-font-rabisco);
+  font-size: 18px;
+  color: var(--suave);
+  rotate: -3deg;
+}
+.fichaText {
+  flex: 1 1 280px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.fichaHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.fichaHead h3 {
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--titulo);
+}
+.desk .fichaHead h3 {
+  font-size: 52px;
+}
+.moeda {
+  flex: none;
+  min-width: 56px;
+  height: 56px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--hw-ouro);
+  color: var(--hw-moeda-tinta);
+  box-shadow: inset -3px -3px 0 color-mix(in srgb, var(--hw-moeda-tinta) 25%, transparent), 2px 3px 0 var(--sombra-c);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--hw-font-cartao);
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.ficha .efeito {
+  font-size: 20px;
+  font-weight: 500;
+}
+.campos {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.campos > div {
+  display: contents;
+}
+.campos dt,
+.campos dd {
+  margin: 0;
+  padding: 10px 0;
+  border-top: 1px dashed var(--filete);
+}
+.campos > div:last-child :is(dt, dd) {
+  border-bottom: 1px dashed var(--filete);
+}
+.campos dt {
+  padding-right: 20px;
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ouro);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+.nota {
+  font-size: 17px;
+}
+
+/* outras regras + fim */
+.casa {
+  flex: 999 1 520px;
+  min-width: 0;
+  padding: 32px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  rotate: -0.6deg;
+}
+.casa .marker {
+  font-size: 28px;
+}
+.casa ul {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 18px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fimWrap {
+  flex: 1 1 300px;
+  min-width: 0;
+  align-self: stretch;
+}
+.fim {
+  padding: 28px 28px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  rotate: 1.2deg;
+}
+.fim h3 {
+  margin: 0;
+  font-family: var(--hw-font-rabisco);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--titulo);
+}
+.fimLabel {
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--tinta);
+}
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.pronto {
+  margin: 0;
+  font-family: var(--hw-font-rabisco);
+  font-size: 22px;
+  rotate: -1deg;
+}
+.screen .criar {
+  min-height: 52px;
+  padding: 0 32px;
+  border-radius: 999px;
+  background: var(--hw-veludo);
+  color: var(--hw-sobre-veludo);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  box-shadow: 3px 4px 0 var(--sombra-c);
+}
+.screen .criar:hover {
+  color: var(--hw-sobre-veludo);
+  background: color-mix(in srgb, var(--hw-veludo) 85%, white);
+}
+@media (max-width: 1023px) {
+  .footer .criar {
+    flex: 1 1 100%;
+  }
 }
