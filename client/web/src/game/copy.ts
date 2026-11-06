@@ -255,9 +255,12 @@ export const copy = {
   loginModal: {
     kicker: "Bilheteria",
     title: "Entrar",
-    text: "Entre com sua conta Google para criar uma sala ou entrar numa.",
+    text: "Entre com sua conta Google ou só com um nome, se estiver na mesma rede.",
     loading: "Carregando o Google…",
     back: "☜ Voltar",
+    localOr: "ou, na mesma rede",
+    localName: "Seu nome",
+    localEnter: "Entrar sem conta",
   },
   castLine: (count: number, max: number) => `${count} de ${max} lugares ocupados`,
   vacantRole: "Lugar vago",
