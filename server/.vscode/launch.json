@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Iniciar backend",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/backend",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "args": [],
+      "showLog": true
+    },
+    {
+      "name": "Iniciar gameServer",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/gameServer",
+      "envFile": "${workspaceFolder}/gameServer/.env",
+      "args": [],
+      "showLog": true
+    }
+  ]
+}

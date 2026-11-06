@@ -1,0 +1,8 @@
+[[GORM]]
+[[Services e Handlers]]
+[[Armazenando JWTS]]
+[[Checklist de Segurança Anti-XSS (e boas práticas gerais)]]
+[[🔐 Onde salvar o JWT?]]
+[[🧠 Visão geral da arquitetura do game-server]]
+[[⚙️ Motor de Processamento de Jogadas e Timeouts]]
+[[🔄 Fluxo de jogadas (da mensagem ws, até encadeamentos definidos)]]

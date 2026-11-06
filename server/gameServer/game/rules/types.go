@@ -1,0 +1,83 @@
+package rules
+
+import (
+	"fmt"
+	"reflect"
+)
+
+// GameRules representa as regras do jogo carregadas do arquivo YAML
+type GameRules struct {
+	Cards    map[string]CardRules `yaml:"Cards"`
+	Generals Generals             `yaml:"General"`
+	Timeouts map[string]Timeouts  `yaml:"Timeouts"`
+}
+
+// CardRules representa as regras das cartas no jogo configuradas no arquivo YAML
+type CardRules struct {
+	Value                *int  `yaml:"value,omitempty"`                // Valores afetados pelas taxas (nem sempre são os preços das cartas)
+	FixedValue           *int  `yaml:"fixedValue,omitempty"`           // Valores fixos (não afetados por taxas)
+	TaxMinimum           *int  `yaml:"taxMinimum,omitempty"`           // Valores mínimos após aplicação de taxas
+	TaxMaximum           *int  `yaml:"taxMaximum,omitempty"`           // Valores máximos após aplicação de taxas
+	CanKillSelf          *bool `yaml:"canKillSelf,omitempty"`          // Indica se a carta pode eliminar a si mesma
+	CanDefendClairvoyant *bool `yaml:"canDefendClairvoyant,omitempty"` // Indica se a carta pode defender o Clairvoyant
+	DoubledValueCard     *bool `yaml:"doubledValueCard,omitempty"`
+	MaxDoubled           *int  `yaml:"maxDoubled,omitempty"`
+	AffectedByTaxes      *bool `yaml:"affectedByTaxes,omitempty"`
+	RoundsUntilDecrease  *int  `yaml:"roundsUntilDecrease,omitempty"`
+
+	// Regras específicas de algumas cartas
+	GracePeriod                *int `yaml:"gracePeriod,omitempty"`                // Investidor: turnos que uma moeda fica investida
+	CoinDenialThreshold        *int `yaml:"coinDenialThreshold,omitempty"`        // Egoísta: valor base (somado às taxas) que pode ser impedido
+	FutureProtectionTaxMinimum *int `yaml:"futureProtectionTaxMinimum,omitempty"` // Guardiã: custo mínimo ao proteger contra ataque futuro
+	FutureProtectionSurcharge  *int `yaml:"futureProtectionSurcharge,omitempty"`  // Guardiã: acréscimo ao proteger contra ataque futuro
+	ClairvoyantBlockDiscount   *int `yaml:"clairvoyantBlockDiscount,omitempty"`   // Guardiã: desconto ao bloquear o Clarividente
+	ClairvoyantBlockTaxMinimum *int `yaml:"clairvoyantBlockTaxMinimum,omitempty"` // Guardiã: custo mínimo ao bloquear o Clarividente
+}
+
+// TimeoutsTypes representa os diferentes tipos de timeout configuráveis para cada sala
+type TimeoutsTypes string
+
+const (
+	TimeoutsTypeDefault     TimeoutsTypes = "DEFAULT"
+	TimeoutsTypeSuddenDeath TimeoutsTypes = "SUDDEN_DEATH"
+)
+
+// Timeouts representa os diferentes tipos de timeout possiveis para cada tipo de estado de sala
+// como DEFAULT e SUDDEN_DEATH, cada um com seus próprios valores
+type Timeouts struct {
+	DisplayMessage          *int `yaml:"displayMessage"`
+	DisplayImportantMessage *int `yaml:"displayImportantMessage"`
+	WaitingAction           *int `yaml:"waitingAction"`
+}
+
+// Get retorna o valor do timeout pelo nome do campo dinamicamente
+func (t *Timeouts) Get(field string) (int, error) {
+	// usa reflection para obter o valor do campo dinamicamente
+	val := reflect.ValueOf(t).Elem().FieldByName(field)
+	// verifica se o campo existe e não é nulo
+	if !val.IsValid() {
+		return 0, fmt.Errorf("campo '%s' não existe", field)
+	}
+	if val.IsNil() {
+		return 0, fmt.Errorf("campo '%s' não configurado", field)
+	}
+	// retorna o valor do campo como int
+	return int(val.Elem().Int()), nil
+}
+
+// Generals representa regras gerais do jogo configuradas no arquivo YAML
+type Generals struct {
+	InitialCoins       *int `yaml:"initialCoins"`
+	MaxPlayers         *int `yaml:"maxPlayers"`
+	MaxCoins           *int `yaml:"maxCoins"`
+	MaxTax             *int `yaml:"maxTax"`
+	MinTax             *int `yaml:"minTax"`
+	CopysOfEachCard    *int `yaml:"copysOfEachCard"`
+	RandomTaxesChanges *int `yaml:"randomTaxesChanges"`
+
+	// Ações básicas do turno
+	BasicTakeCoins       *int `yaml:"basicTakeCoins"`
+	BasicKillCardCost    *int `yaml:"basicKillCardCost"`
+	BasicKillCardMinimum *int `yaml:"basicKillCardMinimum"`
+	BasicSwapMinCoins    *int `yaml:"basicSwapMinCoins"`
+}

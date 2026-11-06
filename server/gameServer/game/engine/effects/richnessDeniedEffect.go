@@ -1,0 +1,35 @@
+package effects
+
+import (
+	"context"
+
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
+	"github.com/redis/go-redis/v9"
+)
+
+func RichnessDeniedEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+	deniedPayload, ok := effect.Payload.(structs.RichnessDeniedPayload)
+	if !ok {
+		utils.LogError("payload inválido para RichnessDeniedPayload")
+		return
+	}
+
+	// Se o que foi negado foi um investimento, o efeito de investimento é cancelado
+	// e a moeda usada para investir volta para a mão do jogador.
+	lastEffect, hasLast := roomData.PeekLastPendingEffect()
+	if hasLast && lastEffect.Cause == structs.EffectInvestment && deniedPayload.TargetPlayer != nil {
+		targetPlayer, err := roomData.GetPlayer(*deniedPayload.TargetPlayer)
+		if err != nil {
+			utils.LogError(err)
+		} else if generalRules, err := roomData.GetGeneralRules(registryRules); err != nil {
+			utils.LogError(err)
+		} else {
+			targetPlayer.AddCoins(1, *generalRules.MaxCoins)
+		}
+	}
+
+	roomData.PopLastPendingEffect()
+}
