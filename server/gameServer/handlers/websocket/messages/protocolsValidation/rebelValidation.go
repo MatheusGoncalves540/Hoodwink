@@ -39,7 +39,7 @@ func ValidateRebelProtocol(roomData *rooms.Room, registryRules *rules.Registry, 
 	}
 
 	// verifica se a taxa mínima já foi atingida
-	if roomData.Tax <= *generalRules.MinTax {
+	if generalRules.MinTax != nil && roomData.Tax <= *generalRules.MinTax {
 		utils.LogInvldPlyrReq("Taxa mínima atingida", playerPlay.PlayerId)
 		return false
 	}

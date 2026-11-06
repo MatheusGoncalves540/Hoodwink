@@ -23,33 +23,46 @@ func GuardianEffect(ctx context.Context, rdb *redis.Client, registryRules *rules
 		utils.LogError("protectedPlayer não encontrado para GuardianEffect: " + err.Error())
 		return
 	}
-	if protectedPlayer == nil {
-		utils.LogError("protectedPlayer não encontrado para GuardianEffect")
-		return
-	}
 
 	switch guardianPayload.ProtectedFrom {
 	case "future":
 		protectedCards := protectedPlayer.GetProtectedCardsIndexes()
 
-		// se a carta já tiver sido protegida por Guardian, desprotege ela para que a nova carta seja protegida
-		if len(protectedCards) > 0 {
-			for _, protectedCardIndex := range protectedCards {
-				protectedPlayer.UnprotectCard(protectedCardIndex)
+		// se a carta já tiver sido protegida por Guardian, desprotege para que a nova carta seja protegida
+		for _, protectedCardIndex := range protectedCards {
+			if err := protectedPlayer.UnprotectCard(protectedCardIndex); err != nil {
+				utils.LogError(err)
 			}
 		}
 
-		protectedPlayer.ProtectCard(guardianPayload.TargetCardIndex)
+		if err := protectedPlayer.ProtectCard(guardianPayload.TargetCardIndex); err != nil {
+			utils.LogError(err)
+		}
 
 	case "death":
-		roomData.PopLastPendingEffect()
+		if cancelLastPendingEffect(roomData, structs.EffectCardKilled) {
+			return
+		}
+		utils.LogError("Guardian tentou bloquear uma morte, mas o efeito não estava pendente")
 
 	case "sight":
-		roomData.PopLastPendingEffect()
+		if cancelLastPendingEffect(roomData, structs.EffectClairvoyant) {
+			return
+		}
+		utils.LogError("Guardian tentou bloquear um Clairvoyant, mas o efeito não estava pendente")
 
 	default:
 		utils.LogError("guardianPayload.ProtectedFrom tem valor inválido: " + guardianPayload.ProtectedFrom)
 		return
 	}
+}
 
+// cancelLastPendingEffect remove o último efeito pendente apenas se ele for do tipo esperado.
+func cancelLastPendingEffect(roomData *rooms.Room, expected structs.EffectCause) bool {
+	last, ok := roomData.PeekLastPendingEffect()
+	if !ok || last.Cause != expected {
+		return false
+	}
+	roomData.PopLastPendingEffect()
+	return true
 }

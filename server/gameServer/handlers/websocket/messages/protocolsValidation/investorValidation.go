@@ -8,12 +8,6 @@ import (
 )
 
 func ValidateInvestorProtocol(roomData *rooms.Room, registryRules *rules.Registry, playerPlay *structs.PlayerPlay) bool {
-	cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
-	if err != nil {
-		utils.LogError("Erro ao obter regras da carta Guardian: " + err.Error())
-		return false
-	}
-
 	// Investor só pode ser usado durante o evento de espera de primeira ação
 	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
 		utils.LogInvldPlyrReq("Investor só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
@@ -25,14 +19,24 @@ func ValidateInvestorProtocol(roomData *rooms.Room, registryRules *rules.Registr
 		return false
 	}
 
-	// Verifica se o jogador tem o máximo de investimentos ativos
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		utils.LogError(err)
 		return false
 	}
 
-	investmentMax := *cardRules.FixedValue
+	// você investe 1 moeda da mão
+	if sourcePlayer.Coins < 1 {
+		utils.LogInvldPlyrReq("Moedas insuficientes para investir", playerPlay.PlayerId)
+		return false
+	}
+
+	// O valor da carta representa o número máximo de moedas investidas (4 + taxas, limitado entre 2 e 6)
+	investmentMax, err := roomData.GetCardValue(registryRules, playerPlay.Type, 0)
+	if err != nil {
+		utils.LogError(err)
+		return false
+	}
 
 	if len(sourcePlayer.Investments) >= investmentMax {
 		utils.LogInvldPlyrReq("Número máximo de investimentos ativos alcançado", playerPlay.PlayerId)

@@ -25,11 +25,16 @@ func (r *Room) DecrementTax(amount int) {
 	r.Tax -= amount
 }
 
-// RandomlyChangeTaxes aleatoriamente aumenta ou diminui as taxas
+// RandomlyChangeTaxes aleatoriamente aumenta ou diminui as taxas.
+// No modo clássico a chance é 0: as taxas só mudam por efeito de cartas.
 func (r *Room) RandomlyChangeTaxes(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry) error {
 	generalRules, err := r.GetGeneralRules(registryRules)
 	if err != nil {
 		return err
+	}
+
+	if generalRules.RandomTaxesChanges == nil || *generalRules.RandomTaxesChanges <= 0 {
+		return nil
 	}
 
 	randPercentage := rand.IntN(99) + 1 // gera um número entre 1 e 100
@@ -40,26 +45,22 @@ func (r *Room) RandomlyChangeTaxes(ctx context.Context, rdb *redis.Client, regis
 		if generalRules.MaxTax != nil && r.Tax >= *generalRules.MaxTax {
 			// Se as taxas já estão no máximo, só podem diminuir
 			r.DecrementTax(1)
-			utils.LogDebug("Taxas diminuídas para" + fmt.Sprint(r.Tax))
-			return nil
+			utils.LogDebug("Taxas diminuídas para " + fmt.Sprint(r.Tax))
 		} else if generalRules.MinTax != nil && r.Tax <= *generalRules.MinTax {
 			// Se as taxas já estão no mínimo, só podem aumentar
 			r.IncrementTax(1)
-			utils.LogDebug("Taxas aumentadas para" + fmt.Sprint(r.Tax))
-			return nil
-		}
-
-		// Decide aleatoriamente se as taxas aumentam ou diminuem
-		//TODO se pá é interessante fazer um anuncer para isso, ou pelo menos logar
-		if rand.IntN(2) == 0 {
+			utils.LogDebug("Taxas aumentadas para " + fmt.Sprint(r.Tax))
+		} else if rand.IntN(2) == 0 {
 			// Aumenta as taxas
 			r.IncrementTax(1)
-			utils.LogDebug("Taxas aumentadas para" + fmt.Sprint(r.Tax))
+			utils.LogDebug("Taxas aumentadas para " + fmt.Sprint(r.Tax))
 		} else {
 			// Diminui as taxas
 			r.DecrementTax(1)
-			utils.LogDebug("Taxas diminuídas para" + fmt.Sprint(r.Tax))
+			utils.LogDebug("Taxas diminuídas para " + fmt.Sprint(r.Tax))
 		}
+
+		r.EnforceInvestorMaxInvestments(registryRules)
 	}
 
 	return nil

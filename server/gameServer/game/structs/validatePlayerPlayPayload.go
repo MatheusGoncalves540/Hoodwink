@@ -45,6 +45,45 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 		}
 		return payload, nil
 
+	case PlayTakeCoins:
+		if len(p.Payload) == 0 {
+			return struct{}{}, nil
+		}
+		var empty struct{}
+		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+			return nil, fmt.Errorf("payload inválido para take coins: %w", err)
+		}
+		return empty, nil
+
+	case PlayBasicKill:
+		var payload AssassinPayload
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para kill card: %w", err)
+		}
+		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
+			return nil, fmt.Errorf("targetPlayer é obrigatório e não pode ser vazio")
+		}
+		if payload.TargetCardIndex == nil {
+			return nil, fmt.Errorf("targetCardIndex é obrigatório")
+		}
+		if *payload.TargetCardIndex < 0 {
+			return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
+		}
+		return payload, nil
+
+	case PlaySwapCards:
+		var payload SwapCardsPayload
+		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+			return nil, fmt.Errorf("payload inválido para swap cards: %w", err)
+		}
+		if payload.TargetCardIndex == nil {
+			return nil, fmt.Errorf("targetCardIndex é obrigatório")
+		}
+		if *payload.TargetCardIndex < 0 {
+			return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
+		}
+		return payload, nil
+
 	case PlayAssassinCard:
 		var payload AssassinPayload
 		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
@@ -176,12 +215,12 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 		if *payload.TargetCardIndex < 0 {
 			return nil, fmt.Errorf("targetCardIndex deve ser >= 0")
 		}
-		if payload.UseOnTwoCards == nil {
-			return nil, fmt.Errorf("useOnTwoCards é obrigatório")
-		}
 		return payload, nil
 
 	case PlayInvestorCard:
+		if len(p.Payload) == 0 {
+			return InvestorPayload{}, nil
+		}
 		var payload InvestorPayload
 		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para investor: %w", err)
@@ -189,6 +228,9 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 		return payload, nil
 
 	case PlaySelfishCard:
+		if len(p.Payload) == 0 {
+			return SelfishPayload{}, nil
+		}
 		var payload SelfishPayload
 		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para selfish: %w", err)

@@ -27,6 +27,38 @@ func (p *Player) GetAliveCardsIndexes() []int {
 	return aliveIndexes
 }
 
+// GetDeadCardsIndexes retorna os índices das cartas mortas do jogador
+func (p *Player) GetDeadCardsIndexes() []int {
+	deadIndexes := []int{}
+	for i := range p.Cards {
+		if p.Cards[i].Dead {
+			deadIndexes = append(deadIndexes, p.Cards[i].Index)
+		}
+	}
+	return deadIndexes
+}
+
+// HasDeadCard indica se o jogador possui ao menos uma carta morta na mão
+func (p *Player) HasDeadCard() bool {
+	return len(p.GetDeadCardsIndexes()) > 0
+}
+
+// GetFirstAliveCardIndexByName retorna o índice da primeira carta viva com o nome informado
+func (p *Player) GetFirstAliveCardIndexByName(name structs.CardName) (int, bool) {
+	for i := range p.Cards {
+		if !p.Cards[i].Dead && p.Cards[i].Name == name {
+			return p.Cards[i].Index, true
+		}
+	}
+	return 0, false
+}
+
+// HasAliveCardName indica se o jogador possui uma carta viva com o nome informado
+func (p *Player) HasAliveCardName(name structs.CardName) bool {
+	_, ok := p.GetFirstAliveCardIndexByName(name)
+	return ok
+}
+
 // KillCard marca a carta como morta pelo Card.Index
 func (p *Player) KillCard(index int) error {
 	card, err := p.GetCardByIndex(index)
@@ -34,10 +66,11 @@ func (p *Player) KillCard(index int) error {
 		return err
 	}
 	card.Dead = true
+	card.Protected = false
 	return nil
 }
 
-// ReviveCard marca a carta como viva pelo Card.Index
+// ReviveCard marca a carta como viva pelo Card.Index, escondendo novamente a carta
 func (p *Player) ReviveCard(index int) error {
 	card, err := p.GetCardByIndex(index)
 	if err != nil {
@@ -45,6 +78,18 @@ func (p *Player) ReviveCard(index int) error {
 	}
 
 	card.Dead = false
+	card.RevealedToAll = false
+	card.Protected = false
+	return nil
+}
+
+// RevealCardToAll marca a carta como revelada para todos pelo Card.Index
+func (p *Player) RevealCardToAll(index int) error {
+	card, err := p.GetCardByIndex(index)
+	if err != nil {
+		return err
+	}
+	card.RevealedToAll = true
 	return nil
 }
 

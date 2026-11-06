@@ -25,6 +25,7 @@ type Room struct {
 	PendingEffects            []structs.EffectDTO                                   `json:"pendingEffects"`
 	PendingPresentationEvents []structs.PresentationEventDTO                        `json:"pendingPresentationEvents"`
 	GameOver                  bool                                                  `json:"gameOver"`
+	WinnerID                  string                                                `json:"winnerId,omitempty"`
 	StartTime                 time.Time                                             `json:"startTime"`
 	Created                   time.Time                                             `json:"created"`
 	Chat                      []structs.ChatMessage                                 `json:"chat"`
@@ -43,6 +44,7 @@ type PublicRoomForUpdates struct {
 	GameEvent         *structs.GameEvent                                    `json:"gameEvent"`
 	PendingEffects    []structs.EffectDTO                                   `json:"pendingEffects"`
 	GameOver          bool                                                  `json:"gameOver"`
+	WinnerID          string                                                `json:"winnerId,omitempty"`
 	StartTime         time.Time                                             `json:"startTime"`
 	Chat              []structs.ChatMessage                                 `json:"chat"`
 }

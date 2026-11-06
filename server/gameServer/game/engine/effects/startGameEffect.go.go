@@ -2,6 +2,7 @@ package effects
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
@@ -16,22 +17,22 @@ func StartGameEffect(ctx context.Context, rdb *redis.Client, roomData *rooms.Roo
 		return err
 	}
 
-	// Seleciona um jogador aleatóriamente
+	// Seleciona o primeiro jogador vivo e conectado na ordem da sala
 	selectedPlayer := roomData.GetFirstAliveAndConnectedPlayer(ctx, rdb)
-
-	nextPlayer, _, _, err := roomData.GetNextRoundPlayer(ctx, rdb, selectedPlayer)
-	if err != nil {
-		return err
+	if selectedPlayer == nil {
+		return fmt.Errorf("nenhum jogador válido para iniciar a partida")
 	}
 
-	// Define o próximo jogador como o jogador atual da sala
-	roomData.CurrentPlayer = nextPlayer.Id
+	// Define o primeiro jogador como o jogador atual da sala
+	roomData.CurrentPlayer = selectedPlayer.Id
+	roomData.GameOver = false
+	roomData.WinnerID = ""
 
 	// Define startTime da sala para o horário atual, indicando que o jogo começou
 	roomData.StartTime = time.Now().UTC()
 
 	// inicia o efeito de espera pela primeira ação do próximo jogador
-	if err := WaitingFirstActionEffect(ctx, rdb, roomData, nextPlayer); err != nil {
+	if err := WaitingFirstActionEffect(ctx, rdb, roomData, selectedPlayer); err != nil {
 		return err
 	}
 

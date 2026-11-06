@@ -21,7 +21,12 @@ func RebelEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Re
 	roomData.MarkCardValueAsDoubled(registryRules, structs.TypePlayerPlays(effect.Cause))
 
 	// decrementa a taxa da sala
-	roomData.DecrementTax(*cardRules.FixedValue)
+	if cardRules.FixedValue != nil {
+		roomData.DecrementTax(*cardRules.FixedValue)
+	}
+
+	// taxas menores reduzem o limite de investimentos e podem descartar o excedente
+	roomData.EnforceInvestorMaxInvestments(registryRules)
 
 	if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventDecrementTaxes, effect.Payload)); err != nil {
 		utils.LogError(err)

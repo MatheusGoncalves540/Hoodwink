@@ -24,6 +24,18 @@ func ReviveCardEffect(ctx context.Context, rdb *redis.Client, registryRules *rul
 		return err
 	}
 
+	if reviveCardPayload.TargetCardIndex == nil {
+		return nil
+	}
+
+	card, err := targetPlayer.GetCardByIndex(*reviveCardPayload.TargetCardIndex)
+	if err != nil {
+		return err
+	}
+	if !card.Dead {
+		return nil
+	}
+
 	// revive a targetCard do targetPlayer
 	err = targetPlayer.ReviveCard(*reviveCardPayload.TargetCardIndex)
 	if err != nil {

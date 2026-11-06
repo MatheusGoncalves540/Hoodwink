@@ -19,8 +19,13 @@ func ValidateTricksterProtocol(roomData *rooms.Room, registryRules *rules.Regist
 		return false
 	}
 
+	if tricksterPayload.TargetPlayer == playerPlay.PlayerId {
+		utils.LogInvldPlyrReq("Trickster só pode roubar moedas de um adversário", playerPlay.PlayerId)
+		return false
+	}
+
 	targetPlayer, err := roomData.GetPlayer(tricksterPayload.TargetPlayer)
-	if err != nil {
+	if err != nil || !targetPlayer.Alive {
 		utils.LogInvldPlyrReq("Jogador alvo não encontrado", playerPlay.PlayerId)
 		return false
 	}

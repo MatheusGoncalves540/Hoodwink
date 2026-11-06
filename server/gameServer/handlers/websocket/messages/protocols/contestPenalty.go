@@ -4,44 +4,26 @@ import (
 	"context"
 	"time"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
 	"github.com/redis/go-redis/v9"
 )
 
-func ContestPenaltyProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, contestPenaltyPayload structs.ContestPenaltyPayload, sourcePlayerId string, targetPlayerId string) error {
-	// extrai o player que está atacando
-	sourcePlayer, err := roomData.GetPlayer(sourcePlayerId)
-	if err != nil {
-		return err
-	}
-
-	// extrai o player que está sendo atacado
-	targetPlayer, err := roomData.GetPlayer(targetPlayerId)
-	if err != nil {
-		return err
-	}
-
-	// Remove o efeito de escolha randomica de carta
+func ContestPenaltyProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, payload structs.ContestPenaltyPayload, chooserID string) error {
+	// Remove o efeito de escolha aleatória criado na contestação.
 	roomData.PopLastPendingEffect()
 
-	// cria o efeito de penalidade por contestação
-	killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &targetPlayer.Id, contestPenaltyPayload.TargetCardIndex)
-
-	killEffect := structs.Effect{
-		Cause:        structs.EffectContestPenalty,
-		SourcePlayer: sourcePlayer.Id,
-		Payload:      killPayload,
+	// Enfileira o efeito de penalidade com a escolha feita pelo jogador.
+	// O resolvedor aplica a morte e, quando aplicável, a troca da carta revelada.
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectContestPenalty, chooserID, payload)); err != nil {
+		return err
 	}
-
-	effects.KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
 
 	// encerra a janela de input para evitar múltiplos cliques duplicados
 	roomData.GameEvent = nil
 
-	// agenda processamento imediato para consumir a fila de apresentação
+	// agenda processamento imediato para consumir a fila
 	roomData.RegistryTimeout(rdb, ctx, time.Now().UTC())
 
 	return nil

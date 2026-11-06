@@ -11,6 +11,18 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// protectionCanBlockKill indica se a proteção da Guardiã pode impedir a morte
+// de acordo com a causa do ataque. Kamikaze, contestação e perda de carta por
+// limite de moedas não podem ser impedidos.
+func protectionCanBlockKill(cause string) bool {
+	switch structs.EffectCause(cause) {
+	case structs.EffectKamikaze, structs.EffectContestPenalty, structs.EffectGreed:
+		return false
+	default:
+		return true
+	}
+}
+
 func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
 	// decodifica o payload
 	killCardPayload, ok := effect.Payload.(structs.KillCardPayload)
@@ -25,25 +37,21 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 		return err
 	}
 
-	protectedCards := targetPlayer.GetProtectedCardsIndexes()
-	if slices.Contains(protectedCards, *killCardPayload.TargetCardIndex) {
-		// se a carta já estiver protegida, retira a proteção ao invés de matar a carta
-		err = targetPlayer.UnprotectCard(*killCardPayload.TargetCardIndex)
-		if err != nil {
-			return err
+	if protectionCanBlockKill(killCardPayload.Cause) {
+		protectedCards := targetPlayer.GetProtectedCardsIndexes()
+		if slices.Contains(protectedCards, *killCardPayload.TargetCardIndex) {
+			// se a carta estava protegida, a Guardiã consome a proteção ao invés de matar a carta
+			return targetPlayer.UnprotectCard(*killCardPayload.TargetCardIndex)
 		}
-
-		return nil
-	} else {
-		// marca a targetCard do targetPlayer como morta
-		err = targetPlayer.KillCard(*killCardPayload.TargetCardIndex)
-		if err != nil {
-			return err
-		}
-
-		// atualiza estado de morte do jogador caso a carta morta seja a última viva do jogador
-		roomData.VerifyIfPlayerDead(targetPlayer)
 	}
+
+	// marca a targetCard do targetPlayer como morta
+	if err := targetPlayer.KillCard(*killCardPayload.TargetCardIndex); err != nil {
+		return err
+	}
+
+	// atualiza estado de morte do jogador caso a carta morta seja a última viva do jogador
+	roomData.VerifyIfPlayerDead(targetPlayer)
 
 	return nil
 }

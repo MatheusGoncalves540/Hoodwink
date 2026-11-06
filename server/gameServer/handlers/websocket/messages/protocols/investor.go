@@ -12,6 +12,11 @@ import (
 )
 
 func InvestorProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
+	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
+	if err != nil {
+		return err
+	}
+
 	// calcula o tempo de expiração do evento
 	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction")
 	if err != nil {
@@ -19,11 +24,17 @@ func InvestorProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	}
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
-	// Calcula o período de carência para o investimento
-	gracePeriod, err := roomData.GetCardValue(registryRules, playerPlay.Type, 0)
+	cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
 	if err != nil {
 		return err
 	}
+	gracePeriod := 6
+	if cardRules.GracePeriod != nil {
+		gracePeriod = *cardRules.GracePeriod
+	}
+
+	// Cada investimento custa 1 moeda da mão do jogador
+	sourcePlayer.RemoveCoins(1)
 
 	investorPayload := structs.NewInvestorPayload(&gracePeriod)
 

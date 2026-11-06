@@ -18,18 +18,21 @@ func newClairvoyantRoom() (*rooms.Room, *players.Player) {
 	return room, target
 }
 
-func TestClairvoyantShowToAllMarksCardRevealed(t *testing.T) {
+func TestClairvoyantRevealDoesNotPersistCardState(t *testing.T) {
 	room, target := newClairvoyantRoom()
 	effect := structs.NewEffect(structs.EffectClairvoyant, "p2", structs.NewClairvoyantPayload("p1", 0, true, nil))
 
 	ClairvoyantEffect(context.Background(), nil, nil, room, effect)
 
-	if !target.Cards[0].RevealedToAll {
-		t.Fatal("carta revelada para todos não foi marcada como revelada")
+	if target.Cards[0].RevealedToAll {
+		t.Fatal("carta revelada pelo Clarividente ficou marcada como revelada permanentemente")
+	}
+	if len(room.PendingPresentationEvents) != 1 {
+		t.Fatalf("eventos de apresentação = %d, quer 1", len(room.PendingPresentationEvents))
 	}
 }
 
-func TestClairvoyantPrivateDoesNotMarkCardRevealed(t *testing.T) {
+func TestClairvoyantPrivateRevealUsesConfidencialPayload(t *testing.T) {
 	room, target := newClairvoyantRoom()
 	effect := structs.NewEffect(structs.EffectClairvoyant, "p2", structs.NewClairvoyantPayload("p1", 0, false, nil))
 
@@ -37,5 +40,11 @@ func TestClairvoyantPrivateDoesNotMarkCardRevealed(t *testing.T) {
 
 	if target.Cards[0].RevealedToAll {
 		t.Fatal("carta revelada só para o jogador foi marcada como revelada para todos")
+	}
+	if len(room.PendingPresentationEvents) != 1 {
+		t.Fatalf("eventos de apresentação = %d, quer 1", len(room.PendingPresentationEvents))
+	}
+	if len(room.PendingPresentationEvents[0].ConfidencialPlayerIds) != 1 || room.PendingPresentationEvents[0].ConfidencialPlayerIds[0] != "p2" {
+		t.Fatalf("payload confidencial não foi direcionado apenas para quem usou o Clarividente")
 	}
 }

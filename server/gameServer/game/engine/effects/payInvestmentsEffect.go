@@ -1,93 +1,87 @@
 package effects
 
 import (
-	"context"
-
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-// PayInvestments paga os investimentos do jogador e gera as moedas correspondentes
-// Chamado no início de cada novo turno. Essa função paga todos os investimentos de todos os players de uma vez
-func PayInvestments(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room) {
-	for _, player := range roomData.Players {
-		if player.HasActiveInvestment() {
-			payPlayerInvestments(ctx, rdb, roomData, player)
-			countdownInvestment(ctx, rdb, registryRules, roomData, player, 1)
-		}
-	}
-}
-
-// payPlayerInvestments paga os investimentos de um jogador específico e gera as moedas correspondentes
-func payPlayerInvestments(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, soucePlayer *players.Player) {
-	// Calcula as moedas a serem ganhas com base no número de investimentos ativos
-	earnedCoins := len(soucePlayer.Investments) / 2
-
-	// Caso o número de investimentos seja ímpar, o jogador tem um investimento pendente que ainda não gerou moedas
-	// então marca o investimento pendente e só gera as moedas na próxima vez que pagar os investimentos
-	if len(soucePlayer.Investments)%2 != 0 {
-		if soucePlayer.PendingInvestmentCoin == true {
-			// se já havia um investimento pendente, gera a moeda correspondente e remove o status de investimento pendente
-			earnedCoins++
-			soucePlayer.PendingInvestmentCoin = false
-		} else {
-			// se não havia um investimento pendente, marca o investimento atual como pendente para gerar a moeda na próxima vez
-			soucePlayer.PendingInvestmentCoin = true
-		}
-	}
-
-	earnCoinsPayload := structs.NewEarnCoinsPayload(string(structs.EffectInvestor), earnedCoins, nil)
-
-	investmentsEffect := structs.NewEffect(structs.EffectInvestor, soucePlayer.Id, earnCoinsPayload)
-
-	err := EarnCoinsAnnouncer(ctx, rdb, roomData, investmentsEffect)
-	if err != nil {
-		utils.LogError(err)
+// PayInvestmentsForPlayer paga a receita passiva do Investidor no início do turno do jogador
+// e decrementa o tempo restante de cada moeda investida.
+func PayInvestmentsForPlayer(registryRules *rules.Registry, roomData *rooms.Room, player *players.Player) {
+	if player == nil || !player.Alive || !player.HasActiveInvestment() {
 		return
 	}
-}
 
-// countdownInvestment decrementa os investimentos do jogador, removendo os que chegam a zero (chamar a cada rodada para atualizar os investimentos)
-func countdownInvestment(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, player *players.Player, amount int) {
 	generalRules, err := roomData.GetGeneralRules(registryRules)
 	if err != nil {
 		utils.LogError(err)
 		return
 	}
 
-	// Loop para percorrer os investimentos do jogador
-	for i := 0; i < len(player.Investments); i++ {
-		// Decrementa o investimento pelo valor do amount
-		player.Investments[i] -= amount
-		// Verifica se o investimento expirou
-		if player.Investments[i] <= 0 {
-			// Remove o investimento expirado
-			player.Investments = append(player.Investments[:i], player.Investments[i+1:]...)
-			// Decrementa o índice para verificar o próximo investimento corretamente
-			i--
+	payPlayerInvestments(roomData, player, *generalRules.MaxCoins)
+	countdownInvestment(roomData, player, 1, *generalRules.MaxCoins)
+}
 
-			// Gera as moedas correspondentes ao investimento expirado
-			// adiciona as moedas ao jogador e retorna breakLimit, que indica se o limite de moedas será ultrapassado
-			breakLimit := player.AddCoins(1, *generalRules.MaxCoins)
+// payPlayerInvestments paga a receita passiva do Investidor (metade dos investimentos, apenas moedas inteiras).
+func payPlayerInvestments(roomData *rooms.Room, sourcePlayer *players.Player, maxCoins int) {
+	earnedCoins := len(sourcePlayer.Investments) / 2
 
-			if breakLimit {
-				// se o limite de moedas for ultrapassado, mata a carta viva de menor índice
-				aliveIndexes := player.GetAliveCardsIndexes()
-
-				greedPayload := structs.NewKillCardPayload(string(structs.EffectGreed), &player.Id, &aliveIndexes[0])
-
-				killEffect := structs.Effect{
-					Cause:        structs.EffectGreed,
-					SourcePlayer: player.Id,
-					Payload:      greedPayload,
-				}
-
-				KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
-			}
+	// Com número ímpar de investimentos, alterna o pagamento da metade restante
+	// para que o total recebido ao longo do tempo seja equivalente à metade.
+	if len(sourcePlayer.Investments)%2 != 0 {
+		if sourcePlayer.PendingInvestmentCoin {
+			earnedCoins++
+			sourcePlayer.PendingInvestmentCoin = false
+		} else {
+			sourcePlayer.PendingInvestmentCoin = true
 		}
 	}
+
+	if earnedCoins <= 0 {
+		return
+	}
+
+	if sourcePlayer.AddCoins(earnedCoins, maxCoins) {
+		applyGreedCardLoss(roomData, sourcePlayer)
+	}
+}
+
+// countdownInvestment decrementa os investimentos do jogador, devolvendo a moeda investida quando expira.
+func countdownInvestment(roomData *rooms.Room, player *players.Player, amount int, maxCoins int) {
+	for i := 0; i < len(player.Investments); i++ {
+		player.Investments[i] -= amount
+		if player.Investments[i] > 0 {
+			continue
+		}
+
+		// Remove o investimento expirado
+		player.Investments = append(player.Investments[:i], player.Investments[i+1:]...)
+		i--
+
+		// Devolve a moeda investida para a mão do jogador
+		if player.AddCoins(1, maxCoins) {
+			applyGreedCardLoss(roomData, player)
+		}
+	}
+
+	if len(player.Investments) == 0 {
+		player.PendingInvestmentCoin = false
+	}
+}
+
+// applyGreedCardLoss aplica a perda de carta por ultrapassar o limite de moedas.
+// Essa perda não pode ser impedida por nenhuma carta.
+func applyGreedCardLoss(roomData *rooms.Room, player *players.Player) {
+	aliveIndexes := player.GetAliveCardsIndexes()
+	if len(aliveIndexes) == 0 {
+		return
+	}
+
+	if err := player.KillCard(aliveIndexes[0]); err != nil {
+		utils.LogError(err)
+		return
+	}
+	roomData.VerifyIfPlayerDead(player)
 }

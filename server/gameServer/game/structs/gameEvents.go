@@ -28,6 +28,7 @@ func NewGameEvent(playerID string, eventType GameEventType, expiresAt time.Time,
 const (
 	EventWaitingStart           GameEventType = "WAITING_START"
 	EventWaitingFirstAction     GameEventType = "WAITING_FIRST_ACTION"
+	EventActionTaken            GameEventType = "ACTION_TAKEN"
 	EventCardKilled             GameEventType = "CARD_KILLED"
 	EventContest                GameEventType = "CONTEST"
 	EventContestPenalty         GameEventType = "CONTEST_PENALTY"

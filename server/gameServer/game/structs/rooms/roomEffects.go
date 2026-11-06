@@ -49,6 +49,14 @@ func (r *Room) PopNextPendingPresentationEvent() (structs.PresentationEventDTO, 
 	return first, true
 }
 
+// PeekLastPendingEffect retorna o último efeito pendente sem removê-lo
+func (r *Room) PeekLastPendingEffect() (structs.EffectDTO, bool) {
+	if len(r.PendingEffects) == 0 {
+		return structs.EffectDTO{}, false
+	}
+	return r.PendingEffects[len(r.PendingEffects)-1], true
+}
+
 // HasPendingPresentationEvent verifica se há eventos de apresentação pendentes
 func (r *Room) HasPendingPresentationEvent() bool {
 	return len(r.PendingPresentationEvents) > 0

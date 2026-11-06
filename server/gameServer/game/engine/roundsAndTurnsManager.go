@@ -10,13 +10,17 @@ import (
 )
 
 func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, registryRules *rules.Registry) error {
+	if roomData.GameOver {
+		return nil
+	}
+
 	currentPlayer, err := roomData.GetPlayer(roomData.CurrentPlayer)
 	if err != nil {
 		return err
 	}
 
 	// Define quem é o próximo jogador
-	nextPlayer, isLast, isNewTurn, err := roomData.GetNextRoundPlayer(ctx, rdb, currentPlayer)
+	nextPlayer, _, isNewTurn, err := roomData.GetNextRoundPlayer(ctx, rdb, currentPlayer)
 	if err != nil {
 		return err
 	}
@@ -26,15 +30,21 @@ func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, reg
 	roomData.GameEvent = nil
 
 	// decrementa os rounds restantes para redução dos valores dobrados
-	roomData.DecreaseDoubledCardValuesRounds()
+	roomData.DecreaseDoubledCardValuesRounds(registryRules)
 
 	// Aleatoriamente aumenta ou diminui as taxas
 	roomData.RandomlyChangeTaxes(ctx, rdb, registryRules)
 
-	// executa o que for necessario para caso seja a ultima rodada do turno
-	if isLast {
-		LastRoundOfTurn(ctx, rdb, roomData, registryRules)
+	// O Investidor recebe no início do próprio turno e os investimentos avançam um turno
+	effects.PayInvestmentsForPlayer(registryRules, roomData, nextPlayer)
+
+	// o pagamento de investimentos pode matar o jogador ou encerrar a partida
+	if roomData.GameOver || !nextPlayer.Alive {
+		roomData.SaveRoom(ctx, rdb)
+		roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
+		return nil
 	}
+
 	// inicia novo turno caso tenhamos voltado para o primeiro jogador do turno
 	if isNewTurn {
 		NewTurn(ctx, rdb, roomData, registryRules)
@@ -51,11 +61,6 @@ func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, reg
 	}
 
 	return nil
-}
-
-// Função chamada no final de uma rodada
-func LastRoundOfTurn(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, registryRules *rules.Registry) {
-	effects.PayInvestments(ctx, rdb, registryRules, roomData)
 }
 
 // Função chamada no inicio de um novo turno

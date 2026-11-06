@@ -18,7 +18,12 @@ func InvestorEffect(ctx context.Context, rdb *redis.Client, registryRules *rules
 		return
 	}
 
-	effect.Payload = structs.NewInvestmentPayload(string(effect.Cause), investorPayload.GracePeriod)
+	gracePeriod := 6
+	if investorPayload.GracePeriod != nil {
+		gracePeriod = *investorPayload.GracePeriod
+	}
+
+	effect.Payload = structs.NewInvestmentPayload(string(effect.Cause), &gracePeriod)
 
 	err := effects.InvestmentAnnouncer(ctx, rdb, registryRules, roomData, effect)
 	if err != nil {

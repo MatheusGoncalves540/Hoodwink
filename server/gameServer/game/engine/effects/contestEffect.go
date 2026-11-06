@@ -18,48 +18,59 @@ func ContestEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.
 		return
 	}
 
-	// obtém o jogador que iniciou contestou
-	sourcePlayer, err := roomData.GetPlayer(effect.SourcePlayer)
+	// jogador que contestou
+	contestant, err := roomData.GetPlayer(effect.SourcePlayer)
 	if err != nil {
 		utils.LogError(err)
 		return
 	}
 
-	// obtém o jogador que está sendo contestado
+	// jogador que teve a carta contestada
 	contestedPlayer, err := roomData.GetPlayer(contestPayload.ContestedPlayer)
 	if err != nil {
 		utils.LogError(err)
 		return
 	}
 
-	// Verifica se o jogador contestado possui a carta que está sendo contestada
-	hasCard := false
-	for _, card := range contestedPlayer.Cards {
-		if string(card.Name) == contestPayload.ContestedCard {
-			hasCard = true
-			break
-		}
+	// A carta só conta como "em mãos" se estiver viva.
+	revealedCardIndex, hasCard := contestedPlayer.GetFirstAliveCardIndexByName(structs.CardName(contestPayload.ContestedCard))
+
+	// Se o jogador não tinha a carta, o efeito da carta é cancelado.
+	if !hasCard {
+		roomData.PopLastPendingEffect()
+	} else if err := contestedPlayer.RevealCardToAll(revealedCardIndex); err != nil {
+		utils.LogError(err)
 	}
 
-	// calcula o tempo de expiração do efeito
+	// Quem escolhe a carta que morre:
+	// - se o jogador tinha a carta, ele mesmo escolhe uma carta do contestador;
+	// - se não tinha, o contestador escolhe uma carta do jogador.
+	chooserID := contestant.Id
+	if hasCard {
+		chooserID = contestedPlayer.Id
+	}
+
 	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction")
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 	if err != nil {
 		utils.LogError(err)
 		return
 	}
+	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
-	// se o jogador contestado não possuir a carta, cancela o efeito pendente (o ultimo adicionado)
-	if !hasCard {
-		roomData.PopLastPendingEffect()
+	penaltyPayload := structs.NewContestPenaltyPayload(
+		contestedPlayer.Id,
+		contestant.Id,
+		contestPayload.ContestedCard,
+		hasCard,
+		nil,
+	)
+	if hasCard {
+		penaltyPayload.RevealedCardIndex = &revealedCardIndex
 	}
 
-	penaltyPayload := structs.NewContestPenaltyPayload(contestedPlayer.Id, contestPayload.ContestedCard, hasCard, nil)
+	roomData.GameEvent = structs.NewGameEvent(chooserID, structs.EventContestPenalty, expiresAt, penaltyPayload)
 
-	// Jogador contestado/que contestou escolhe uma carta do outro jogador para matar (esse evento)
-	roomData.GameEvent = structs.NewGameEvent(sourcePlayer.Id, structs.EventContestPenalty, expiresAt, penaltyPayload)
-
-	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectContestPenalty, sourcePlayer.Id, penaltyPayload)); err != nil {
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectContestPenalty, chooserID, penaltyPayload)); err != nil {
 		utils.LogError(err)
 		return
 	}

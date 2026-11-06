@@ -65,18 +65,36 @@ func NewContestPayload(contestedPlayer, contestedCard string) ContestPayload {
 }
 
 type ContestPenaltyPayload struct {
-	ContestedPlayer string `json:"contestedPlayer"`
-	ContestedCard   string `json:"contestedCard"`
-	HasCard         bool   `json:"hasCard"`
-	TargetCardIndex *int   `json:"targetCardIndex,omitempty"`
+	ContestedPlayer   string `json:"contestedPlayer"`
+	ContestingPlayer  string `json:"contestingPlayer"`
+	ContestedCard     string `json:"contestedCard"`
+	HasCard           bool   `json:"hasCard"`
+	TargetCardIndex   *int   `json:"targetCardIndex,omitempty"`
+	RevealedCardIndex *int   `json:"revealedCardIndex,omitempty"`
 }
 
-func NewContestPenaltyPayload(contestedPlayer, contestedCard string, hasCard bool, targetCardIndex *int) ContestPenaltyPayload {
+func NewContestPenaltyPayload(contestedPlayer, contestingPlayer, contestedCard string, hasCard bool, targetCardIndex *int) ContestPenaltyPayload {
 	return ContestPenaltyPayload{
-		ContestedPlayer: contestedPlayer,
-		ContestedCard:   contestedCard,
-		HasCard:         hasCard,
+		ContestedPlayer:  contestedPlayer,
+		ContestingPlayer: contestingPlayer,
+		ContestedCard:    contestedCard,
+		HasCard:          hasCard,
+		TargetCardIndex:  targetCardIndex,
+	}
+}
+
+// SwapCardsPayload é usado pela ação básica de troca de cartas com o baralho.
+type SwapCardsPayload struct {
+	TargetPlayer    *string `json:"targetPlayer,omitempty"`
+	TargetCardIndex *int    `json:"targetCardIndex"`
+	UseOnTwoCards   *bool   `json:"useOnTwoCards,omitempty"`
+}
+
+func NewSwapCardsPayload(targetPlayer *string, targetCardIndex *int, useOnTwoCards *bool) SwapCardsPayload {
+	return SwapCardsPayload{
+		TargetPlayer:    targetPlayer,
 		TargetCardIndex: targetCardIndex,
+		UseOnTwoCards:   useOnTwoCards,
 	}
 }
 

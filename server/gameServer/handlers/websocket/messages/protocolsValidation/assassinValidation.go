@@ -32,7 +32,7 @@ func ValidateAssassinProtocol(roomData *rooms.Room, registryRules *rules.Registr
 	}
 
 	// verifica se o jogador está tentando jurar de morte uma carta dele mesmo
-	if payload.TargetPlayer == &playerPlay.PlayerId {
+	if payload.TargetPlayer != nil && *payload.TargetPlayer == playerPlay.PlayerId {
 		utils.LogInvldPlyrReq("Player tentou jurar de morte uma carta dele mesmo", playerPlay.PlayerId)
 		return false
 	}

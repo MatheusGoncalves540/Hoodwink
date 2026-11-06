@@ -6,48 +6,83 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-func ValidateContestPenaltyProtocol(roomData *rooms.Room, playerPlay *structs.PlayerPlay, payload structs.ContestPenaltyPayload) (sourcePlayerId *string, targetPlayerId *string, valid bool) {
-	// Contest só pode ser usado durante um evento de penalidade de carta por contestação
+// ValidateContestPenaltyProtocol valida a escolha da carta que morre na contestação
+// e devolve o payload normalizado com os dados calculados pelo servidor.
+func ValidateContestPenaltyProtocol(roomData *rooms.Room, playerPlay *structs.PlayerPlay, payload structs.ContestPenaltyPayload) (*structs.ContestPenaltyPayload, *string, *string, bool) {
+	// Contest Penalty só pode ser usado durante um evento de penalidade de contestação
 	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventContestPenalty {
 		utils.LogInvldPlyrReq("Contest Penalty só pode ser usado durante um evento de penalidade de carta por contestação", playerPlay.PlayerId)
-		return nil, nil, false
+		return nil, nil, nil, false
 	}
 
 	payloadMap, ok := roomData.GameEvent.Payload.(map[string]interface{})
 	if !ok {
 		utils.LogError("payload does not match map structure")
-		return nil, nil, false
+		return nil, nil, nil, false
 	}
 
-	// Extrair targetPlayer e hasCard do mapa
 	contestedPlayerId, ok := payloadMap["contestedPlayer"].(string)
 	if !ok {
 		utils.LogInvldPlyrReq("contestedPlayer not found or invalid in payload", playerPlay.PlayerId)
-		return nil, nil, false
+		return nil, nil, nil, false
+	}
+	contestingPlayerId, ok := payloadMap["contestingPlayer"].(string)
+	if !ok {
+		utils.LogInvldPlyrReq("contestingPlayer not found or invalid in payload", playerPlay.PlayerId)
+		return nil, nil, nil, false
+	}
+	contestedCard, ok := payloadMap["contestedCard"].(string)
+	if !ok {
+		utils.LogInvldPlyrReq("contestedCard not found or invalid in payload", playerPlay.PlayerId)
+		return nil, nil, nil, false
 	}
 	hasCard, ok := payloadMap["hasCard"].(bool)
 	if !ok {
 		utils.LogInvldPlyrReq("hasCard not found or invalid in payload", playerPlay.PlayerId)
-		return nil, nil, false
+		return nil, nil, nil, false
 	}
 
-	whoWasContestedId := contestedPlayerId
-
-	whoIsContestingId := roomData.GameEvent.PlayerID
-
-	requestPlayerId := playerPlay.PlayerId
-
+	chooserID := contestingPlayerId
+	targetPlayerID := contestedPlayerId
 	if hasCard {
-		if requestPlayerId != whoWasContestedId {
-			utils.LogInvldPlyrReq("Apenas o jogador que foi contestado pode usar Contest Penalty quando ele possuia a carta", requestPlayerId)
-			return nil, nil, false
-		}
-		return &whoWasContestedId, &whoIsContestingId, true
-	} else {
-		if requestPlayerId != whoIsContestingId {
-			utils.LogInvldPlyrReq("Apenas o jogador que contestou pode usar Contest Penalty quando ele não possuia a carta", requestPlayerId)
-			return nil, nil, false
-		}
-		return &whoIsContestingId, &whoWasContestedId, true
+		chooserID = contestedPlayerId
+		targetPlayerID = contestingPlayerId
 	}
+
+	if playerPlay.PlayerId != chooserID {
+		utils.LogInvldPlyrReq("Apenas o jogador responsável pela escolha pode usar Contest Penalty", playerPlay.PlayerId)
+		return nil, nil, nil, false
+	}
+
+	if payload.TargetCardIndex == nil {
+		utils.LogInvldPlyrReq("targetCardIndex é obrigatório", playerPlay.PlayerId)
+		return nil, nil, nil, false
+	}
+
+	targetPlayer, err := roomData.GetPlayer(targetPlayerID)
+	if err != nil {
+		utils.LogError(err)
+		return nil, nil, nil, false
+	}
+	card, err := targetPlayer.GetCardByIndex(*payload.TargetCardIndex)
+	if err != nil || card.Dead {
+		utils.LogInvldPlyrReq("targetCardIndex não aponta para uma carta viva do alvo", playerPlay.PlayerId)
+		return nil, nil, nil, false
+	}
+
+	normalized := structs.NewContestPenaltyPayload(
+		contestedPlayerId,
+		contestingPlayerId,
+		contestedCard,
+		hasCard,
+		payload.TargetCardIndex,
+	)
+
+	// O índice da carta revelada é sempre calculado pelo servidor.
+	if revealedCardIndex, ok := payloadMap["revealedCardIndex"].(float64); ok {
+		index := int(revealedCardIndex)
+		normalized.RevealedCardIndex = &index
+	}
+
+	return &normalized, &chooserID, &targetPlayerID, true
 }

@@ -24,16 +24,12 @@ func CroupierProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	}
 	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
 
-	// marca a remoção de coins
-	if croupierPayload.UseOnTwoCards != nil && *croupierPayload.UseOnTwoCards {
-		// Se o croupier for usado em 2 cartas, remove todas as coins do jogador
-		cardPrice := sourcePlayer.Coins
-		sourcePlayer.RemoveCoins(cardPrice)
-	} else {
-		// Se o croupier for usado em 1 carta, remove metade das coins do jogador, arredondando para baixo
-		cardPrice := sourcePlayer.Coins / 2
-		sourcePlayer.RemoveCoins(cardPrice)
+	// Croupier custa (6 + taxas), com mínimo definido nas regras
+	cardPrice, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), 0)
+	if err != nil {
+		return err
 	}
+	sourcePlayer.RemoveCoins(cardPrice)
 
 	// registra o evento de jogo
 	roomData.GameEvent = structs.NewGameEvent(playerPlay.PlayerId, structs.EventCardPlayedCroupier, expiresAt, croupierPayload)

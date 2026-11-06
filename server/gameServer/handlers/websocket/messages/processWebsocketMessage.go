@@ -25,6 +25,11 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 	}
 	defer roomData.ReleaseRoomLock(ctx, rdb, utils.GetInstanceID())
 
+	if roomData.GameOver {
+		utils.LogInvldPlyrReq("partida encerrada", playerPlay.PlayerId)
+		return
+	}
+
 	// verifica se o jogador está vivo antes de processar a jogada
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
@@ -55,11 +60,56 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 				return false
 			}
 
-			sourcePlayerId, targetPlayerId, valid := protocolsValidation.ValidateContestPenaltyProtocol(roomData, playerPlay, contestPenaltyPayload)
+			normalizedPayload, chooserID, _, valid := protocolsValidation.ValidateContestPenaltyProtocol(roomData, playerPlay, contestPenaltyPayload)
 			if !valid {
 				return false
 			}
-			if err := protocols.ContestPenaltyProtocol(ctx, rdb, registryRules, roomData, contestPenaltyPayload, *sourcePlayerId, *targetPlayerId); err != nil {
+			if err := protocols.ContestPenaltyProtocol(ctx, rdb, registryRules, roomData, *normalizedPayload, *chooserID); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
+
+		structs.PlayTakeCoins: func() bool {
+			if !protocolsValidation.ValidateTakeCoinsProtocol(roomData, playerPlay) {
+				return false
+			}
+			if err := protocols.TakeCoinsProtocol(ctx, rdb, registryRules, roomData, playerPlay); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
+
+		structs.PlayBasicKill: func() bool {
+			killPayload, ok := playerPlay.Payload.(structs.AssassinPayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match AssassinPayload structure", sourcePlayer.Id)
+				return false
+			}
+
+			if !protocolsValidation.ValidateBasicKillProtocol(roomData, registryRules, playerPlay, killPayload) {
+				return false
+			}
+			if err := protocols.BasicKillProtocol(ctx, rdb, registryRules, roomData, playerPlay, killPayload); err != nil {
+				utils.LogError(err)
+				return false
+			}
+			return true
+		},
+
+		structs.PlaySwapCards: func() bool {
+			swapPayload, ok := playerPlay.Payload.(structs.SwapCardsPayload)
+			if !ok {
+				utils.LogInvldPlyrReq("payload does not match SwapCardsPayload structure", sourcePlayer.Id)
+				return false
+			}
+
+			if !protocolsValidation.ValidateSwapCardsProtocol(roomData, registryRules, playerPlay, swapPayload) {
+				return false
+			}
+			if err := protocols.SwapCardsProtocol(ctx, rdb, registryRules, roomData, playerPlay, swapPayload); err != nil {
 				utils.LogError(err)
 				return false
 			}

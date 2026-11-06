@@ -39,7 +39,7 @@ func ValidatePoliticalProtocol(roomData *rooms.Room, registryRules *rules.Regist
 	}
 
 	// verifica se a taxa máxima já foi atingida
-	if roomData.Tax >= *generalRules.MaxTax {
+	if generalRules.MaxTax != nil && roomData.Tax >= *generalRules.MaxTax {
 		utils.LogInvldPlyrReq("Taxa máxima atingida", playerPlay.PlayerId)
 		return false
 	}

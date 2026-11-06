@@ -21,7 +21,12 @@ func PoliticalEffect(ctx context.Context, rdb *redis.Client, registryRules *rule
 	roomData.MarkCardValueAsDoubled(registryRules, structs.TypePlayerPlays(effect.Cause))
 
 	// incrementa a taxa da sala
-	roomData.IncrementTax(*cardRules.FixedValue)
+	if cardRules.FixedValue != nil {
+		roomData.IncrementTax(*cardRules.FixedValue)
+	}
+
+	// taxas maiores podem liberar mais investimentos
+	roomData.EnforceInvestorMaxInvestments(registryRules)
 
 	if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventIncrementTaxes, effect.Payload)); err != nil {
 		utils.LogError(err)

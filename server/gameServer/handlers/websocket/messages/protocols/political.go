@@ -37,8 +37,13 @@ func PoliticalProtocol(ctx context.Context, rdb *redis.Client, registryRules *ru
 
 	sourcePlayer.RemoveCoins(cardPrice)
 
+	taxStep := 1
+	if cardRules.FixedValue != nil {
+		taxStep = *cardRules.FixedValue
+	}
+
 	// prepara payload
-	politicalPayload := structs.NewPoliticalPayload(*cardRules.FixedValue)
+	politicalPayload := structs.NewPoliticalPayload(taxStep)
 
 	// registra o evento de jogo
 	roomData.GameEvent = structs.NewGameEvent(playerPlay.PlayerId, structs.EventCardPlayedPolitical, expiresAt, politicalPayload)

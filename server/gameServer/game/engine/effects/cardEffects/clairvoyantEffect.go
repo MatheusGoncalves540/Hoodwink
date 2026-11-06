@@ -39,36 +39,39 @@ func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 		utils.LogError(err)
 		return
 	}
+	if revealedCard.Dead {
+		utils.LogInvldPlyrReq("Clairvoyant tentou revelar uma carta morta", effect.SourcePlayer)
+		return
+	}
 	revealedCardName := string(revealedCard.Name)
 
+	// A carta é revelada momentaneamente e depois escondida novamente, sem trocar de posição.
+	// A revelação é feita pelo evento de apresentação, não alterando o estado permanente da carta.
+	clairvoyantPayload.RevealedCard = &revealedCardName
+
 	if clairvoyantPayload.ShowToAllPlayers {
-		// a carta fica virada para cima para todos até ser trocada
-		revealedCard.RevealedToAll = true
-
-		// adiciona o nome da carta revelada ao payload
-		clairvoyantPayload.RevealedCard = &revealedCardName
-
 		if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventRevealedCard, clairvoyantPayload)); err != nil {
 			utils.LogError(err)
 			return
 		}
-
 		return
-	} else {
-		presentationEvent := structs.NewPresentationEvent(effect.SourcePlayer, structs.EventRevealedCard, clairvoyantPayload)
-		presentationEvent.ConfidencialPayload = structs.ClairvoyantPayload{
-			TargetPlayer:     clairvoyantPayload.TargetPlayer,
-			TargetCardIndex:  clairvoyantPayload.TargetCardIndex,
-			ShowToAllPlayers: false,
-			RevealedCard:     &revealedCardName,
-		}
-		presentationEvent.ConfidencialPlayerIds = []string{effect.SourcePlayer}
+	}
 
-		if err := roomData.AppendPendingPresentationEvent(presentationEvent); err != nil {
-			utils.LogError(err)
-			return
-		}
+	presentationEvent := structs.NewPresentationEvent(effect.SourcePlayer, structs.EventRevealedCard, structs.ClairvoyantPayload{
+		TargetPlayer:     clairvoyantPayload.TargetPlayer,
+		TargetCardIndex:  clairvoyantPayload.TargetCardIndex,
+		ShowToAllPlayers: false,
+	})
+	presentationEvent.ConfidencialPayload = structs.ClairvoyantPayload{
+		TargetPlayer:     clairvoyantPayload.TargetPlayer,
+		TargetCardIndex:  clairvoyantPayload.TargetCardIndex,
+		ShowToAllPlayers: false,
+		RevealedCard:     &revealedCardName,
+	}
+	presentationEvent.ConfidencialPlayerIds = []string{effect.SourcePlayer}
 
+	if err := roomData.AppendPendingPresentationEvent(presentationEvent); err != nil {
+		utils.LogError(err)
 		return
 	}
 }

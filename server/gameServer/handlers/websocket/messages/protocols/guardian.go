@@ -35,17 +35,13 @@ func GuardianProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 
 	case structs.EventCardPlayedClairvoyant:
 		guardianPayload = structs.NewGuardianPayload(payload.TargetPlayer, payload.TargetCardIndex, "sight")
+
+	default:
+		return fmt.Errorf("evento inválido para o uso da Guardian: %s", roomData.GameEvent.Type)
 	}
 
-	// se só tiver uma carta viva, o jogador pode usar Guardian por um desconto
-	discount := 0
-	aliveCards := sourcePlayer.GetAliveCardsIndexes()
-	if len(aliveCards) == 1 {
-		discount = 1
-	}
-
-	// marca a remoção de coins
-	cardPrice, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), discount)
+	// marca a remoção de coins de acordo com o tipo de proteção
+	cardPrice, err := roomData.GetGuardianValue(registryRules, guardianPayload.ProtectedFrom)
 	if err != nil {
 		return err
 	}
@@ -61,27 +57,6 @@ func GuardianProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 
 	// registra o timeout no redis
 	roomData.RegistryTimeout(rdb, ctx, expiresAt)
-
-	// cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
-	// if err != nil {
-	// 	return fmt.Errorf("%s", "Erro ao obter regras da carta Guardian: "+err.Error())
-	// }
-
-	// sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// //
-
-	// switch roomData.GameEvent.Type {
-	// case structs.EventWaitingFirstAction:
-	// 	// protege a carta requisitada
-	// 	// fazer efeito para chamar  sourcePlayer.ProtectCard(payload.TargetCardIndex)
-	// case structs.EventCardKilled:
-	// 	// cancela a morte da carta requisitada
-	// 	// fazer efeito para isso
-	// }
 
 	return nil
 }

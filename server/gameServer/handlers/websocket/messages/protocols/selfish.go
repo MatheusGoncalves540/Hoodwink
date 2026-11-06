@@ -19,7 +19,7 @@ func SelfishProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 
 	cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
 	if err != nil {
-		return fmt.Errorf("%s", "Erro ao obter regras da carta Rebel: "+err.Error())
+		return fmt.Errorf("erro ao obter regras da carta Selfish: %w", err)
 	}
 
 	// calcula o tempo de expiração do evento
@@ -37,29 +37,22 @@ func SelfishProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 	targetPlayerValue := roomData.GameEvent.PlayerID
 	targetPlayer := &targetPlayerValue
 
-	// marca a remoção de coins
+	// marca a remoção de coins de acordo com o que está sendo negado
 	switch roomData.GameEvent.Type {
-	case structs.EventEarnCoins, structs.EventStealCoins:
-		cardPrice := *cardRules.FixedValue
-		sourcePlayer.RemoveCoins(cardPrice)
-
-	case structs.EventChangedCard:
-		cardPrice, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), 0)
+	case structs.EventChangedCard, structs.EventRevivedCard:
+		cardPrice, err := roomData.GetCardValue(registryRules, playerPlay.Type, 0)
 		if err != nil {
 			return err
 		}
-
 		sourcePlayer.RemoveCoins(cardPrice)
 
-	case structs.EventInvestment:
-		// disconto de 5, pra contar só o fix de 1 e as taxas
-		cardPrice, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), 5)
-		if err != nil {
-			return err
+	default:
+		// negar moedas, roubo ou investimento custa 1 moeda fixa
+		cardPrice := 1
+		if cardRules.FixedValue != nil {
+			cardPrice = *cardRules.FixedValue
 		}
-
 		sourcePlayer.RemoveCoins(cardPrice)
-
 	}
 
 	selfishPayload := structs.NewSelfishPayload(whatWasDenied, targetPlayer)

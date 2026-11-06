@@ -21,33 +21,35 @@ func ValidateGuardianProtocol(roomData *rooms.Room, registryRules *rules.Registr
 	}
 
 	if roomData.GameEvent == nil {
-		utils.LogInvldPlyrReq("Guardian só pode ser usado durante o evento de carta morta ou de primeira ação", playerPlay.PlayerId)
+		utils.LogInvldPlyrReq("Guardian só pode ser usado durante o evento de carta morta, clairvoyant ou de primeira ação", playerPlay.PlayerId)
 		return false
 	}
 
-	// Se usado na primeira ação do jogo, marca que o jogador matou a propria carta
+	if payload.TargetPlayer != playerPlay.PlayerId {
+		utils.LogInvldPlyrReq("Player tentou usar Guardian em uma carta que não é dele", playerPlay.PlayerId)
+		return false
+	}
+
+	targetAllyCard, err := sourcePlayer.GetCardByIndex(payload.TargetCardIndex)
+	if err != nil {
+		utils.LogError(err)
+		return false
+	}
+	if targetAllyCard.Dead {
+		utils.LogInvldPlyrReq("Player tentou usar Guardian em uma carta morta", playerPlay.PlayerId)
+		return false
+	}
+
+	protectMode := ""
+
 	switch roomData.GameEvent.Type {
 	case structs.EventWaitingFirstAction:
 		if roomData.CurrentPlayer != playerPlay.PlayerId {
 			utils.LogInvldPlyrReq("Player tentou usar Guardian fora do seu turno", playerPlay.PlayerId)
 			return false
 		}
+		protectMode = "future"
 
-		// verifica se o jogador forneceu um índice válido da carta aliada
-		targetAllyCard, err := sourcePlayer.GetCardByIndex(payload.TargetCardIndex)
-		if err != nil {
-			utils.LogError(err)
-			return false
-		}
-
-		if targetAllyCard.Dead {
-			utils.LogInvldPlyrReq("Player tentou usar Guardian para proteger uma carta na primeira ação, mas não forneceu um índice valido da carta", playerPlay.PlayerId)
-			return false
-		}
-		if targetAllyCard.Protected {
-			utils.LogInvldPlyrReq("Player tentou usar Guardian para proteger uma carta na primeira ação, mas a carta já está protegida", playerPlay.PlayerId)
-			return false
-		}
 	case structs.EventCardKilled:
 		payloadMap, ok := roomData.GameEvent.Payload.(map[string]interface{})
 		if !ok {
@@ -55,15 +57,19 @@ func ValidateGuardianProtocol(roomData *rooms.Room, registryRules *rules.Registr
 			return false
 		}
 
-		// Extrair targetPlayer do mapa
 		targetPlayerIdStr, ok := payloadMap["targetPlayer"].(string)
 		if !ok {
 			utils.LogInvldPlyrReq("targetPlayer não encontrado ou inválido no payload", playerPlay.PlayerId)
 			return false
 		}
-
 		if targetPlayerIdStr != playerPlay.PlayerId {
 			utils.LogInvldPlyrReq("Player tentou usar Guardian em um evento que não é dele", playerPlay.PlayerId)
+			return false
+		}
+
+		killedCardIndex, ok := payloadMap["targetCardIndex"].(float64)
+		if !ok || int(killedCardIndex) != payload.TargetCardIndex {
+			utils.LogInvldPlyrReq("Guardian deve ser usada na carta que está sofrendo o ataque", playerPlay.PlayerId)
 			return false
 		}
 
@@ -73,15 +79,20 @@ func ValidateGuardianProtocol(roomData *rooms.Room, registryRules *rules.Registr
 			return false
 		}
 
-		// verifica se o evento de carta morta foi causado por ContestPenalty ou Kamikaze, caso tenha sido, o jogador não pode usar Guardian
-		switch cardKilledCause {
-		case string(structs.EffectContestPenalty):
-			utils.LogInvldPlyrReq("Player tentou usar Guardian em um evento que não é bloqueado por Guardian", playerPlay.PlayerId)
-			return false
-		case string(structs.EffectKamikaze):
+		// Kamikaze, contestação e perda de carta por limite de moedas não podem ser impedidos
+		switch structs.EffectCause(cardKilledCause) {
+		case structs.EffectContestPenalty, structs.EffectKamikaze, structs.EffectGreed:
 			utils.LogInvldPlyrReq("Player tentou usar Guardian em um evento que não é bloqueado por Guardian", playerPlay.PlayerId)
 			return false
 		}
+
+		// A proteção existente já bloqueia o ataque; não é necessário gastar outra Guardian
+		if targetAllyCard.Protected {
+			utils.LogInvldPlyrReq("A carta já está protegida contra o próximo ataque", playerPlay.PlayerId)
+			return false
+		}
+
+		protectMode = "death"
 
 	case structs.EventCardPlayedClairvoyant:
 		if cardRules.CanDefendClairvoyant == nil || !*cardRules.CanDefendClairvoyant {
@@ -89,28 +100,32 @@ func ValidateGuardianProtocol(roomData *rooms.Room, registryRules *rules.Registr
 			return false
 		}
 
+		payloadMap, ok := roomData.GameEvent.Payload.(map[string]interface{})
+		if !ok {
+			utils.LogError("payload does not match map structure")
+			return false
+		}
+		targetPlayerIdStr, _ := payloadMap["targetPlayer"].(string)
+		targetCardIndex, _ := payloadMap["targetCardIndex"].(float64)
+		if targetPlayerIdStr != playerPlay.PlayerId || int(targetCardIndex) != payload.TargetCardIndex {
+			utils.LogInvldPlyrReq("Guardian deve ser usada na própria carta que está sendo revelada", playerPlay.PlayerId)
+			return false
+		}
+		protectMode = "sight"
+
 	default:
 		utils.LogInvldPlyrReq("Guardian só pode ser usado durante o evento de carta morta, clairvoyant ou de primeira ação", playerPlay.PlayerId)
 		return false
 	}
 
-	// verifica se o jogador está tentando proteger uma carta que não é dele
-	if payload.TargetPlayer != playerPlay.PlayerId {
-		utils.LogInvldPlyrReq("Player tentou usar Guardian em uma carta que não é dele", playerPlay.PlayerId)
+	// verifica se player tem moedas pra isso
+	cardPrice, err := roomData.GetGuardianValue(registryRules, protectMode)
+	if err != nil {
+		utils.LogError(err)
 		return false
 	}
-
-	// se só tiver uma carta viva, o jogador pode usar Guardian por um desconto
-	discount := 0
-	aliveCards := sourcePlayer.GetAliveCardsIndexes()
-	if len(aliveCards) == 1 {
-		discount = 1
-	}
-
-	// verifica se player tem moedas pra isso, considerando o desconto caso só tenha uma carta viva
-	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, registryRules, playerPlay.Type, discount)
-	if err != nil {
-		utils.LogInvldPlyrReq(err, playerPlay.PlayerId)
+	if sourcePlayer.Coins < cardPrice {
+		utils.LogInvldPlyrReq("Moedas insuficientes para usar Guardian", playerPlay.PlayerId)
 		return false
 	}
 

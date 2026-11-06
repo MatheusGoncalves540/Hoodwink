@@ -76,6 +76,7 @@ func (r *Room) GetPublicRoomForUpdates() PublicRoomForUpdates {
 		GameEvent:         r.GameEvent,
 		PendingEffects:    r.PendingEffects,
 		GameOver:          r.GameOver,
+		WinnerID:          r.WinnerID,
 		StartTime:         r.StartTime,
 		DoubledCardValues: r.DoubledCardValues,
 		Chat:              r.Chat,

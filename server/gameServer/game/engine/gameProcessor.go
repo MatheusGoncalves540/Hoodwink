@@ -88,8 +88,15 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, registryRules *
 		return
 	}
 
-	// Nada pendente → próximo turno
+	// Nada pendente → próximo turno (ou fim de jogo)
 	if roomData.GameEvent == nil && !roomData.HasPendingLogicEffect() && !roomData.HasPendingPresentationEvent() {
+		roomData.UpdateGameOver()
+		if roomData.GameOver {
+			rdb.ZRem(ctx, "rooms:timeouts", roomData.ID)
+			roomData.SaveRoom(ctx, rdb)
+			roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
+			return
+		}
 		NextRound(ctx, rdb, roomData, registryRules)
 	}
 }

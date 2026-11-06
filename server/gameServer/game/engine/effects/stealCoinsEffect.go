@@ -33,11 +33,15 @@ func StealCoinsEffect(ctx context.Context, rdb *redis.Client, registryRules *rul
 		return
 	}
 
-	// calcula as moedas a serem ganhas pelo jogador, que é a metade das moedas perdidas sem restos
-	earnedCoins := stealCoinsPayload.LostCoins / 2
+	// o Trapaceiro retira a quantia do alvo e recebe a metade maior em caso de valor ímpar
+	lostCoins := stealCoinsPayload.LostCoins
+	if lostCoins > targetPlayer.Coins {
+		lostCoins = targetPlayer.Coins
+	}
+	earnedCoins := utils.CeilDiv(lostCoins, 2)
 
 	// subtrai as moedas do jogador
-	targetPlayer.RemoveCoins(stealCoinsPayload.LostCoins)
+	targetPlayer.RemoveCoins(lostCoins)
 
 	// adiciona as moedas ao jogador
 	breakLimit := sourcePlayer.AddCoins(earnedCoins, *generalRules.MaxCoins)
@@ -45,6 +49,9 @@ func StealCoinsEffect(ctx context.Context, rdb *redis.Client, registryRules *rul
 	if breakLimit {
 		// se o limite de moedas for ultrapassado, mata a carta viva de menor índice
 		aliveIndexes := sourcePlayer.GetAliveCardsIndexes()
+		if len(aliveIndexes) == 0 {
+			return
+		}
 
 		greedPayload := structs.NewKillCardPayload(string(structs.EffectGreed), &sourcePlayer.Id, &aliveIndexes[0])
 

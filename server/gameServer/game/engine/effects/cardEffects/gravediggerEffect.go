@@ -18,18 +18,16 @@ func GravediggerEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 		return
 	}
 
-	changeCardPayload := structs.NewChangeCardPayload(string(effect.Cause), gravediggerPayload.TargetPlayer, gravediggerPayload.TargetCardIndex, nil)
+	reviveCardPayload := structs.NewReviveCardPayload(string(effect.Cause), gravediggerPayload.TargetPlayer, gravediggerPayload.TargetCardIndex)
 
-	changeCardEffect := structs.Effect{
-		Cause:        structs.EffectChangedCard,
+	reviveCardEffect := structs.Effect{
+		Cause:        structs.EffectGravedigger,
 		SourcePlayer: effect.SourcePlayer,
-		Payload:      changeCardPayload,
+		Payload:      reviveCardPayload,
 	}
 
-	// chama o ChangeCardAnnouncer para trocar a carta do jogador alvo
-	err := effects.ChangeCardAnnouncer(ctx, rdb, registryRules, roomData, changeCardEffect)
-	if err != nil {
+	// chama o ReviveCardAnnouncer para ressuscitar a carta morta do jogador
+	if err := effects.ReviveCardAnnouncer(ctx, rdb, registryRules, roomData, reviveCardEffect); err != nil {
 		utils.LogError(err)
-		return
 	}
 }

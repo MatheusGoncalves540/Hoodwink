@@ -32,5 +32,22 @@ func ValidateClairvoyantProtocol(roomData *rooms.Room, registryRules *rules.Regi
 		return false
 	}
 
+	if clairvoyantPayload.TargetPlayer == playerPlay.PlayerId {
+		utils.LogInvldPlyrReq("Clairvoyant só pode revelar a carta de um adversário", playerPlay.PlayerId)
+		return false
+	}
+
+	targetPlayer, err := roomData.GetPlayer(clairvoyantPayload.TargetPlayer)
+	if err != nil || !targetPlayer.Alive {
+		utils.LogInvldPlyrReq("Jogador alvo inválido para o Clairvoyant", playerPlay.PlayerId)
+		return false
+	}
+
+	card, err := targetPlayer.GetCardByIndex(clairvoyantPayload.TargetCardIndex)
+	if err != nil || card.Dead {
+		utils.LogInvldPlyrReq("Clairvoyant tentou revelar uma carta morta", playerPlay.PlayerId)
+		return false
+	}
+
 	return true
 }

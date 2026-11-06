@@ -116,6 +116,10 @@ func (r *Room) RemoveTTL(ctx context.Context, rdb *redis.Client) error {
 
 // RegistryTimeout registra o timeout no redis
 func (r *Room) RegistryTimeout(rdb *redis.Client, ctx context.Context, expiresAt time.Time) {
+	if rdb == nil {
+		return
+	}
+
 	rdb.ZAdd(ctx, "rooms:timeouts", redis.Z{
 		Score:  float64(expiresAt.UnixMilli()),
 		Member: r.ID,

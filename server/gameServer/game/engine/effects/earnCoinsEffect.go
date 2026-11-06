@@ -17,6 +17,10 @@ func EarnCoinsEffect(ctx context.Context, rdb *redis.Client, registryRules *rule
 		return
 	}
 
+	if earnCoinsPayload.EarnedCoins <= 0 {
+		return
+	}
+
 	generalRules, err := roomData.GetGeneralRules(registryRules)
 	if err != nil {
 		utils.LogError(err)
@@ -35,6 +39,9 @@ func EarnCoinsEffect(ctx context.Context, rdb *redis.Client, registryRules *rule
 	if breakLimit {
 		// se o limite de moedas for ultrapassado, mata a carta viva de menor índice
 		aliveIndexes := sourcePlayer.GetAliveCardsIndexes()
+		if len(aliveIndexes) == 0 {
+			return
+		}
 
 		greedPayload := structs.NewKillCardPayload(string(structs.EffectGreed), &sourcePlayer.Id, &aliveIndexes[0])
 

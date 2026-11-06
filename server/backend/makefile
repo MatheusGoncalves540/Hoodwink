@@ -1,7 +1,8 @@
 # Makefile para subir PostgreSQL e Redis Stack com Podman
 
-# Diretórios locais
-POSTGRES_VOLUME := ./postgres
+# Volume nomeado do Podman: bind mount em /mnt/d (drvfs) não suporta
+# chown/chmod, o que faz o initdb do Postgres falhar no WSL.
+POSTGRES_VOLUME := hoodwink-postgres-data
 REDIS_CONF := ./redis.conf
 
 # Arquivo de ambiente (pode sobrescrever via: make ENV_FILE=../.env)
@@ -28,29 +29,30 @@ REDIS_IMAGE := docker.io/library/redis:8.0
 
 all: redis-conf db-up migrate redis-up install dev
 
-## Cria o diretório e sobe o container do PostgreSQL
+## Sobe o container do PostgreSQL
 db-up:
-	@mkdir -p $(POSTGRES_VOLUME)
 	podman create --name $(POSTGRES_CONTAINER) \
 	  -e POSTGRES_USER=postgres \
 	  -e POSTGRES_PASSWORD=postgres \
 	  -e POSTGRES_DB=hoodwink \
 	  -p 5432:5432 \
-	  -v $(POSTGRES_VOLUME):/var/lib/postgresql:Z \
+	  -v $(POSTGRES_VOLUME):/var/lib/postgresql \
 	  $(POSTGRES_IMAGE)
 	podman start $(POSTGRES_CONTAINER)
 
-## Gera o arquivo redis.conf se não existir
+## Gera o arquivo redis.conf se não existir (ou estiver vazio)
+## bind 0.0.0.0 porque o forward de porta do Podman chega no IP do
+## container, não no loopback dele. CONFIG não é renomeado: o RediSearch
+## embutido na imagem redis:8 chama CONFIG no load e aborta sem ele.
 redis-conf:
-	@test -f $(REDIS_CONF) || printf '%s\n' \
-'bind 127.0.0.1' \
-'requirepass redis' \
+	@test -s $(REDIS_CONF) || printf '%s\n' \
+'bind 0.0.0.0' \
 'protected-mode yes' \
+'requirepass redis' \
 'appendonly yes' \
-'rename-command FLUSHALL' "" \
-'rename-command FLUSHDB' "" \
-'rename-command CONFIG' "" \
-'rename-command SHUTDOWN' "" \
+'rename-command FLUSHALL ""' \
+'rename-command FLUSHDB ""' \
+'rename-command SHUTDOWN ""' \
 'appendfsync everysec' > $(REDIS_CONF)
 
 ## Sobe o container do Redis Stack

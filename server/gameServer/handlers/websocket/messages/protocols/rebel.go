@@ -37,8 +37,13 @@ func RebelProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.
 
 	sourcePlayer.RemoveCoins(cardPrice)
 
+	taxStep := 1
+	if cardRules.FixedValue != nil {
+		taxStep = *cardRules.FixedValue
+	}
+
 	// prepara payload
-	rebelPayload := structs.NewRebelPayload(*cardRules.FixedValue)
+	rebelPayload := structs.NewRebelPayload(taxStep)
 
 	// registra o evento de jogo
 	roomData.GameEvent = structs.NewGameEvent(playerPlay.PlayerId, structs.EventCardPlayedRebel, expiresAt, rebelPayload)

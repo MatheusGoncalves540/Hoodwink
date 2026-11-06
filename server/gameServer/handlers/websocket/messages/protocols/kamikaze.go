@@ -12,18 +12,9 @@ import (
 )
 
 func KamikazeProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, kamikazePayload *structs.KamikazePayload) error {
-	killedHimSelf := kamikazePayload.KilledHimSelf && kamikazePayload.TargetAllyCardIndex != nil
-
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		return err
-	}
-
-	if killedHimSelf {
-		sourcePlayer.KillCard(*kamikazePayload.TargetAllyCardIndex)
-
-		// atualiza estado de morte do jogador caso a carta morta seja a última viva do jogador
-		roomData.VerifyIfPlayerDead(sourcePlayer)
 	}
 
 	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction")
