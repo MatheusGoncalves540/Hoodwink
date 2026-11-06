@@ -118,6 +118,16 @@ sudo bash k8s/scripts/edge-nginx.sh --tls  # depois do DNS: emite o certificado
 
 ## Operação
 
+Testes pós-deploy (o CI roda o smoke automaticamente):
+
+```bash
+bash k8s/scripts/smoke-test.sh   # health dos 3 serviços + schema/API key
+bash k8s/scripts/e2e-game.sh     # JWT -> sala -> ticket -> WebSocket 101
+```
+
+O `e2e-game.sh` cria um usuário `smoke@example.com`, joga uma sala de teste e
+remove o usuário no fim; a sala expira pelo `ROOM_TTL`.
+
 ```bash
 kubectl -n hoodwink get pods,svc,deploy
 helm -n hoodwink history hoodwink
