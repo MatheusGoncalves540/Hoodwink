@@ -59,22 +59,30 @@ func processExpiredRoomsEvents(ctx context.Context, rdb *redis.Client, registryR
 }
 
 func processRoomWithLock(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomID string) {
-	roomData, err := redisFuncs.LoadRoom(ctx, rdb, roomID)
+	err := redisFuncs.WithRoom(ctx, rdb, roomID, func(roomData *rooms.Room) {
+		// O lote de salas vencidas foi lido antes do mutex: se uma jogada abriu outra janela
+		// nesse meio-tempo (ex.: contestação aos 9,9 s), ela ainda não venceu e não pode ser fechada.
+		if roomData.GameEvent != nil && roomData.GameEvent.ExpiresAt.After(time.Now()) {
+			return
+		}
+
+		ok, err := roomData.AcquireRoomLock(ctx, rdb, utils.GetInstanceID(), 2*time.Second)
+		if err != nil || !ok {
+			return
+		}
+		defer roomData.ReleaseRoomLock(ctx, rdb, utils.GetInstanceID())
+
+		Tick(ctx, rdb, registryRules, roomData)
+	})
 	if err != nil {
 		rdb.ZRem(ctx, "rooms:timeouts", roomID)
-		return
 	}
+}
 
-	ok, err := roomData.AcquireRoomLock(ctx, rdb, utils.GetInstanceID(), 2*time.Second)
-	if err != nil || !ok {
-		return
-	}
-	defer roomData.ReleaseRoomLock(ctx, rdb, utils.GetInstanceID())
-
-	// Fecha janela atual (se existir)
-	if roomData.GameEvent != nil {
-		roomData.GameEvent = nil
-	}
+// Tick fecha a janela atual e avança a sala um passo: próximo evento de apresentação,
+// próximo efeito lógico ou próximo turno. Sem rdb, roda só em memória (testes de cenário).
+func Tick(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room) {
+	roomData.GameEvent = nil
 
 	if roomData.HasPendingPresentationEvent() {
 		createGameEventFromPresentationEvent(ctx, rdb, registryRules, roomData)
@@ -92,7 +100,9 @@ func processRoomWithLock(ctx context.Context, rdb *redis.Client, registryRules *
 	if roomData.GameEvent == nil && !roomData.HasPendingLogicEffect() && !roomData.HasPendingPresentationEvent() {
 		roomData.UpdateGameOver()
 		if roomData.GameOver {
-			rdb.ZRem(ctx, "rooms:timeouts", roomData.ID)
+			if rdb != nil {
+				rdb.ZRem(ctx, "rooms:timeouts", roomData.ID)
+			}
 			roomData.SaveRoom(ctx, rdb)
 			roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
 			return
@@ -147,7 +157,7 @@ func createGameEventFromPresentationEvent(ctx context.Context, rdb *redis.Client
 
 // scheduleImmediateProcessing verifica se a sala tem um evento de apresentação ou efeito lógico pendente e registra um timeout imediato para processamento.
 func scheduleImmediateProcessing(ctx context.Context, rdb *redis.Client, roomData *rooms.Room) {
-	if roomData.GameEvent != nil {
+	if rdb == nil || roomData.GameEvent != nil {
 		return
 	}
 	if !roomData.HasPendingPresentationEvent() && !roomData.HasPendingLogicEffect() {

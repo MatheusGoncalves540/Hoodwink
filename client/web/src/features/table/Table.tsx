@@ -11,7 +11,7 @@ import { eventKey } from "../../game/log";
 import { CLASSIC_RULES } from "../../game/rules.classic";
 import { desktopSeats, mobileSeats } from "../../game/seats";
 import type { GameView } from "../../game/selectors";
-import { selectDecision, selectFootlights, selectSeats, selectStage, selectYou } from "../../game/selectors";
+import { kamikazeAlly, selectDecision, selectFootlights, selectSeats, selectStage, selectYou } from "../../game/selectors";
 import { contest, contestPenalty, play, type Target } from "../../net/actions";
 import { send } from "../../net/GameSocket";
 import { useGameStore } from "../../store/gameStore";
@@ -146,7 +146,9 @@ export function TableScene() {
 
   const sendPlay = (role: ActionId, target?: Target) => {
     try {
-      send(play(role, me ?? "", { showToAll: targeting?.showToAll, ...target }));
+      // Kamikaze: o servidor exige saber qual Kamikaze seu morre (targetAllyCardIndex)
+      const ally = role === "KAMIKAZE" ? (kamikazeAlly(view) ?? undefined) : undefined;
+      send(play(role, me ?? "", { showToAll: targeting?.showToAll, allyCardIndex: ally, ...target }));
     } catch (e) {
       console.error(e);
     }
@@ -270,6 +272,7 @@ export function TableScene() {
         onContest={() => send(contest())}
         onBlock={onBlock}
         onPass={() => setPassed(evKey)}
+        onKamikaze={() => setTargeting({ role: "KAMIKAZE" })}
       />
     ) : undefined;
 

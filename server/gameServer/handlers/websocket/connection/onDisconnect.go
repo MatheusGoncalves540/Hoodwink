@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 
@@ -17,12 +18,13 @@ func OnDisconnect(conn *websocket.Conn, ctx context.Context, rdb *redis.Client, 
 	playerRedis.AcquirePlayerLock(ctx, rdb, playerId, 0)
 	defer playerRedis.ReleasePlayerLock(ctx, rdb, playerId)
 
-	roomData, err := redisFuncs.LoadRoom(ctx, rdb, roomId)
+	err := redisFuncs.WithRoom(ctx, rdb, roomId, func(roomData *rooms.Room) { onDisconnect(ctx, rdb, roomData, playerId) })
 	if err != nil {
-		utils.LogError("Erro ao carregar dados da sala no connect: " + err.Error())
-		return
+		utils.LogError("Erro ao carregar dados da sala no disconnect: " + err.Error())
 	}
+}
 
+func onDisconnect(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, playerId string) {
 	// Verifica se o jogo já foi iniciado
 	if roomData.StartTime.IsZero() {
 		// Jogo não iniciado, remove a estrutura do player na sala

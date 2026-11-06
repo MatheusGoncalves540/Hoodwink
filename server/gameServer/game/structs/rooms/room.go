@@ -42,9 +42,9 @@ type PublicRoomForUpdates struct {
 	Deck              int                                                   `json:"deck"`
 	CurrentPlayer     string                                                `json:"currentPlayer"`
 	GameEvent         *structs.GameEvent                                    `json:"gameEvent"`
-	PendingEffects    []structs.EffectDTO                                   `json:"pendingEffects"`
-	GameOver          bool                                                  `json:"gameOver"`
-	WinnerID          string                                                `json:"winnerId,omitempty"`
-	StartTime         time.Time                                             `json:"startTime"`
-	Chat              []structs.ChatMessage                                 `json:"chat"`
+	// Sem PendingEffects: a fila interna do motor não é pública (alvos e reações ainda não anunciados).
+	GameOver  bool                  `json:"gameOver"`
+	WinnerID  string                `json:"winnerId,omitempty"`
+	StartTime time.Time             `json:"startTime"`
+	Chat      []structs.ChatMessage `json:"chat"`
 }

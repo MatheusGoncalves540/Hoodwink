@@ -11,17 +11,6 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// protectionCanBlockKill indica se a proteção da Guardiã pode impedir a morte
-// de acordo com a causa do ataque. Kamikaze, contestação e perda de carta por
-// limite de moedas não podem ser impedidos.
-func protectionCanBlockKill(cause string) bool {
-	switch structs.EffectCause(cause) {
-	case structs.EffectKamikaze, structs.EffectContestPenalty, structs.EffectGreed:
-		return false
-	default:
-		return true
-	}
-}
 
 func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
 	// decodifica o payload
@@ -37,7 +26,7 @@ func KillCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Regis
 		return err
 	}
 
-	if protectionCanBlockKill(killCardPayload.Cause) {
+	if structs.ProtectionBlocks(structs.EffectCause(killCardPayload.Cause)) {
 		protectedCards := targetPlayer.GetProtectedCardsIndexes()
 		if slices.Contains(protectedCards, *killCardPayload.TargetCardIndex) {
 			// se a carta estava protegida, a Guardiã consome a proteção ao invés de matar a carta

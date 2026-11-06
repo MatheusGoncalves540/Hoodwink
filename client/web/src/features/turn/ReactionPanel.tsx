@@ -19,10 +19,12 @@ type Props = {
   onContest(): void;
   onBlock(): void;
   onPass(): void;
+  /** Sua carta Kamikaze está morrendo: escolher quem perde uma carta junto. */
+  onKamikaze?(): void;
 };
 
 /** Sua deixa (tela 5): bloquear, contestar ou deixar passar, com o tempo correndo. */
-export function ReactionPanel({ view, decision, layout, onContest, onBlock, onPass }: Props) {
+export function ReactionPanel({ view, decision, layout, onContest, onBlock, onPass, onKamikaze }: Props) {
   const you = selectYou(view);
   const hand = you.cards.filter((c) => !c.dead && c.role).map((c) => roleName(c.role!));
   const block = decision.block;
@@ -43,6 +45,12 @@ export function ReactionPanel({ view, decision, layout, onContest, onBlock, onPa
       {block && (
         <Ticket className={s.block} disabled={you.coins < block.cost} onClick={onBlock}>
           {copy.block(roleName(block.role))} <span className={s.blockCost}>{copy.blockCost(block.cost)}</span>
+        </Ticket>
+      )}
+
+      {decision.kamikaze && (
+        <Ticket className={s.block} onClick={onKamikaze}>
+          {copy.kamikazeStrike}
         </Ticket>
       )}
 
