@@ -7,3 +7,4 @@ dist
 .env.local
 .env.*.local
 graphify-out
+.env.test
