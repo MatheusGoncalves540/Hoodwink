@@ -29,8 +29,23 @@
 .input::placeholder {
   color: var(--hw-tinta-suave);
 }
+/* campo de código (Entrada): pílula cheia, letra de rótulo em caixa-alta */
 .upper {
-  letter-spacing: 0.12em;
+  height: 52px;
+  border-color: var(--hw-filete);
+  background: var(--hw-luz);
+  font-family: var(--hw-font-rotulo);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.field:has(.upper) .action {
+  height: 52px;
+  padding: 0 20px;
+  font-family: var(--hw-font-rotulo);
+  font-size: 14px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 .action {
@@ -42,8 +57,18 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+/* trilho do desktop (Mesa desktop): campo claro com filete, "ENVIAR" em pílula vazada */
+.field:has(.actionDark) .input {
+  height: 48px;
+  border-color: var(--hw-filete);
+  background: var(--hw-plateia);
+  font-size: 16px;
+}
 .actionDark {
-  background: var(--hw-tinta);
-  border-color: var(--hw-tinta);
-  color: var(--hw-plateia);
+  height: 48px;
+  padding: 0 20px;
+  font-family: var(--hw-font-rotulo);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }

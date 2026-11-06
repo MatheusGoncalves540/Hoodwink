@@ -10,13 +10,36 @@
   flex-direction: column;
   gap: 14px;
 }
+.side,
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+/* desktop: prévia num trilho à esquerda, abas e peças à direita (canvas Camarim) */
 .desk {
-  max-width: 1100px;
-  margin: 0 auto;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 28px;
+  padding: 24px 28px 32px;
+}
+.desk .side {
+  flex: 0 0 380px;
+  padding-right: 28px;
+  border-right: 1px solid var(--hw-filete);
+}
+.desk .main {
+  flex: 1;
+  padding-top: 8px;
 }
 .back {
   color: var(--hw-tinta);
-  font-style: italic;
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   text-decoration: none;
 }
 .title {
@@ -24,29 +47,85 @@
   font-family: var(--hw-font-display);
   font-weight: 400;
   font-size: 40px;
+  line-height: 1.1;
   color: var(--hw-titulo);
+}
+.desk .title {
+  font-size: 56px;
 }
 .lead,
 .tabLead {
   margin: 0;
-  font-style: italic;
+  font-size: 15px;
+}
+.desk .lead {
+  font-size: 17px;
 }
 .preview {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding: 18px;
+  gap: 16px;
+  padding: 14px;
   border-radius: var(--hw-radius-m);
   background: var(--hw-plateia);
   color: var(--hw-tinta);
   box-shadow: inset 0 0 0 1px var(--hw-filete);
 }
+.desk .preview {
+  flex: 1;
+  grid-template-columns: 1fr;
+  align-content: center;
+  justify-items: center;
+  gap: 20px;
+  padding: 32px 36px;
+}
 .previewCast {
-  padding: 18px 22px;
-  font-family: var(--hw-font-display);
-  font-size: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 18px;
   background: var(--hw-luz);
+  text-align: center;
+}
+.desk .previewCast {
+  align-self: stretch;
+  padding: 32px 18px;
+}
+.previewCast b {
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--hw-titulo);
+}
+.desk .previewCast b {
+  font-size: 44px;
+}
+.previewRoom {
+  font-family: var(--hw-font-rotulo);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hw-ouro-texto);
+}
+.previewCount {
+  font-size: 13px;
+}
+.previewCards {
+  display: flex;
+  gap: 8px;
+}
+.preview:not(.desk *) .previewCards > :last-child {
+  display: none;
+}
+.previewTicket {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: auto;
+  padding: 0 28px;
 }
 .tabs {
   display: flex;
@@ -117,6 +196,39 @@
   font-family: var(--hw-font-display);
   font-size: 34px;
   color: var(--hw-titulo);
+}
+.pack {
+  width: 100%;
+  height: 72px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: var(--hw-radius-s);
+}
+.pack b {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  overflow: hidden;
+  background: var(--hw-plateia);
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 17px;
+  color: var(--hw-titulo);
+  white-space: nowrap;
+}
+.pack i {
+  flex: 0 0 22%;
+  background: var(--hw-veludo);
+}
+.pack i + i {
+  flex-basis: 14%;
+  background: var(--hw-ouro);
+}
+.desk .pack b {
+  font-size: 20px;
 }
 .cores {
   display: flex;

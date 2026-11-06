@@ -37,6 +37,8 @@
 .profileRow {
   width: 100%;
   display: flex;
+  gap: 8px;
+  white-space: nowrap;
   justify-content: flex-end;
 }
 .avatar {
@@ -54,9 +56,14 @@
 }
 .profileRow .login {
   height: 40px;
-  padding: 0 14px;
+  padding: 0 12px;
+  flex: none;
   border-radius: var(--hw-radius-pill);
-  font-size: 14px;
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 .proso {
   flex: 1;
@@ -67,38 +74,33 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  color: var(--hw-tinta-suave);
+  gap: 14px;
+  color: var(--hw-ouro-texto);
 }
 .prosoFrame {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.5px;
+  stroke-width: 2px;
   stroke-dasharray: 6 5;
   overflow: visible;
 }
 .prosoAsk {
-  width: 0.62em;
-  height: 1.15em;
+  width: 64px;
+  height: 102px;
+}
+.prosoName {
   font-family: var(--hw-font-display);
-  font-size: 56px;
-  color: var(--hw-ouro-texto);
-}
-.prosoAsk i {
-  font-style: normal;
-  text-align: center;
-  line-height: 1.15em;
-}
-.prosoAsk i:nth-child(2) {
-  rotate: 6deg;
-}
-.prosoAsk i:nth-child(3) {
-  rotate: -5deg;
-  translate: 1px 1px;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--hw-titulo);
 }
 .prosoNote {
-  font-style: italic;
-  font-size: 15px;
+  font-family: var(--hw-font-rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hw-ouro-texto);
 }
 .cartaz .nowShowing {
   font-size: 12px;
@@ -150,9 +152,10 @@
 .how {
   align-self: center;
   padding: 10px;
-  font-size: 16px;
+  font-size: 17px;
   font-style: italic;
-  color: var(--hw-tinta);
+  font-weight: 700;
+  color: var(--hw-titulo);
 }
 .desk .logo {
   font-size: 112px;
@@ -180,6 +183,7 @@
 }
 .camarim {
   margin-right: auto;
+  font-size: 15px;
   align-self: center;
   color: var(--hw-tinta);
   font-style: italic;
