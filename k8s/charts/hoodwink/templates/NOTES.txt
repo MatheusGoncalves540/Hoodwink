@@ -1,0 +1,15 @@
+Hoodwink implantado no namespace {{ .Release.Namespace }}.
+
+Site:    https://{{ .Values.ingress.host }} (TLS no nginx do host, não no Traefik)
+API:     https://{{ .Values.ingress.host }}/api/alive
+Game WS: wss://{{ .Values.ingress.host }}/gs/game?Ticket=...
+
+Pods:
+  kubectl -n {{ .Release.Namespace }} get pods
+  kubectl -n {{ .Release.Namespace }} logs deploy/{{ include "hoodwink.fullname" . }}-backend -f
+  kubectl -n {{ .Release.Namespace }} logs deploy/{{ include "hoodwink.fullname" . }}-gameserver -f
+
+O Secret {{ include "hoodwink.secretName" . }} precisa existir antes do upgrade
+(chaves: {{ .Values.secrets.keys.pgPass }}, {{ .Values.secrets.keys.jwtSecret }},
+{{ .Values.secrets.keys.gameJwtSecret }}, {{ .Values.secrets.keys.backendApiKey }},
+{{ .Values.secrets.keys.redisPassword }}).

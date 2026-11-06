@@ -1,0 +1,125 @@
+# Defaults do chart. Produção: values.production.yaml.
+
+# Tag única para as três imagens (o CI passa --set imageTag=<sha>).
+imageTag: ""
+imagePullPolicy: IfNotPresent
+
+images:
+  backend:
+    repository: ghcr.io/matheusgoncalves540/hoodwink-backend
+  gameserver:
+    repository: ghcr.io/matheusgoncalves540/hoodwink-gameserver
+  web:
+    repository: ghcr.io/matheusgoncalves540/hoodwink-web
+
+revisionHistoryLimit: 5
+
+# Segredos criados fora do chart (na VM, a partir de k8s/.env.production).
+# Chaves esperadas: PG_PASS, JWT_SECRET, GAME_JWT_SECRET, BACKEND_API_KEY,
+# REDIS_PASSWORD.
+secrets:
+  existingSecret: hoodwink-secrets
+  keys:
+    pgPass: PG_PASS
+    jwtSecret: JWT_SECRET
+    gameJwtSecret: GAME_JWT_SECRET
+    backendApiKey: BACKEND_API_KEY
+    redisPassword: REDIS_PASSWORD
+
+backend:
+  replicas: 1
+  # hostNetwork: o pod usa a rede do nó (flannel sem egress nesta VM) e fala
+  # com Postgres/Redis/gameServer por 127.0.0.1.
+  hostNetwork: true
+  port: 8088
+  config:
+    ENVIRONMENT: production
+    SERVER_URL: http://localhost:8088
+    FRONTEND_URL: http://localhost:5173
+    GAME_SERVER_URL: http://localhost:4444
+    PORT: "8088"
+    PG_HOST: 127.0.0.1
+    PG_NAME: hoodwink
+    PG_USER: postgres
+    PG_PORT: "5432"
+    PG_SSLMODE: disable
+    GOOGLE_CLIENT_ID: ""
+    JWT_EXPIRATION: "24"
+    JWT_REFRESH_MIDDLEWARE: "12"
+    DEBUG: "false"
+    CORS: "false"
+    AUTOMIGRATE: "false"
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+
+gameserver:
+  replicas: 1
+  hostNetwork: true
+  port: 4444
+  config:
+    ENVIRONMENT: production
+    GAME_SERVER_URL: http://localhost:4444
+    BACKEND_URL: http://127.0.0.1:8088
+    FRONTEND_URL: http://localhost:5173
+    PORT: "4444"
+    REDIS_ADDR: 127.0.0.1:6379
+    HEARTBEAT_INTERVAL: "5"
+    HEARTBEAT_TTL: "10"
+    JWT_EXPIRATION: "2"
+    CORS: "false"
+    ROOM_TTL: "5"
+    ROOM_AFK_TTL_LIMIT: "180"
+    PROCESSOR_BATCH_SIZE: "5"
+    PROCESSOR_INTERVAL_MS: "300"
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+
+web:
+  replicas: 1
+  port: 80
+  service:
+    type: NodePort
+    nodePort: 30081
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+
+# Schema idempotente aplicado por initContainer do backend (imagem postgres).
+migrations:
+  enabled: true
+
+postgres:
+  enabled: true
+  image: postgres:16-alpine
+  hostNetwork: true
+  port: 5432
+  user: postgres
+  database: hoodwink
+  persistence:
+    # hostPath persistente em produção; vazio = emptyDir (efêmero).
+    hostPath: ""
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+
+redis:
+  enabled: true
+  image: redis:7.4-alpine
+  hostNetwork: true
+  port: 6379
+  persistence:
+    hostPath: ""
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+
+# O TLS é terminado no nginx do host; o Ingress fica desligado em produção.
+ingress:
+  enabled: false
+  className: traefik
+  host: hoodwink.hermis.com.br
+  tls:
+    enabled: false
+    secretName: hoodwink-tls

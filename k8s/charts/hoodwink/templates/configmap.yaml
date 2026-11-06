@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hoodwink.fullname" . }}-backend-config
+  labels:
+    {{- include "hoodwink.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.backend.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hoodwink.fullname" . }}-gameserver-config
+  labels:
+    {{- include "hoodwink.labels" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.gameserver.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
