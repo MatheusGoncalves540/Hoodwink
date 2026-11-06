@@ -12,21 +12,24 @@ import (
 
 // SaveRoomWithTTL salva o estado da sala no Redis com TTL específico
 func (r *Room) SaveRoomWithTTL(ctx context.Context, rdb *redis.Client, ttl time.Duration) error {
-	// Pega o ID da instância atual
+	// Sem Redis (motor rodando offline, nos testes de cenário) não há o que persistir.
+	if rdb == nil {
+		return nil
+	}
 	instanceID := utils.GetInstanceID()
-	// Tenta adquirir o lock da sala
-	ok, err := r.AcquireRoomLock(ctx, rdb, instanceID, 5*time.Second)
-	if err != nil {
-		// Retorna erro se falhar ao tentar lock
-		utils.LogError(err)
-		return err
+	// Se quem chamou já segura o lock (ProcessPlay, gameProcessor), salvar não pode soltá-lo:
+	// antes o defer abaixo apagava o lock no meio da jogada e outra instância entrava.
+	if owner, _ := rdb.Get(ctx, "lock:room:"+r.ID).Result(); owner != instanceID {
+		ok, err := r.AcquireRoomLock(ctx, rdb, instanceID, 5*time.Second)
+		if err != nil {
+			utils.LogError(err)
+			return err
+		}
+		if !ok {
+			return fmt.Errorf("não foi possível adquirir lock para a sala %s", r.ID)
+		}
+		defer r.ReleaseRoomLock(ctx, rdb, instanceID)
 	}
-	if !ok {
-		// Retorna erro se outra instância já está modificando
-		return fmt.Errorf("não foi possível adquirir lock para a sala %s", r.ID)
-	}
-	// Libera o lock ao final da função
-	defer r.ReleaseRoomLock(ctx, rdb, instanceID)
 
 	// Serializa a sala para JSON
 	data, err := json.Marshal(r)

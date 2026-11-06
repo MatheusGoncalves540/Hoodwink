@@ -4,7 +4,7 @@ import { basicPrice, canSwap, priceOf, type Price } from "../../game/pricing";
 import type { RoleId } from "../../game/protocol";
 import { BASIC_GROUP, ROLE_GROUPS, type ActionId } from "../../game/roles";
 import { CLASSIC_RULES } from "../../game/rules.classic";
-import { selectFootlights, selectYou, type GameView } from "../../game/selectors";
+import { kamikazeAlly, selectFootlights, selectYou, type GameView } from "../../game/selectors";
 import { Coin } from "../../ui/Coin/Coin";
 import { Timer } from "../../ui/Timer/Timer";
 import { cx } from "../../ui/cx";
@@ -67,6 +67,8 @@ export function ActionBoard({ view, layout, onPick }: Props) {
                 const price: Price = room ? priceOf(role, room) : { kind: "cost", coins: 0 };
                 const offTurn = !!group.offTurn;
                 const missing = offTurn ? null : short(price);
+                // no seu turno o Kamikaze só serve se você matar um Kamikaze vivo seu (kamikazeValidation.go)
+                const blocked = role === "KAMIKAZE" && kamikazeAlly(view) == null ? copy.needKamikaze : undefined;
                 return (
                   <ActionButton
                     key={role}
@@ -74,7 +76,8 @@ export function ActionBoard({ view, layout, onPick }: Props) {
                     price={price}
                     held={!offTurn && held(role)}
                     offTurn={offTurn}
-                    missing={missing}
+                    missing={blocked ? null : missing}
+                    blocked={blocked}
                     onClick={onPick}
                   />
                 );

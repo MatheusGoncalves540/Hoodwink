@@ -7,6 +7,7 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/connection"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
@@ -90,14 +91,15 @@ func (h *HTTPHandler) WebSocketHandler(rdb *redis.Client, rulesRegistry *rules.R
 				break
 			}
 
-			roomData, err := redisFuncs.LoadRoom(ctx, rdb, roomId)
+			// carrega a sala só depois de ter a vez dela: nada de gravar por cima do gameProcessor
+			err = redisFuncs.WithRoom(ctx, rdb, roomId, func(roomData *rooms.Room) {
+				connection.OnMessage(ctx, rdb, rulesRegistry, play, roomData)
+			})
 			if err != nil {
 				utils.LogError(fmt.Sprintf("Erro ao carregar dados da sala: %v", err))
 				conn.Close()
 				break
 			}
-
-			connection.OnMessage(ctx, rdb, rulesRegistry, play, roomData)
 		}
 	}
 }

@@ -82,10 +82,7 @@ func ValidateKamikazeProtocol(roomData *rooms.Room, registryRules *rules.Registr
 		// Se a carta está protegida e o ataque é bloqueável, ela não morre de verdade:
 		// o Kamikaze não deve ser acionado.
 		cause, _ := payloadMap["cause"].(string)
-		unblockable := structs.EffectCause(cause) == structs.EffectKamikaze ||
-			structs.EffectCause(cause) == structs.EffectContestPenalty ||
-			structs.EffectCause(cause) == structs.EffectGreed
-		if deadCard.Protected && !unblockable {
+		if deadCard.Protected && structs.ProtectionBlocks(structs.EffectCause(cause)) {
 			utils.LogInvldPlyrReq("O Kamikaze está protegido e não vai morrer com esse ataque", playerPlay.PlayerId)
 			return false
 		}

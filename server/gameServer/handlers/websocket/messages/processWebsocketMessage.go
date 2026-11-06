@@ -25,20 +25,29 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 	}
 	defer roomData.ReleaseRoomLock(ctx, rdb, utils.GetInstanceID())
 
+	if ApplyPlay(ctx, rdb, roomData, playerPlay, registryRules) {
+		roomData.SaveRoom(ctx, rdb)
+		roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
+	}
+}
+
+// ApplyPlay valida e aplica a jogada na sala em memória; true quando foi aceita.
+// Não persiste nem transmite: ProcessPlay faz isso, e os testes de cenário rodam sem Redis.
+func ApplyPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, playerPlay *structs.PlayerPlay, registryRules *rules.Registry) bool {
 	if roomData.GameOver {
 		utils.LogInvldPlyrReq("partida encerrada", playerPlay.PlayerId)
-		return
+		return false
 	}
 
 	// verifica se o jogador está vivo antes de processar a jogada
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		utils.LogError(err)
-		return
+		return false
 	}
 	if !sourcePlayer.Alive {
 		utils.LogInvldPlyrReq("player "+playerPlay.PlayerId+" está morto e não pode jogar", playerPlay.PlayerId)
-		return
+		return false
 	}
 
 	var playHandlers = map[structs.TypePlayerPlays]func() bool{
@@ -291,10 +300,6 @@ func ProcessPlay(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, p
 		},
 	}
 
-	if handler, ok := playHandlers[playerPlay.Type]; ok {
-		if handler() {
-			roomData.SaveRoom(ctx, rdb)
-			roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
-		}
-	}
+	handler, ok := playHandlers[playerPlay.Type]
+	return ok && handler()
 }

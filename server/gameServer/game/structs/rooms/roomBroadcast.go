@@ -23,6 +23,9 @@ func (r *Room) BroadcastMsgToRoom(ctx context.Context, rdb *redis.Client, messag
 // Se confidencialRoomData for nil OU confidencialPlayerIds estiver vazio, envia para todos (toAll: true).
 // Caso contrário, envia apenas para os playerIds especificados usando confidencialRoomData.
 func (r *Room) SendUpdatedRoomData(ctx context.Context, rdb *redis.Client, confidencialRoomData *Room, confidencialPlayerIds []string) error {
+	if rdb == nil {
+		return nil
+	}
 	// Verifica se é broadcast para todos ou seletivo
 	toAll := confidencialRoomData == nil || len(confidencialPlayerIds) == 0
 
@@ -74,7 +77,6 @@ func (r *Room) GetPublicRoomForUpdates() PublicRoomForUpdates {
 		Deck:              len(r.Deck),
 		CurrentPlayer:     r.CurrentPlayer,
 		GameEvent:         r.GameEvent,
-		PendingEffects:    r.PendingEffects,
 		GameOver:          r.GameOver,
 		WinnerID:          r.WinnerID,
 		StartTime:         r.StartTime,

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { fixture, FIXTURE_NAMES, type FixtureName } from "./fixtures";
-import type { PublicRoom } from "./protocol";
+import type { PublicRoom, RoleId } from "./protocol";
 import {
-  selectChat, selectDecision, selectFinale, selectFootlights, selectLog, selectRolesUsed, selectScene,
+  kamikazeAlly, selectChat, selectDecision, selectFinale, selectFootlights, selectLog, selectRolesUsed, selectScene,
   selectSeatSheet, selectSeats, selectStage, selectWaitingRoom, selectYou, selectYouSheet, type GameView,
 } from "./selectors";
 
@@ -92,9 +92,42 @@ describe("selectDecision", () => {
     expect(selectDecision(withEvent(base, "CARD_KILLED", "ana", { cause: "CONTEST_PENALTY", targetPlayer: "me" }))).toEqual({ kind: "none" });
   });
 
-  it("morte causada por você mesmo (Greed) também aceita Guardiã", () => {
-    expect(selectDecision(withEvent(base, "CARD_KILLED", "me", { cause: "GREED", targetPlayer: "me" }))).toMatchObject({
-      kind: "react", block: { role: "GUARDIAN" }, targetsMe: true,
+  it("morte por ganância (Greed) não aceita Guardiã: o servidor recusa (guardianValidation.go)", () => {
+    expect(selectDecision(withEvent(base, "CARD_KILLED", "me", { cause: "GREED", targetPlayer: "me" }))).toEqual({ kind: "none" });
+  });
+
+  describe("Kamikaze", () => {
+    const hand = (v: GameView, cards: { name?: RoleId; dead?: boolean; protected?: boolean }[]): GameView => {
+      const r = v.room as PublicRoom;
+      const me = r.players.me;
+      return { ...v, room: { ...r, players: { ...r.players, me: { ...me, cards: cards.map((c, index) => ({ index, dead: false, protected: false, ...c })) } } } };
+    };
+    const kami = hand(base, [{ name: "GUARDIAN" }, { name: "KAMIKAZE" }]);
+
+    it("sua carta Kamikaze morrendo: pode levar uma junto, e ainda bloquear se o ataque for bloqueável", () => {
+      expect(selectDecision(withEvent(kami, "CARD_KILLED", "ana", { cause: "ASSASSIN", targetPlayer: "me", targetCardIndex: 1 }))).toMatchObject({
+        kind: "react", kamikaze: true, block: { role: "GUARDIAN" },
+      });
+      // contestação não se bloqueia, mas o Kamikaze revida
+      expect(selectDecision(withEvent(kami, "CARD_KILLED", "ana", { cause: "CONTEST_PENALTY", targetPlayer: "me", targetCardIndex: 1 }))).toMatchObject({
+        kind: "react", kamikaze: true, block: null,
+      });
+    });
+
+    it("outra carta sua morrendo não aciona o Kamikaze", () => {
+      expect(selectDecision(withEvent(kami, "CARD_KILLED", "ana", { cause: "ASSASSIN", targetPlayer: "me", targetCardIndex: 0 }))).not.toHaveProperty("kamikaze");
+    });
+
+    it("Kamikaze protegido não morre de Assassino, então não revida", () => {
+      const prot = hand(base, [{ name: "GUARDIAN" }, { name: "KAMIKAZE", protected: true }]);
+      expect(selectDecision(withEvent(prot, "CARD_KILLED", "ana", { cause: "ASSASSIN", targetPlayer: "me", targetCardIndex: 1 }))).toEqual({ kind: "none" });
+    });
+
+    it("kamikazeAlly: o Kamikaze que morre na reação; no turno, o primeiro vivo; sem Kamikaze, null", () => {
+      expect(kamikazeAlly(withEvent(kami, "CARD_KILLED", "ana", { cause: "ASSASSIN", targetPlayer: "me", targetCardIndex: 1 }))).toBe(1);
+      expect(kamikazeAlly(withEvent(kami, "CARD_KILLED", "ana", { cause: "ASSASSIN", targetPlayer: "me", targetCardIndex: 0 }))).toBeNull();
+      expect(kamikazeAlly(withEvent(kami, "WAITING_FIRST_ACTION", "me"))).toBe(1);
+      expect(kamikazeAlly(withEvent(hand(base, [{ name: "KAMIKAZE", dead: true }, { name: "REBEL" }]), "WAITING_FIRST_ACTION", "me"))).toBeNull();
     });
   });
 

@@ -84,6 +84,10 @@ func (r *Room) RemovePlayerFromRoom(ctx context.Context, rdb *redis.Client, play
 
 // VerifyIfPlayerIsInEspecifiedRoom verifica se um jogador específico está registrado em uma sala específica (redis), retornando um booleano e um erro caso haja falha na consulta ao Redis
 func (r *Room) VerifyIfPlayerIsInRegistredEspecifiedRoom(ctx context.Context, rdb *redis.Client, playerId string) (bool, error) {
+	// ponytail: sem Redis (motor offline/testes) todo mundo conta como conectado.
+	if rdb == nil {
+		return true, nil
+	}
 	connectedToRoomID, registered, err := playerRedis.GetRegisteredRoomForPlayer(ctx, rdb, playerId)
 	if err != nil {
 		return false, fmt.Errorf("Falha ao obter sala registrada: %s", err.Error())
