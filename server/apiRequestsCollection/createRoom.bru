@@ -1,0 +1,33 @@
+meta {
+  name: createRoom
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{urlGame}}/newRoom
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+body:json {
+  {
+    "roomName": "Sala nome Teste212",
+    "password": "passwo",
+    "MaxPlayers": 4
+  }
+}
+
+script:post-response {
+  const resp = res.body;
+    if (resp.RoomId) {
+      bru.setVar('roomId', resp.RoomId);
+      console.log('✅ RoomId salvo:', resp.RoomId);
+    } else {
+      console.log('❌ RoomId não encontrado na resposta');
+  }
+}

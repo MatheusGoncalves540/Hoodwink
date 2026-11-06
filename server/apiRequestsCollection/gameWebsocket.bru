@@ -1,0 +1,25 @@
+meta {
+  name: gameWebsocket
+  type: ws
+  seq: 7
+}
+
+ws {
+  url: {{urlGame}}/game?Ticket={{roomTicket}}
+  body: ws
+  auth: none
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {
+      "type": "ASSASSIN",
+      "payload": {
+        "targetPlayer": "019bb7a6-a0fb-7fd6-bb48-692eea9dcc7f",
+        "targetCardIndex": 1
+      }
+    }
+  '''
+}

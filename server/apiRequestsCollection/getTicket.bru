@@ -1,0 +1,25 @@
+meta {
+  name: getTicket
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{urlGame}}/getTicket/{{roomId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{authToken}}
+}
+
+script:post-response {
+  const resp = res.body;
+    if (resp.data.ticket) {
+      bru.setVar('roomTicket', resp.data.ticket);
+      console.log('✅ roomTicket salvo');
+    } else {
+      console.log('❌ roomTicket não encontrado na resposta');
+  }
+}
