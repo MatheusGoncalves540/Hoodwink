@@ -44,9 +44,11 @@ Registro necessário em `hermis.com.br`:
 
 Painel: <https://dash.cloudflare.com/?to=/:account/hermis.com.br/dns/records>
 
-Use **DNS only** para o certbot conseguir o desafio HTTP-01. Depois do
-certificado emitido, o proxy laranja pode ser habilitado se o SSL da Cloudflare
-ficar em **Full (strict)**.
+Use **DNS only** na primeira emissão ou deixe o proxy laranja ligado: o
+`edge-nginx.sh --tls` sobe um 443 temporário para o desafio ACME chegar no
+origin (a Cloudflare em Full ignora o cert temporário) e emite o certificado
+válido. Depois da emissão, configure **SSL/TLS → Full (strict)** na Cloudflare;
+o origin tem certificado Let's Encrypt próprio para `hoodwink.hermis.com.br`.
 
 ## Google OAuth
 
