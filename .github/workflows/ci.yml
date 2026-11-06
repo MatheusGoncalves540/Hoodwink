@@ -147,5 +147,8 @@ jobs:
             done
             kubectl -n "$NS" get pods
 
+            echo "==> Smoke test"
+            bash k8s/scripts/smoke-test.sh
+
             # Evita acúmulo de camadas órfãs no disco da VM.
             sudo docker image prune -f >/dev/null
