@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink/services"
 	"github.com/MatheusGoncalves540/Hoodwink/structures"
 	"github.com/MatheusGoncalves540/Hoodwink/utils"
+	"github.com/google/uuid"
 	"google.golang.org/api/idtoken"
 )
 
@@ -29,17 +31,36 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body ExternalAuthPayload
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.IdToken == "" {
-		utils.SendError(w, "id_token obrigatório", http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		utils.SendError(w, "payload inválido", http.StatusBadRequest)
 		return
 	}
 
-	// Validação do id_token conforme o provedor
+	// Validação conforme o provedor
 	var email string
 	var err error
 	switch provider {
 	case "google":
+		if body.IdToken == "" {
+			utils.SendError(w, "id_token obrigatório", http.StatusBadRequest)
+			return
+		}
 		email, _, err = ValidateGoogleIDToken(body.IdToken)
+	case "local":
+		// Login de teste para jogar em rede local (Radmin): o Google recusa origens
+		// http://<ip>, então os amigos entram só com um nome. Nunca fora de local/development.
+		if env := os.Getenv("ENVIRONMENT"); env != "local" && env != "development" {
+			utils.SendError(w, "Provedor não suportado", http.StatusBadRequest)
+			return
+		}
+		body.Username = strings.TrimSpace(body.Username)
+		if body.Username == "" {
+			utils.SendError(w, "username obrigatório", http.StatusBadRequest)
+			return
+		}
+		// Identidade única por login: dois amigos podem escolher o mesmo nome sem
+		// virarem o mesmo jogador (o id do usuário vem do email).
+		email = fmt.Sprintf("%s+%s@local.hoodwink", strings.ToLower(body.Username), uuid.NewString())
 	// Futuro: case "discord": ...
 	default:
 		utils.SendError(w, "Provedor não suportado", http.StatusBadRequest)

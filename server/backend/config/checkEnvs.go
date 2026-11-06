@@ -29,6 +29,11 @@ func CheckEnvVars(filePath string) {
 		parts := strings.SplitN(line, "=", 2)
 		key := strings.TrimSpace(parts[0])
 
+		// Chaves opcionais vêm vazias no .env.example e não são erros.
+		if len(parts) < 2 || strings.TrimSpace(parts[1]) == "" {
+			continue
+		}
+
 		if os.Getenv(key) == "" {
 			missingVars = append(missingVars, key)
 		}

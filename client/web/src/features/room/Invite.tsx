@@ -2,7 +2,7 @@
  * Convite da sala (Sala.dc.html → seção "Convite").
  * O ingresso é escuro (classe global `ticket`); o botão usa currentColor para aparecer sobre ele.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { copy } from "../../game/copy";
 import { Button } from "../../ui/Button/Button";
 import { cx } from "../../ui/cx";
@@ -39,7 +39,7 @@ export function Invite({ code, layout, className }: Props) {
     >
       <div className={s.room}>
         <span className={s.label}>{copy.roomNumber}</span>
-        <span className={s.code}>{code}</span>
+        <span className={s.code} style={{ "--len": Math.max(code.length, 4) } as CSSProperties}>{code}</span>
       </div>
       <Button variant="outline" className={s.copy} onClick={copyInvite}>
         {copied ? copy.inviteCopied : copy.copyInvite}
