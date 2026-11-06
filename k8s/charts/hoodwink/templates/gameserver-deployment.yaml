@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hoodwink.fullname" . }}-gameserver
+  labels:
+    {{- include "hoodwink.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gameserver
+spec:
+  replicas: {{ .Values.gameserver.replicas }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "hoodwink.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: gameserver
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "hoodwink.labels" . | nindent 8 }}
+        app.kubernetes.io/component: gameserver
+    spec:
+      {{- if .Values.gameserver.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: Default
+      {{- end }}
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: wait-redis
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - until nc -z 127.0.0.1 {{ .Values.redis.port }}; do echo "aguardando redis..."; sleep 2; done
+      containers:
+        - name: gameserver
+          image: "{{ .Values.images.gameserver.repository }}:{{ .Values.imageTag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.gameserver.port }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "hoodwink.fullname" . }}-gameserver-config
+          env:
+            # O gameServer valida o JWT emitido pelo backend.
+            - name: BACKEND_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.jwtSecret }}
+            # Ticket de sala do gameServer (não confundir com o do backend).
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.gameJwtSecret }}
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.backendApiKey }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.redisPassword }}
+          startupProbe:
+            httpGet:
+              path: /alive
+              port: http
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /alive
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            {{- toYaml .Values.gameserver.resources | nindent 12 }}
+      {{- with .Values.gameserver.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.gameserver.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

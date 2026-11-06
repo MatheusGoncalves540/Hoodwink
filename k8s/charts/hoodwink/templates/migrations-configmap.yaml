@@ -1,0 +1,27 @@
+{{- if .Values.migrations.enabled }}
+# Schema base idempotente. O backend não usa AUTOMIGRATE em produção; o
+# initContainer do Deployment aplica este arquivo antes de subir a API.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hoodwink.fullname" . }}-migrations
+  labels:
+    {{- include "hoodwink.labels" . | nindent 4 }}
+data:
+  001_init.sql: |
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+    CREATE TABLE IF NOT EXISTS api_keys (
+        apikey UUID PRIMARY KEY,
+        system_name VARCHAR(255) UNIQUE NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        provider VARCHAR(100) NOT NULL,
+        username VARCHAR(100) NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+{{- end }}

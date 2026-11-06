@@ -1,0 +1,2 @@
+# Segredos da instalação: vivem só na VM, nunca no Git.
+.env.production

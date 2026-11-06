@@ -1,0 +1,151 @@
+name: CI
+
+on:
+  push:
+    branches: [main, production]
+  pull_request:
+  workflow_dispatch:
+
+# PR novo cancela a execução anterior; push em production nunca é cancelado.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  web:
+    name: Web — testes e build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: client/web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Tests
+        run: npm test
+
+      - name: Build de produção
+        run: npm run build
+
+  server:
+    name: Server — ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [server/backend, server/gameServer]
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Tests
+        run: go test ./...
+
+  # Build NATIVO na VM (arm64) + import no containerd, como no Summus: a rede
+  # de pods do flannel não tem egress nesta VM Oracle, então não há registry.
+  #
+  # Secrets/vars do repositório:
+  #   vars.VM_HOST | secrets.VM_USER | secrets.VM_SSH_KEY
+  # Segredos da aplicação: $HOME/Hoodwink/k8s/.env.production na VM.
+  deploy:
+    name: Deploy na VM (Helm)
+    needs: [web, server]
+    if: github.ref == 'refs/heads/production' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - name: Build + deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ vars.VM_HOST || '144.33.18.156' }}
+          username: ${{ secrets.VM_USER || 'ubuntu' }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          command_timeout: 40m
+          envs: GITHUB_SHA
+          script: |
+            set -euo pipefail
+            export KUBECONFIG="$HOME/.kube/config"
+
+            NS=hoodwink
+            RELEASE=hoodwink
+            REPO="$HOME/Hoodwink"
+            PREFIX=ghcr.io/matheusgoncalves540
+            SHA="${GITHUB_SHA:?GITHUB_SHA ausente}"
+
+            if [ ! -d "$REPO/.git" ]; then
+              echo "==> Clonando o repositório na VM"
+              git clone https://github.com/MatheusGoncalves540/Hoodwink.git "$REPO"
+            fi
+
+            echo "==> Atualizando $REPO para $SHA"
+            cd "$REPO"
+            git fetch origin --prune
+            git checkout -f "$SHA"
+            SHORT=$(git rev-parse --short HEAD)
+
+            if [ ! -f k8s/.env.production ]; then
+              echo "::error::Crie $REPO/k8s/.env.production (chaves: PG_PASS, JWT_SECRET, GAME_JWT_SECRET, BACKEND_API_KEY, REDIS_PASSWORD)."
+              exit 1
+            fi
+
+            echo "==> Build das imagens (nativo arm64) $SHORT"
+            sudo docker build -t "$PREFIX/hoodwink-backend:$SHORT" server/backend
+            sudo docker build -t "$PREFIX/hoodwink-gameserver:$SHORT" server/gameServer
+            sudo docker build -t "$PREFIX/hoodwink-web:$SHORT" client/web
+
+            echo "==> Import no containerd do k3s"
+            for image in backend gameserver web; do
+              ref="$PREFIX/hoodwink-$image:$SHORT"
+              sudo docker save "$ref" -o "/tmp/hoodwink-$image.tar"
+              sudo k3s ctr images import "/tmp/hoodwink-$image.tar"
+              sudo rm -f "/tmp/hoodwink-$image.tar"
+            done
+
+            echo "==> Namespace + Secret"
+            kubectl apply -f k8s/namespace.yaml
+            kubectl -n "$NS" create secret generic hoodwink-secrets \
+              --from-env-file=k8s/.env.production \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            echo "==> Helm upgrade --install --atomic"
+            CHART=k8s/charts/hoodwink
+            if ! helm upgrade --install "$RELEASE" "$CHART" -n "$NS" \
+                  -f "$CHART/values.production.yaml" \
+                  --set imageTag="$SHORT" \
+                  --wait --atomic --timeout 10m; then
+              echo "::error::Deploy falhou — diagnóstico:"
+              kubectl -n "$NS" get pods -o wide || true
+              kubectl -n "$NS" get events --sort-by=.lastTimestamp | tail -n 30 || true
+              kubectl -n "$NS" logs -l app.kubernetes.io/instance="$RELEASE" --tail=120 --prefix || true
+              exit 1
+            fi
+
+            echo "==> Rollout OK"
+            for component in backend gameserver web; do
+              kubectl -n "$NS" rollout status "deploy/$RELEASE-$component" --timeout=180s
+            done
+            kubectl -n "$NS" get pods
+
+            # Evita acúmulo de camadas órfãs no disco da VM.
+            sudo docker image prune -f >/dev/null

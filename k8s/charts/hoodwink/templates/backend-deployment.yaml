@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hoodwink.fullname" . }}-backend
+  labels:
+    {{- include "hoodwink.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  # hostNetwork + porta fixa: um pod por nó, sem RollingUpdate concorrente.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "hoodwink.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- if .Values.migrations.enabled }}
+        checksum/migrations: {{ include (print $.Template.BasePath "/migrations-configmap.yaml") . | sha256sum }}
+        {{- end }}
+      labels:
+        {{- include "hoodwink.labels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      {{- if .Values.backend.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: Default
+      {{- end }}
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      {{- if .Values.migrations.enabled }}
+      initContainers:
+        - name: migrate
+          image: {{ .Values.postgres.image | quote }}
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -eu
+              until PGPASSWORD="$PG_PASS" psql -h "$PG_HOST" -p "$PG_PORT" -U "$PG_USER" -d "$PG_NAME" -c 'SELECT 1' >/dev/null 2>&1; do
+                echo "aguardando postgres em $PG_HOST:$PG_PORT..."
+                sleep 2
+              done
+              PGPASSWORD="$PG_PASS" psql -h "$PG_HOST" -p "$PG_PORT" -U "$PG_USER" -d "$PG_NAME" \
+                -v ON_ERROR_STOP=1 -f /migrations/001_init.sql
+              PGPASSWORD="$PG_PASS" psql -h "$PG_HOST" -p "$PG_PORT" -U "$PG_USER" -d "$PG_NAME" \
+                -v ON_ERROR_STOP=1 <<SQL
+              INSERT INTO api_keys (apikey, system_name)
+              VALUES ('$BACKEND_API_KEY', 'gameServer')
+              ON CONFLICT (apikey) DO NOTHING;
+              SQL
+          envFrom:
+            - configMapRef:
+                name: {{ include "hoodwink.fullname" . }}-backend-config
+          env:
+            - name: PG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.pgPass }}
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.backendApiKey }}
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+              readOnly: true
+      {{- end }}
+      containers:
+        - name: backend
+          image: "{{ .Values.images.backend.repository }}:{{ .Values.imageTag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.port }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "hoodwink.fullname" . }}-backend-config
+          env:
+            - name: PG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.pgPass }}
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.jwtSecret }}
+          startupProbe:
+            httpGet:
+              path: /alive
+              port: http
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /alive
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+      volumes:
+        {{- if .Values.migrations.enabled }}
+        - name: migrations
+          configMap:
+            name: {{ include "hoodwink.fullname" . }}-migrations
+        {{- end }}
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

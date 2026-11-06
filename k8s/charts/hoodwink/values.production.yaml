@@ -1,0 +1,31 @@
+# Produção: VM Oracle (k3s), atrás do nginx do host com TLS do certbot.
+# Deploy: helm upgrade --install hoodwink k8s/charts/hoodwink -n hoodwink \
+#   -f k8s/charts/hoodwink/values.production.yaml --set imageTag=<sha>
+
+backend:
+  config:
+    ENVIRONMENT: production
+    SERVER_URL: https://hoodwink.hermis.com.br/api
+    FRONTEND_URL: https://hoodwink.hermis.com.br
+    GAME_SERVER_URL: https://hoodwink.hermis.com.br/gs
+    GOOGLE_CLIENT_ID: 58863270996-45l8cn568h3uoauamoqkkdh9dh0o6ota.apps.googleusercontent.com
+    CORS: "false"
+
+gameserver:
+  config:
+    ENVIRONMENT: production
+    GAME_SERVER_URL: https://hoodwink.hermis.com.br/gs
+    BACKEND_URL: http://127.0.0.1:8088
+    FRONTEND_URL: https://hoodwink.hermis.com.br
+    CORS: "false"
+
+postgres:
+  persistence:
+    hostPath: /opt/hoodwink/postgres
+
+redis:
+  persistence:
+    hostPath: /opt/hoodwink/redis
+
+ingress:
+  enabled: false
