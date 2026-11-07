@@ -655,16 +655,15 @@ func replayAndCompare(t *testing.T, decoded *format.Replay, recorded []redisFunc
 		t.Fatalf("depois do fim esperava ErrDone, veio %v", err)
 	}
 
-	final := r.State()
-	if final == nil || !final.GameOver {
+	if r.State() == nil || !r.GameOver() {
 		t.Fatal("runner não terminou em GameOver")
 	}
 	wantWinner := ""
 	if finalRoom.WinnerID != "" {
 		wantWinner = replayIndexString(finalRoom, finalRoom.WinnerID)
 	}
-	if final.WinnerID != wantWinner {
-		t.Fatalf("vencedor no runner = %q, quer %q", final.WinnerID, wantWinner)
+	if got := r.WinnerID(); got != wantWinner {
+		t.Fatalf("vencedor no runner = %q, quer %q", got, wantWinner)
 	}
 	return r.Hash()
 }
@@ -821,8 +820,7 @@ func TestGoldenV1(t *testing.T) {
 	if got := r.Hash(); got != want {
 		t.Fatalf("hash final do golden = %s, quer %s", got, want)
 	}
-	state := r.State()
-	if state == nil || !state.GameOver {
+	if r.State() == nil || !r.GameOver() {
 		t.Fatal("golden não termina em GameOver")
 	}
 	t.Logf("golden: %d bytes, %d entradas, hash %s", len(raw), len(decoded.Entries), want)
