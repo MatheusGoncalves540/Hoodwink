@@ -200,9 +200,10 @@ jobs:
 
             echo "==> Build das imagens (nativo arm64) $SHORT"
 
-            sudo docker build -f server/backend/Dockerfile -t "$PREFIX/hoodwink-backend:$SHORT" server
-            sudo docker build -f server/gameServer/Dockerfile -t "$PREFIX/hoodwink-gameserver:$SHORT" server
-            sudo docker build \
+            # BuildKit: cache de módulos/compilação Go entre deploys e `nginx -t` no build.
+            sudo DOCKER_BUILDKIT=1 docker build -f server/backend/Dockerfile -t "$PREFIX/hoodwink-backend:$SHORT" server
+            sudo DOCKER_BUILDKIT=1 docker build -f server/gameServer/Dockerfile -t "$PREFIX/hoodwink-gameserver:$SHORT" server
+            sudo DOCKER_BUILDKIT=1 docker build \
               --build-arg "VITE_REPLAY_PUBLIC_KEY=${REPLAY_PUBLIC_KEY_HEX:-}" \
               -t "$PREFIX/hoodwink-web:$SHORT" client/web
 

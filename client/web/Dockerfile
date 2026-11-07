@@ -35,6 +35,8 @@ RUN npm run build
 FROM nginx:stable-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
+# Falha no build (e não em CrashLoopBackOff por 10 min no helm) se o config for inválido.
+RUN nginx -t
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
