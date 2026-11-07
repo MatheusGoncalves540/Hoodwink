@@ -13,7 +13,7 @@ import { CLASSIC_RULES } from "../../game/rules.classic";
 import { desktopSeats, mobileSeats } from "../../game/seats";
 import type { GameView } from "../../game/selectors";
 import { kamikazeAlly, selectDecision, selectFootlights, selectSeats, selectStage, selectYou } from "../../game/selectors";
-import { contest, contestPenalty, play, type Target } from "../../net/actions";
+import { contest, contestPenalty, pass, play, type Target } from "../../net/actions";
 import { send } from "../../net/GameSocket";
 import { useGameStore } from "../../store/gameStore";
 import { useSessionStore } from "../../store/sessionStore";
@@ -335,7 +335,11 @@ export function TableScene() {
         layout={layout}
         onContest={() => send(contest())}
         onBlock={onBlock}
-        onPass={() => setPassed(evKey)}
+        onPass={() => {
+          // o servidor só fecha a janela quando todos os que podem reagir passaram
+          send(pass());
+          setPassed(evKey);
+        }}
         onKamikaze={() => setTargeting({ role: "KAMIKAZE" })}
       />
     ) : undefined;

@@ -27,6 +27,10 @@ export type LogEntry = {
   role?: RoleId;
   /** acontecimento que também aparece na conversa, entre parênteses (contestação resolvida, saída de cena) */
   chat?: boolean;
+  /** Carta revelada pelo Clarividente que este aparelho viu (a mesa toda ou só quem jogou). */
+  reveal?: { targetId: string; cardIndex: number; role: RoleId };
+  /** O evento trocou as cartas deste jogador: o que a mesa viu antes não vale mais. */
+  forgetCards?: string;
 };
 
 export const eventKey = (e: GameEvent | null) => (e ? `${e.type}|${e.playerId}|${e.expiresAt}` : "");
@@ -71,11 +75,13 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
           const contested = fname(str(p.contestedPlayer));
           const contester = fname(str(p.contestingPlayer)) || fname(ev.playerId);
           const outcome = p.hasCard ? copy.log.penaltyHad(contested, contester) : copy.log.penaltyBluff(contested, contester);
+          // a carta mostrada na contestação é trocada: uma revelação antiga daquele jogador deixa de valer
+          const forget = p.hasCard ? { forgetCards: str(p.contestedPlayer) || ev.playerId } : {};
           if (open?.open === "declared" && open.role) {
             // o CONTEST pode se perder na reconexão: fecha a declaração como contestada e já aplica o desfecho
-            out[last] = { ...open, pred: copy.log.contested(roleName(open.role), contester) + outcome, open: undefined, chat: true };
+            out[last] = { ...open, pred: copy.log.contested(roleName(open.role), contester) + outcome, open: undefined, chat: true, ...forget };
           } else if (open?.open === "contested") {
-            out[last] = { ...open, pred: open.pred + outcome, open: undefined, chat: true };
+            out[last] = { ...open, pred: open.pred + outcome, open: undefined, chat: true, ...forget };
           }
           break;
         }
@@ -91,8 +97,9 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
           break;
         }
         case "REVEALED_CARD": {
+          const targetId = str(p.targetPlayer);
           const card = declaredRole(`CARD_PLAYED_${str(p.revealedCard)}`);
-          push(ev.playerId, copy.log.revealed(fname(str(p.targetPlayer)), card ? roleName(card) : undefined));
+          push(ev.playerId, copy.log.revealed(fname(targetId), card ? roleName(card) : undefined), card ? { reveal: { targetId, cardIndex: num(p.targetCardIndex), role: card } } : {});
           break;
         }
         case "REVIVED_CARD":
@@ -100,7 +107,9 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
           break;
         case "CHANGED_CARD":
           // troca da carta revelada pela contestação não é jogada de Crupiê
-          push(ev.playerId, str(p.cause) === "CONTEST_PENALTY" ? copy.log.changedContested : str(p.cause) === "SWAP_CARDS" ? copy.log.swapped : copy.log.changed);
+          push(ev.playerId, str(p.cause) === "CONTEST_PENALTY" ? copy.log.changedContested : str(p.cause) === "SWAP_CARDS" ? copy.log.swapped : copy.log.changed, {
+            forgetCards: ev.playerId,
+          });
           break;
         case "EARN_COINS":
           // ação do turno (02 §6): EARN_COINS com cause TAKE_COINS
@@ -129,6 +138,22 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
     }
   }
 
+  // O Clarividente recebe primeiro a versão pública do REVEALED_CARD (sem o nome da carta) e
+  // depois a confidencial, com a mesma chave. Completa a linha já criada em vez de ignorá-la.
+  if (ev && ev.type === "REVEALED_CARD" && key === eventKey(prev?.gameEvent ?? null)) {
+    const p = obj(ev.payload);
+    const card = declaredRole(`CARD_PLAYED_${str(p.revealedCard)}`);
+    const i = card ? out.findIndex((e) => e.key === key) : -1;
+    if (card && i >= 0) {
+      const targetId = str(p.targetPlayer);
+      out[i] = {
+        ...out[i],
+        pred: copy.log.revealed(fname(targetId), roleName(card)),
+        reveal: { targetId, cardIndex: num(p.targetCardIndex), role: card },
+      };
+    }
+  }
+
   // quem saiu de cena entre as duas salas
   if (prev) {
     for (const p of Object.values(next.players)) {
@@ -136,6 +161,20 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
       if (!p.alive && prev.players[p.id]?.alive && !out.some((e) => e.key === exitKey)) {
         out.push({ key: exitKey, turn: next.turn, at: now, actorId: p.id, actorName: p.name, pred: copy.log.exited, chat: true });
       }
+    }
+  }
+  return out;
+}
+
+/** Cartas que este aparelho viu o Clarividente revelar, por jogador e índice. */
+export function revealedCards(log: LogEntry[]): Map<string, Map<number, RoleId>> {
+  const out = new Map<string, Map<number, RoleId>>();
+  for (const e of log) {
+    if (e.forgetCards) out.delete(e.forgetCards);
+    if (e.reveal) {
+      const cards = out.get(e.reveal.targetId) ?? new Map<number, RoleId>();
+      cards.set(e.reveal.cardIndex, e.reveal.role);
+      out.set(e.reveal.targetId, cards);
     }
   }
   return out;

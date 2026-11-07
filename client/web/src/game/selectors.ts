@@ -22,7 +22,7 @@
  * selectWaitingRoom(v) → { code, name, max, seats, castLine, isHost }
  */
 import { copy, firstName } from "./copy";
-import { exitsOf, logSelfText, logText, type LogEntry } from "./log";
+import { exitsOf, logSelfText, logText, revealedCards, type LogEntry } from "./log";
 import { playOrder, type PublicCard, type PublicRoom, type RoleId } from "./protocol";
 import { cardValue, guardianPrice } from "./pricing";
 import { declaredRole, roleName, ROLES } from "./roles";
@@ -46,6 +46,13 @@ export type SeatVM = {
 const miniCard = (c: PublicCard): MiniCard =>
   c.dead ? { state: "dead", role: c.name } : c.name ? { state: "revealed", role: c.name } : c.protected ? { state: "protected" } : { state: "back" };
 
+/** A mesa viu a carta: o estado atual manda; se ela já voltou a ficar escondida, o diário lembra o papel. */
+const cardWithReveal = (c: PublicCard, known: Map<number, RoleId> | undefined): MiniCard => {
+  const base = miniCard(c);
+  const role = base.state === "back" ? known?.get(c.index) : undefined;
+  return role ? { state: "revealed", role } : base;
+};
+
 const fname = (v: GameView, id: string) => firstName(v.room?.players[id]?.name ?? "");
 const payload = (v: GameView) => (v.room?.gameEvent?.payload ?? {}) as Record<string, unknown>;
 /** startTime zero (Go: "0001-01-01T00:00:00Z") = sala ainda não começou; gameEvent nulo só marca o intervalo entre deixas. */
@@ -66,9 +73,10 @@ export function opponents(v: GameView) {
 }
 
 export function selectSeats(v: GameView): SeatVM[] {
+  const known = revealedCards(v.log);
   return opponents(v).map((p) => {
     const out = !p.alive;
-    const cards = p.cards.map((c): MiniCard => ({ ...miniCard(c), index: c.index }));
+    const cards = p.cards.map((c): MiniCard => ({ ...cardWithReveal(c, known.get(p.id)), index: c.index }));
     return {
       id: p.id,
       name: p.name,
@@ -365,8 +373,8 @@ export function kamikazeAlly(v: GameView): number | null {
 
 export function selectLog(v: GameView, playerId?: string) {
   return v.log
-    .filter((e) => !playerId || e.actorId === playerId)
-    .map((e) => ({ key: e.key, turn: e.turn, text: playerId ? logSelfText(e) : logText(e) }))
+    .filter((e) => !playerId || e.actorId === playerId || e.reveal?.targetId === playerId)
+    .map((e) => ({ key: e.key, turn: e.turn, text: playerId && e.actorId === playerId ? logSelfText(e) : logText(e) }))
     .reverse();
 }
 
@@ -448,12 +456,13 @@ export type SeatSheetVM = {
 export function selectSeatSheet(v: GameView, id: string): SeatSheetVM | null {
   const p = v.room?.players[id];
   if (!p) return null;
+  const known = revealedCards(v.log).get(p.id);
   return {
     id: p.id,
     name: p.name,
     coins: p.coins,
     alive: p.alive,
-    cards: p.cards.map((c) => ({ ...miniCard(c), index: c.index })),
+    cards: p.cards.map((c) => ({ ...cardWithReveal(c, known), index: c.index })),
     investments: p.investments,
     log: selectLog(v, id),
   };

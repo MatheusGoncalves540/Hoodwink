@@ -23,8 +23,9 @@ export const REPLAY_WASM_BASE = "/replay/";
 export const REPLAY_WASM_EXEC_FILE = "wasm_exec.js";
 
 export const replayEngines: readonly ReplayEngineAsset[] = [
-  { version: 1, file: "replay-v1-ca85cce6.wasm.br", sha256: "ca85cce60961bf9d19d306071ecff396e33117098d2011047532d2c0505399ea", sha256Br: "289d5140ecdbdeb99ae22b7ffd93d6b228905d579cafa0855fd3642374fdae11", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
-  { version: 2, file: "replay-v2-51852979.wasm.br", sha256: "51852979635ba79f992edd2f6dfd0a6a5a916a559e0cd3e97acc37413f42f725", sha256Br: "175f4f013353be1de18a83e411daa7d983e8f9051320454906182c12618dffc4", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
+  { version: 1, file: "replay-v1-708e003a.wasm.br", sha256: "708e003ae3a7619f3aba73836d9ac5ae61a056f4bb6f4039f59c91e51f36ff52", sha256Br: "0aa37cb328fba746b8fb8c12b0c84297831eaaeb5d1cdc2bb7ec06cac4530132", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
+  { version: 2, file: "replay-v2-042a928c.wasm.br", sha256: "042a928ccc9e2a8c660745e63d496d93ba9d69f82915693d7db88e83101cc987", sha256Br: "12d37b334b2d2458ce9b1849b74f0b8b2fd87f03be3fa120f3846980344b3003", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
+  { version: 3, file: "replay-v3-541036a0.wasm.br", sha256: "541036a044d3f575ead811da8b277d2c716b65bc5f8801b78a77e4f5251792c5", sha256Br: "5ec97a9a9bdb9bca78330cea7e288df04321c9a9520a168dd5dd851f3d3486ac", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
 ];
 
 export const replayEngineByVersion = (version: number): ReplayEngineAsset | undefined =>

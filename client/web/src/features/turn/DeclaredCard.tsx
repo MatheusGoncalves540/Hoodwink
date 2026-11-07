@@ -22,9 +22,9 @@ export function DeclaredCard({ view, layout }: { view: GameView; layout: Layout 
     const cardPhrase = copy.possessive(targetName, targetId === view.me);
     return (
       <section aria-label={copy.stage} aria-live="assertive" className={cx(s.stage, desktop && s.desk)}>
-        <figure className={cx(s.figure, "m-hit")}>
+        <figure className={cx(s.figure, s.revealFigure)}>
           {card ? (
-            <CardFace as="div" size="xl" role={card} className={cx("m-flip", s.face)} style={size} />
+            <CardFace as="div" size="xl" role={card} className={cx(s.face, s.reveal)} style={size} />
           ) : (
             <div className={s.dashed} style={size}>
               <span className={s.art} role="img" aria-label={copy.cardArt(role ?? "carta")}>

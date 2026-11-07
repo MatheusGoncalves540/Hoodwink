@@ -13,6 +13,7 @@ type PlayerPlay struct {
 const (
 	Command              TypePlayerPlays = "COMMAND_"
 	PlayChatMessage      TypePlayerPlays = "CHAT_MESSAGE"
+	PlayPass             TypePlayerPlays = "PASS"
 	PlayContest          TypePlayerPlays = "CONTEST"
 	PlayContestPenalty   TypePlayerPlays = "CONTEST_PENALTY"
 	PlayTakeCoins        TypePlayerPlays = "TAKE_COINS"
