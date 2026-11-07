@@ -37,6 +37,9 @@ describe("ActionBoard", () => {
   it("mostra a fileira só de leitura com suas cartas", () => {
     expect(out).toContain('aria-label="Suas cartas"');
     expect(out).toContain('data-slot="hand"');
+    // a protegida aparece com o estado do servidor, e nada aqui é seletor: quem escolhe é a gaveta Você
+    expect(out).toContain(">protegida<");
+    expect(out).not.toContain("aria-label=\"Escolher Guardiã\"");
   });
 
   it("Egoísta fica fora do turno, desabilitado, com 1+", () => {
