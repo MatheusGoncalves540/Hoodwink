@@ -78,8 +78,8 @@ describe("ações do turno", () => {
     expect(porTaxa((t) => killCost(t))).toEqual([3, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8]);
   });
 
-  it("Pegar moeda: 1 + t, nunca negativo", () => {
-    expect(porTaxa((t) => basicPrice("TAKE_COINS", room(t), 0).coins)).toEqual([0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6]);
+  it("Pegar moeda: 1 + t, e taxa negativa não reduz", () => {
+    expect(porTaxa((t) => basicPrice("TAKE_COINS", room(t), 0).coins)).toEqual([1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6]);
     expect(basicPrice("TAKE_COINS", room(0), 0)).toEqual({ kind: "gain", coins: 1 });
   });
 

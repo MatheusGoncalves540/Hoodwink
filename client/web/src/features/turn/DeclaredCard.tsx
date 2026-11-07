@@ -9,49 +9,74 @@ import { CardFace } from "../../ui/Card/Card";
 import { cx } from "../../ui/cx";
 import s from "./DeclaredCard.module.css";
 
-/** Palco da reação/contestação (Main, ContestaBlefe e ContestaVerdade): carta declarada, carimbo e texto. */
+/** Palco da reação/contestação (Main, ContestaBlefe e ContestaVerdade) e da carta revelada (Clarividente). */
 export function DeclaredCard({ view, layout }: { view: GameView; layout: Layout }) {
-  const declared = selectStage(view).declared;
+  const stage = selectStage(view);
+  const desktop = layout === "desktop";
+  const size = { width: desktop ? 132 : 116, height: desktop ? 186 : 162 };
+
+  if (stage.revealed) {
+    const { actorName, targetId, targetName, card, mine, toAll } = stage.revealed;
+    const revealedName = firstName(actorName);
+    const role = card ? roleName(card) : null;
+    const cardPhrase = copy.possessive(targetName, targetId === view.me);
+    return (
+      <section aria-label={copy.stage} aria-live="assertive" className={cx(s.stage, desktop && s.desk)}>
+        <figure className={cx(s.figure, "m-hit")}>
+          {card ? (
+            <CardFace as="div" size="xl" role={card} className={cx("m-flip", s.face)} style={size} />
+          ) : (
+            <div className={s.dashed} style={size}>
+              <span className={s.art} role="img" aria-label={copy.cardArt(role ?? "carta")}>
+                ?
+              </span>
+              <span className={s.dashedName}>{targetName}</span>
+            </div>
+          )}
+        </figure>
+        <div className={cx("m-rise", s.text, s.textLate)}>
+          <p className={s.lead}>{copy.revealedLead(revealedName, cardPhrase)}</p>
+          <h1 className={s.role}>{role ?? "?"}</h1>
+          <p className={s.effect}>{toAll ? copy.revealedToAll : mine ? copy.revealedPrivateMe : copy.revealedHidden}</p>
+        </div>
+      </section>
+    );
+  }
+
+  const declared = stage.declared;
   if (!declared) return null;
 
-  const desktop = layout === "desktop";
-  const { actorName, role, phase } = declared;
+  const { actorId, actorName, role, phase, targetId, targetName, contesterId, contesterName, chooserName } = declared;
   const name = firstName(actorName);
+  const roleLabel = roleName(role);
   const price = view.room ? priceOf(role, view.room) : ({ kind: "cost", coins: 0 } as const);
   const value = CLASSIC_RULES.cards[role].value ?? 0;
   const truth = phase === "truth";
   const contested = phase === "contested" || phase === "bluff" || truth;
-  const targetsMe = !!view.me && declared.targetId === view.me;
   const effect = truth
-    ? copy.truthReturn(name)
+    ? copy.truthEffect(name, copy.possessive(contesterName ?? "", contesterId === view.me))
     : phase === "bluff"
-      ? copy.bluffed(name, roleName(role)) + copy.bluffFall(name)
+      ? copy.bluffEffect(name, roleLabel, chooserName ?? "", copy.possessive(actorName, actorId === view.me))
       : phase === "contested"
-        ? ""
-        : copy.declaredEffect(name, role, price, targetsMe);
+        ? copy.doubtedBy(contesterName ?? "")
+        : copy.declaredEffect(name, role, price, targetId ? { name: targetName ?? "", mine: targetId === view.me } : null);
 
   return (
     <section aria-label={copy.stage} aria-live="assertive" className={cx(s.stage, desktop && s.desk)}>
       <figure className={cx(s.figure, contested && "m-hit")}>
         {truth ? (
-          <CardFace
-            as="div"
-            size="xl"
-            role={role}
-            className={cx("m-flip", s.face)}
-            style={{ width: desktop ? 132 : 116, height: desktop ? 186 : 162 }}
-          />
+          <CardFace as="div" size="xl" role={role} className={cx("m-flip", s.face)} style={size} />
         ) : (
-          <div className={cx(s.dashed, phase === "declared" && "m-drop")} style={{ width: desktop ? 132 : 116, height: desktop ? 186 : 162 }}>
+          <div className={cx(s.dashed, phase === "declared" && "m-drop")} style={size}>
             {phase === "declared" && (
               <span className={s.value} aria-label={copy.baseValue(value)}>
                 {value}
               </span>
             )}
-            <span className={s.art} role="img" aria-label={copy.cardArt(roleName(role))}>
-              {copy.cardArt(roleName(role))}
+            <span className={s.art} role="img" aria-label={copy.cardArt(roleLabel)}>
+              {copy.cardArt(roleLabel)}
             </span>
-            <span className={s.dashedName}>{roleName(role)}</span>
+            <span className={s.dashedName}>{roleLabel}</span>
           </div>
         )}
         {contested && (
@@ -62,7 +87,7 @@ export function DeclaredCard({ view, layout }: { view: GameView; layout: Layout 
 
       <div className={cx("m-rise", s.text, contested && s.textLate)}>
         <p className={s.lead}>{phase === "declared" ? copy.declaredLead(name) : truth ? copy.truthLead(name) : copy.contestedLead(name)}</p>
-        <h1 className={s.role}>{roleName(role)}</h1>
+        <h1 className={s.role}>{roleLabel}</h1>
         {effect && <p className={s.effect}>{effect}</p>}
       </div>
     </section>

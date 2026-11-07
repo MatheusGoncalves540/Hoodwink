@@ -77,6 +77,28 @@ describe("reação e contestação", () => {
   });
 });
 
+describe("carta revelada", () => {
+  it("Clarividente: o palco mostra a carta e o alvo", () => {
+    const base = view("Mesa6");
+    const v: GameView = {
+      ...base,
+      room: {
+        ...base.room!,
+        gameEvent: {
+          type: "REVEALED_CARD",
+          playerId: "ana",
+          expiresAt: NOW + 6000,
+          payload: { targetPlayer: "bruno", targetCardIndex: 0, showToAllPlayers: true, revealedCard: "KAMIKAZE" },
+        },
+      },
+    };
+    const out = html(<DeclaredCard view={v} layout="mobile" />);
+    expect(out).toContain("Ana revelou uma carta de Bruno.");
+    expect(out).toContain("Kamikaze");
+    expect(out).toContain("A mesa toda viu a carta.");
+  });
+});
+
 describe("reação com bloqueio", () => {
   it("Clarividente: a Guardiã aparece com o preço da taxa", () => {
     const base = view("Mesa6");

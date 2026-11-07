@@ -221,12 +221,13 @@ export function fixture(name: FixtureName, now: number): Fixture {
     case "ContestaBlefe":
       return {
         ...base,
-        room: anaPlays({ type: "CONTEST_PENALTY", playerId: "me", left: 6, payload: { contestedPlayer: "ana", contestedCard: "ASSASSIN", hasCard: false } }),
+        room: anaPlays({ type: "CONTEST_PENALTY", playerId: "me", left: 6, payload: { contestedPlayer: "ana", contestingPlayer: "me", contestedCard: "ASSASSIN", hasCard: false } }),
       };
     case "ContestaVerdade":
       return {
         ...base,
-        room: anaPlays({ type: "CONTEST_PENALTY", playerId: "me", left: 6, payload: { contestedPlayer: "ana", contestedCard: "ASSASSIN", hasCard: true } }),
+        // o servidor põe no playerId quem escolhe a carta que cai (contestEffect.go): com a carta, o contestado
+        room: anaPlays({ type: "CONTEST_PENALTY", playerId: "ana", left: 6, payload: { contestedPlayer: "ana", contestingPlayer: "me", contestedCard: "ASSASSIN", hasCard: true } }),
       };
     case "ForaDeCena": {
       const out = { ...ME, alive: false, investments: [], cards: cards([{ name: "GUARDIAN", dead: true }, { name: "TRILLIONAIRE", dead: true }]) };

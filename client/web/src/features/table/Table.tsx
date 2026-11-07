@@ -142,7 +142,7 @@ export function TableScene() {
   const view = useMemo(() => ({ me, room, log }), [me, room, log]);
   const decision = useMemo(() => selectDecision(view), [view]);
   const footlights = useMemo(() => selectFootlights(view), [view]);
-  const declared = useMemo(() => selectStage(view).declared, [view]);
+  const stage = useMemo(() => selectStage(view), [view]);
   const [showAlert, setShowAlert] = useState(false);
   const evKey = room?.gameEvent ? eventKey(room.gameEvent) : "";
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
@@ -342,7 +342,7 @@ export function TableScene() {
       slots={{
         sheet,
         rail: panel ?? <DesktopRail view={view} chatInputRef={chatInputRef} />,
-        stageOverlay: declared ? <DeclaredCard view={view} layout={layout} /> : undefined,
+        stageOverlay: stage.declared || stage.revealed ? <DeclaredCard view={view} layout={layout} /> : undefined,
         scenery,
         screenOverlay,
         bottomPanel: targeting ? targetBar : layout === "mobile" ? panel : undefined,
