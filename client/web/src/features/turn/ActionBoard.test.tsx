@@ -1,17 +1,31 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { fixture } from "../../game/fixtures";
-import { ActionBoard } from "./ActionBoard";
+import { ActionBoard, ActionPeek } from "./ActionBoard";
 
 const NOW = Date.UTC(2026, 10, 4, 21, 41);
 const f = fixture("Acoes", NOW);
 const out = renderToStaticMarkup(<ActionBoard view={{ me: f.me, room: f.room, log: f.log }} layout="mobile" onPick={() => {}} />);
 
 describe("ActionBoard", () => {
-  it("mostra o título, suas moedas e o tempo da jogada", () => {
-    expect(out).toContain("Escolha uma ação");
-    expect(out).toContain('aria-label="Você tem 5 moedas"');
-    expect(out).toContain('role="progressbar" aria-label="Tempo da jogada"');
+  it("o cabeçalho da gaveta (handle) mostra o título, suas moedas e o tempo da jogada", () => {
+    const peek = renderToStaticMarkup(<ActionPeek view={{ me: f.me, room: f.room, log: f.log }} open />);
+    expect(peek).toContain("Escolha uma ação");
+    expect(peek).toContain("Ver palco");
+    expect(peek).toContain('aria-label="Você tem 5 moedas"');
+    expect(peek).toContain('role="progressbar" aria-label="Tempo da jogada"');
+    expect(renderToStaticMarkup(<ActionPeek view={{ me: f.me, room: f.room, log: f.log }} open={false} />)).toContain("Abrir");
+  });
+
+  it("Na sua mão vem no topo, com a carta ao lado, e sai dos grupos", () => {
+    const hand = out.indexOf("Na sua mão");
+    expect(hand).toBeGreaterThan(-1);
+    expect(hand).toBeLessThan(out.indexOf("Ações do turno"));
+    expect(out).toContain("Jogar estas não é blefe.");
+    // Trilionário e Guardiã estão na mão: aparecem uma vez só, antes dos grupos
+    expect(out.split('aria-label="Trilionário, recebe 4 moedas"')).toHaveLength(2);
+    expect(out.indexOf('aria-label="Trilionário, recebe 4 moedas"')).toBeLessThan(out.indexOf("Ações do turno"));
+    expect(out).toContain('class="hw-carta');
   });
 
   it("usa o preço de pricing.ts e marca o que está na mão", () => {
@@ -19,7 +33,6 @@ describe("ActionBoard", () => {
     expect(out).toContain('aria-label="Trilionário, recebe 4 moedas"');
     // sem Kamikaze vivo na mão o servidor recusaria o sacrifício: botão desligado com o motivo
     expect(out).toContain('aria-label="Kamikaze, Precisa de um Kamikaze vivo na mão"');
-    expect(out).toContain("☞ na mão");
     expect(out).toContain('aria-label="Guardiã, custa 7, faltam 2 moedas"');
   });
 

@@ -105,8 +105,10 @@
   font-size: 15px;
 }
 
-/* Fluxo de alvo inferido (05-protocolo.md): anel de ouro nos elegíveis, 40% nos demais. */
+/* Fluxo de alvo inferido (05-protocolo.md): anel de ouro nos elegíveis, 40% nos demais.
+   Acesos, sobem acima do escuro do TargetSpotlight (z 7) e abaixo do cartaz (z 9). */
 .targetable {
+  z-index: 8;
   border: 2px solid var(--hw-ouro);
   box-shadow: 0 0 0 3px var(--hw-plateia), 0 0 0 5px var(--hw-ouro);
 }

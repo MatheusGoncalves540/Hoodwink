@@ -1,5 +1,4 @@
-/* Gaveta do miolo da mesa: cobre só a área dos jogadores (o slot em Table.module.css
-   já recorta cabeçalho, trilho e faixa Você). O handle é a borda de cima da gaveta e
+/* Gaveta da mesa: cobre do cabeçalho ao pé (o slot em Table.module.css recorta cabeçalho e trilho). O handle é a borda de cima da gaveta e
    sobe junto com o painel; fechada, só ele fica à vista no pé do slot. */
 .curtain {
   --curtain-handle-h: 44px;
@@ -10,15 +9,18 @@
 }
 .drawer {
   position: absolute;
-  inset: 0;
+  inset: var(--curtain-top, 0px) 0 0;
   display: flex;
   flex-direction: column;
   /* fechada: a gaveta desce até sobrar só o handle no pé do slot */
-  transform: translateY(calc(100% - var(--curtain-handle-h)));
-  transition: transform 0.32s var(--m-drawer);
+  transform: translateY(calc(100% - var(--curtain-handle-h) - var(--curtain-rest, 0px)));
+  /* fechar: afunda mais rápido de volta atrás da faixa Você */
+  transition: transform 0.34s cubic-bezier(0.55, 0, 0.75, 0.4);
 }
 .open .drawer {
   transform: none;
+  /* abrir: sobe macio e assenta */
+  transition: transform 0.46s var(--m-drawer);
 }
 /* sem handle (durante o alvo) não há o que recolher */
 .curtain:not(.hasHandle) .drawer {
@@ -80,4 +82,43 @@
   .body {
     transition: none;
   }
+}
+
+/* sem handle (barra de alvo) a gaveta para acima da faixa Você: seus dados seguem à vista */
+.curtain:not(.hasHandle) .body {
+  padding-bottom: var(--curtain-rest, 0px);
+}
+
+/* Com peek o handle é o cabeçalho da gaveta (título, moedas, tempo): borda de cima arredondada,
+   sombra sobre o palco e arraste vertical (touch-action: none). */
+.hasPeek {
+  --curtain-handle-h: 124px;
+}
+.hasPeek .handle {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 20px 12px;
+  border-top: 3px double var(--hw-tinta);
+  border-bottom: 1px solid var(--hw-filete);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -18px 44px var(--hw-sombra);
+  transition: border-radius 0.38s var(--m-drawer);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: var(--hw-font-texto);
+  text-align: left;
+  touch-action: none;
+}
+.hasPeek .grip {
+  align-self: center;
+  width: 48px;
+  height: 5px;
+}
+/* aberta, a gaveta vira tela: as quinas se endireitam junto com a subida */
+.open.hasPeek .handle {
+  border-radius: 0;
 }

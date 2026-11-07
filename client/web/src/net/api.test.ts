@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ENV } from "../config/envs";
-import { getTicket, newRoom, refreshToken } from "./api";
+import { getTicket, newRoom, refreshToken, rematch } from "./api";
 
 const base = ENV.VITE_GAMESERVER_URL.replace(/\/$/, "");
 const json = (body: unknown, status = 200) =>
@@ -24,6 +24,18 @@ describe("api", () => {
       method: "POST",
       headers: { Authorization: "Bearer jwt", "Content-Type": "application/json" },
       body: JSON.stringify({ roomName: "Sala", password: "", maxPlayers: 6 }),
+    });
+  });
+
+  it("pede a revanche da partida e devolve a sala nova", async () => {
+    const fetch = stubFetch(json({ RoomId: "N3W4RM", message: "Revanche pronta." }));
+    await expect(rematch("jwt", "OLDRM1")).resolves.toBe("N3W4RM");
+
+    const [url, init] = fetch.mock.calls[0]!;
+    expect(url).toBe(`${base}/rematch/OLDRM1`);
+    expect(init).toEqual({
+      method: "POST",
+      headers: { Authorization: "Bearer jwt", "Content-Type": "application/json" },
     });
   });
 

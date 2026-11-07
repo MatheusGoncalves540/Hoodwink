@@ -37,7 +37,7 @@ describe("primitivos de ui/ (fumaça em Node)", () => {
     const out = html(<Timer expiresAt={1_007_500} total={10} label="Tempo para reagir" decision />);
     vi.useRealTimers();
     expect(out).toContain('role="progressbar" aria-label="Tempo para reagir" aria-valuemin="0" aria-valuemax="10" aria-valuenow="8"');
-    expect(out).toContain("--de:0.75;animation-duration:7500ms");
+    expect(out).toContain("transform:scaleX(0.75)");
     // o "?" virou tira de 3 desenhos (fase 4); o número continua parado
     expect(out).toMatch(/restam <b class="hw-num">8<span class="m-tira [^"]*"><span><i>\?<\/i><i>\?<\/i><i>\?<\/i><\/span><\/span><\/b>/);
   });
@@ -47,7 +47,7 @@ describe("primitivos de ui/ (fumaça em Node)", () => {
     const out = html(<Timer expiresAt={1_000_000} total={5} label="t" />);
     vi.useRealTimers();
     expect(out).toContain('aria-valuenow="0"');
-    expect(out).toContain("--de:0;animation-duration:0ms");
+    expect(out).toContain("transform:scaleX(0)");
   });
 
   it("pontos da contestação: 6 cheios de 10, o sexto pisca", () => {

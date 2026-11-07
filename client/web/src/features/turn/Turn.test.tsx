@@ -1,15 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { fixture, type FixtureName } from "../../game/fixtures";
-import { selectDecision, type Decision, type GameView } from "../../game/selectors";
+import { selectDecision, selectSeatSheet, selectSeats, type Decision, type GameView } from "../../game/selectors";
 import { play } from "../../net/actions";
 import { Table } from "../table/Table";
-import { CenterCurtain } from "./CenterCurtain";
 import { RevealChoice } from "./RevealChoice";
 import { ContestPick } from "./ContestPick";
 import { DeclaredCard } from "./DeclaredCard";
 import { ReactionPanel } from "./ReactionPanel";
 import { TargetBar } from "./TargetBar";
+import { TargetPrompt } from "./TargetPrompt";
 
 const NOW = Date.UTC(2026, 10, 4, 21, 41);
 const view = (name: FixtureName): GameView => {
@@ -139,7 +139,8 @@ describe("barra de alvo (regras v2)", () => {
 describe("escolha do Clarividente", () => {
   it("oferece revelar para todos ou só para você, sem escolha pronta", () => {
     const out = html(<RevealChoice onPick={() => {}} onBack={() => {}} />);
-    expect(out).toContain('aria-label="Revelar para"');
+    expect(out).toContain('role="dialog"');
+    expect(out).toContain("Revelar para quem");
     expect(out).toContain(">Todos<");
     expect(out).toContain(">Apenas você<");
     expect(out).toContain("A mesa toda vê a carta.");
@@ -151,36 +152,46 @@ describe("escolha do Clarividente", () => {
     });
   });
 
-  it("depois da escolha, a mesa dos alvos fica visível com o que foi decidido", () => {
+  it("depois da escolha, a mesa apaga e só os camarotes elegíveis ganham refletor e anel", () => {
+    const v = view("Mesa6");
+    const seats = selectSeats(v);
+    const lit = seats.filter((x) => !x.out).map((x) => x.id);
     const out = html(
       <Table
-        view={view("Mesa6")}
-        targeting
-        slots={{
-          curtain: (
-            <CenterCurtain open>
-              <TargetBar role="CLAIRVOYANT" onBack={() => {}} note="A carta vai aparecer para todos." />
-            </CenterCurtain>
-          ),
-        }}
+        view={v}
+        targets={lit}
+        slots={{ prompt: <TargetPrompt step="Clarividente · etapa 2 de 3" question="De quem é a carta?" context="A carta vai aparecer para todos." onBack={() => {}} /> }}
       />,
     );
-    expect(out).toContain("Escolha o alvo");
+    expect(out).toContain('data-slot="target-light"');
+    // um refletor por camarote aceso (a lâmpada é o svg de cada luz)
+    expect(out.match(/viewBox="0 0 96 64"/g)?.length).toBe(lit.length);
+    expect(out).toContain("Clarividente · etapa 2 de 3");
+    expect(out).toContain('data-lugar="pergunta"');
     expect(out).toContain("A carta vai aparecer para todos.");
-    // HUD continua: a faixa Você aparece depois da cortina
-    expect(out.indexOf('aria-label="Você"')).toBeGreaterThan(out.indexOf('data-slot="curtain"'));
-    // durante o alvo a cortina não recolhe: sem handle
-    expect(out).not.toContain("Fechar ações");
+    // o cartaz vem por cima da mesa apagada
+    expect(out.indexOf('data-slot="prompt"')).toBeGreaterThan(out.indexOf('data-slot="target-light"'));
   });
 
-  it("o holofote em cone traz a pergunta no centro, por cima da mesa escura", () => {
-    const out = html(
-      <Table view={view("Mesa6")} targeting cone slots={{ center: <RevealChoice onPick={() => {}} onBack={() => {}} /> }} />,
-    );
-    expect(out).toContain('data-slot="target-light"');
-    expect(out).toContain('data-slot="center"');
-    expect(out).toContain("Revelar para");
-    // o cartão fica depois do holofote (por cima dele)
-    expect(out.indexOf('data-slot="center"')).toBeGreaterThan(out.indexOf('data-slot="target-light"'));
+  it("etapa da carta: as cartas vivas do alvo viram os botões do cartaz; a morta fica de fora", () => {
+    const v = view("Mesa6");
+    const target = selectSeats(v).find((x) => x.cards.some((c) => c.state === "dead") && x.cards.some((c) => c.state !== "dead"));
+    const seat = target ? selectSeatSheet(v, target.id) : null;
+    if (!seat) throw new Error("Mesa6 deveria ter um camarote com carta morta e viva");
+    const out = html(<TargetPrompt step="Assassino · etapa 2 de 2" question={`Qual carta de ${seat.name}?`} seat={seat} onPickCard={() => {}} onBack={() => {}} />);
+    const alive = seat.cards.filter((c) => c.state !== "dead").length;
+    expect(out.match(/aria-label="Escolher a carta/g)?.length).toBe(alive);
+    expect(out).toContain(`Qual carta de ${seat.name}`);
+  });
+
+  it("o holofote global traz a pergunta por cima da mesa e da faixa Você, sem as poças de alvo", () => {
+    const out = html(<Table view={view("Mesa6")} slots={{ center: <RevealChoice onPick={() => {}} onBack={() => {}} /> }} />);
+    expect(out).not.toContain('data-slot="target-light"');
+    expect(out).toContain('data-slot="global-question"');
+    expect(out).toContain('data-lugar="pergunta"');
+    expect(out).toContain("Revelar para quem");
+    expect(out).toContain("Voltar às ações");
+    // o holofote cobre a faixa Você: vem depois dela
+    expect(out.indexOf('data-slot="center"')).toBeGreaterThan(out.indexOf('aria-label="Você"'));
   });
 });

@@ -45,6 +45,17 @@ func ApplyPlay(ctx context.Context, sink rooms.Sink, roomData *rooms.Room, playe
 	}
 
 	var playHandlers = map[structs.TypePlayerPlays]func() bool{
+		structs.PlayPass: func() bool {
+			if !protocolsValidation.ValidatePassProtocol(roomData, playerPlay) {
+				return false
+			}
+			if err := protocols.PassProtocol(ctx, sink, roomData, playerPlay); err != nil {
+				pure.LogError(err)
+				return false
+			}
+			return true
+		},
+
 		structs.PlayContest: func() bool {
 			if !protocolsValidation.ValidateContestProtocol(roomData, playerPlay) {
 				return false

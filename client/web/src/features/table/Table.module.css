@@ -49,84 +49,60 @@
   z-index: 4;
 }
 
-/* Cortina do miolo: abaixo do cabeçalho e acima da ribalta, sem cobrir trilho. */
+/* Gaveta de ações (Gaveta v2): aberta, ocupa a coluna do palco de alto a baixo, cabeçalho inclusive; o trilho
+   fica. Fechada, mora atrás da faixa Você e só a aba aparece acima dela (--curtain-rest). O slot não recebe
+   clique: só a aba e o conteúdo aberto. */
 .curtainSlot {
   position: absolute;
   left: 0;
   right: 0;
-  top: 52px;
-  bottom: calc(100% - var(--hw-footlights-top));
+  top: 0;
+  bottom: 0;
   z-index: 5;
+  pointer-events: none;
+  --curtain-rest: var(--hw-youbar-h);
 }
 .desk .curtainSlot {
-  top: 64px;
+  right: 420px;
+}
+/* a faixa Você cobre a gaveta guardada; com ela aberta, desce para dar lugar e volta depois que a gaveta afunda */
+.youOverDrawer {
+  z-index: 6;
+  transition: translate 0.36s var(--m-drawer) 0.2s;
+}
+.youAway {
+  translate: 0 110%;
+  transition: translate 0.26s cubic-bezier(0.4, 0, 1, 1) 0.04s;
 }
 
-/* Escolha de alvo (Clarividente, Assassino, Matar, Trapaceiro, Kamikaze):
-   a mesa escurece e cada camarote elegível ganha uma poça de luz. O recorte
-   mantém cabeçalho, faixa Você e trilho legíveis. */
-.targetLight {
+/* Cartaz da escolha de alvo: no pé, acima da mesa apagada (TargetSpotlight z 7) e dos camarotes acesos (z 8) */
+.prompt {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 52px;
-  bottom: calc(100% - var(--hw-footlights-top));
-  z-index: 3;
-  overflow: hidden;
-  pointer-events: none;
-  background: var(--hw-scrim);
-  animation: m-fade 0.24s ease-out both;
+  left: 14px;
+  right: 14px;
+  bottom: 20px;
+  z-index: 9;
 }
-.desk .targetLight {
-  top: 64px;
-}
-.pool {
-  position: absolute;
-  background:
-    radial-gradient(closest-side, var(--hw-poca), transparent 74%),
-    radial-gradient(closest-side, var(--hw-poca), transparent 62%),
-    radial-gradient(closest-side, var(--hw-poca), transparent 52%);
-  animation: m-fade 0.3s ease-out both;
-}
-/* Primeira etapa da escolha: um cone de luz do palco até o pé da mesa.
-   Mesmo desenho do <Spotlight> (cone em --hw-cone, poça em --hw-poca), sem tocar nele. */
-.cone {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 4%, var(--hw-cone) 94%);
-  clip-path: polygon(50% 0%, 94% 100%, 6% 100%);
-  animation: m-fade 0.4s ease-out both;
-}
-.coneBase {
-  position: absolute;
-  left: 6%;
-  right: 6%;
-  bottom: 1%;
-  height: 18%;
-  border-radius: 50%;
-  background:
-    radial-gradient(ellipse at 50% 50%, var(--hw-poca), transparent 72%),
-    radial-gradient(ellipse at 50% 50%, var(--hw-poca), transparent 60%);
-  animation: m-fade 0.5s ease-out both;
+.desk .prompt {
+  /* centro da coluna do palco (tela menos o trilho de 420 px) */
+  left: calc((100% - 420px - 580px) / 2);
+  right: auto;
+  width: 580px;
+  bottom: 40px;
 }
 
-/* Cartão centrado sobre o holofote (escolha do Clarividente). */
+/* Holofote de pergunta global (GlobalQuestion): do cabeçalho até o pé, faixa Você inclusive. */
 .center {
   position: absolute;
   left: 0;
   right: 0;
   top: 52px;
-  bottom: calc(100% - var(--hw-footlights-top));
-  z-index: 4;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-}
-.center > * {
-  pointer-events: auto;
+  bottom: 0;
+  z-index: 5;
 }
 .desk .center {
   top: 64px;
+  right: 420px;
 }
 
 /* Desktop (Mesa6Desk.dc.html): palco de 1020 px + trilho de 420 px */
@@ -151,9 +127,9 @@
   overflow-y: auto;
 }
 
-/* Camada de tela inteira (ações, aviso de morte súbita): cobre cabeçalho e trilho. */
+/* Camada de tela inteira (aviso de morte súbita): cobre cabeçalho, trilho, gaveta e alvo. */
 .screenOverlay {
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: 10;
 }

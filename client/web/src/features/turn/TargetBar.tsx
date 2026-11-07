@@ -1,7 +1,6 @@
 import { copy } from "../../game/copy";
 import { roleName, type ActionId } from "../../game/roles";
 import { Button } from "../../ui/Button/Button";
-import { cx } from "../../ui/cx";
 import s from "./TargetBar.module.css";
 
 type Props = {
@@ -17,7 +16,7 @@ type Props = {
 export function TargetBar({ role, onBack, onSwapBoth, note }: Props) {
   return (
     <section aria-label={copy.pickTarget} className={s.bar}>
-      <p className={cx("m-respira-forte", s.title)}>{copy.pickTarget}</p>
+      <p className={s.title}>{copy.pickTarget}</p>
       <p className={s.hint}>
         {role === "KILL_CARD" ? copy.killHint : role === "SWAP_CARDS" ? copy.swapHint : copy.pickTargetHint(roleName(role))}
       </p>

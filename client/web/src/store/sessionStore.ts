@@ -5,7 +5,7 @@
  */
 import { create } from "zustand";
 import shouldRefresh from "../Auth/shouldRefresh";
-import { getTicket, newRoom, refreshToken, type NewRoomInput } from "../net/api";
+import { getTicket, newRoom, refreshToken, rematch as rematchRoom, type NewRoomInput } from "../net/api";
 import { useAuthStore } from "./authStore";
 
 /** ClassicRules.yaml → General.maxPlayers e CreateRoomRequest (2..10). */
@@ -74,6 +74,8 @@ type SessionState = {
   create(token: string, input: NewRoomInput): Promise<string | null>;
   /** Entra numa sala existente. Devolve o código, ou null. */
   join(token: string, roomCode: string): Promise<string | null>;
+  /** Revanche: entra na sala nova da partida encerrada (a mesma para todos que clicarem). */
+  rematch(token: string, oldRoomCode: string): Promise<string | null>;
   reset(): void;
 };
 
@@ -131,6 +133,24 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         set({ busy: false });
         return null;
       }
+      const ticket = await getTicket(fresh, roomCode);
+      set({ roomCode, ticket, busy: false });
+      return roomCode;
+    } catch (e) {
+      set({ busy: false, error: reason(e) });
+      return null;
+    }
+  },
+  rematch: async (token, oldRoomCode) => {
+    if (get().busy) return null;
+    set({ busy: true, error: null });
+    try {
+      const fresh = await ensureFreshToken(token);
+      if (!fresh) {
+        set({ busy: false });
+        return null;
+      }
+      const roomCode = await rematchRoom(fresh, oldRoomCode);
       const ticket = await getTicket(fresh, roomCode);
       set({ roomCode, ticket, busy: false });
       return roomCode;
