@@ -21,11 +21,11 @@ describe("Mesa6", () => {
 
   it("camarotes na ordem de jogo, com estados das miniaturas", () => {
     expect(selectSeats(v)).toEqual([
-      { id: "ana", name: "Ana", short: "Ana", coins: 7, cards: [{ state: "revealed", role: "CROUPIER" }, { state: "back" }], inScene: false, out: false, hasMore: true, label: "Ver o lugar de Ana, 7 moedas" },
-      { id: "carla", name: "Carla", short: "Carla", coins: 11, cards: [{ state: "protected" }, { state: "back" }], inScene: true, out: false, hasMore: true, label: "Ver o lugar de Carla, 11 moedas" },
-      { id: "bruno", name: "Bruno", short: "Bruno", coins: 2, cards: [{ state: "dead", role: "ASSASSIN" }, { state: "back" }], inScene: false, out: false, hasMore: true, label: "Ver o lugar de Bruno, 2 moedas" },
-      { id: "davi", name: "Davi", short: "Davi", coins: 0, cards: [{ state: "dead", role: "TRICKSTER" }, { state: "dead", role: "GRAVEDIGGER" }], inScene: false, out: true, hasMore: false, label: "Ver o lugar de Davi, fora do jogo" },
-      { id: "eva", name: "Eva", short: "Eva", coins: 4, cards: [{ state: "back" }, { state: "back" }], inScene: false, out: false, hasMore: true, label: "Ver o lugar de Eva, 4 moedas" },
+      { id: "ana", name: "Ana", short: "Ana", coins: 7, cards: [{ state: "revealed", role: "CROUPIER", index: 0 }, { state: "back", index: 1 }], inScene: false, out: false, hasMore: true, label: "Ana, 7 moedas. Ver o lugar" },
+      { id: "carla", name: "Carla", short: "Carla", coins: 11, cards: [{ state: "protected", index: 0 }, { state: "back", index: 1 }], inScene: true, out: false, hasMore: true, label: "Carla, 11 moedas. Ver o lugar" },
+      { id: "bruno", name: "Bruno", short: "Bruno", coins: 2, cards: [{ state: "dead", role: "ASSASSIN", index: 0 }, { state: "back", index: 1 }], inScene: false, out: false, hasMore: true, label: "Bruno, 2 moedas. Ver o lugar" },
+      { id: "davi", name: "Davi", short: "Davi", coins: 0, cards: [{ state: "dead", role: "TRICKSTER", index: 0 }, { state: "dead", role: "GRAVEDIGGER", index: 1 }], inScene: false, out: true, hasMore: false, label: "Davi, fora do jogo. Ver o lugar" },
+      { id: "eva", name: "Eva", short: "Eva", coins: 4, cards: [{ state: "back", index: 0 }, { state: "back", index: 1 }], inScene: false, out: false, hasMore: true, label: "Eva, 4 moedas. Ver o lugar" },
     ]);
   });
 

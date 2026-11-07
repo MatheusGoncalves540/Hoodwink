@@ -4,17 +4,16 @@ import (
 	"context"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func GravediggerEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func GravediggerEffect(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	gravediggerPayload, ok := effect.Payload.(structs.GravediggerPayload)
 	if !ok {
-		utils.LogError("payload inválido para GravediggerPayload")
+		pure.LogError("payload inválido para GravediggerPayload")
 		return
 	}
 
@@ -27,7 +26,7 @@ func GravediggerEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 	}
 
 	// chama o ReviveCardAnnouncer para ressuscitar a carta morta do jogador
-	if err := effects.ReviveCardAnnouncer(ctx, rdb, registryRules, roomData, reviveCardEffect); err != nil {
-		utils.LogError(err)
+	if err := effects.ReviveCardAnnouncer(ctx, sink, registryRules, roomData, reviveCardEffect); err != nil {
+		pure.LogError(err)
 	}
 }

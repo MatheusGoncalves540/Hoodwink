@@ -26,8 +26,8 @@ export function OutOfScene({ view, layout, onChat, onLeave }: Props) {
       <div className={s.head}>
         <h2 className={s.title}>{copy.outOfScene}</h2>
         <span role="img" aria-label={copy.deadCardsLabel(names)} className={s.deadCards}>
-          {you.cards.map((c, i) => (
-            <span key={i} className={s.deadCard}>
+          {you.cards.map((c) => (
+            <span key={c.index} className={s.deadCard}>
               {c.role ? roleName(c.role) : "?"}
             </span>
           ))}
@@ -37,7 +37,7 @@ export function OutOfScene({ view, layout, onChat, onLeave }: Props) {
       <div className={s.actions}>
         <Ticket onClick={onChat}>{copy.openChat}</Ticket>
         <Button variant="link" onClick={onLeave}>
-          {copy.leaveRoom}
+          {copy.leaveScene}
         </Button>
       </div>
     </section>

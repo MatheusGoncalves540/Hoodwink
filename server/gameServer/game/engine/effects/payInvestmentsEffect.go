@@ -1,10 +1,10 @@
 package effects
 
 import (
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 // PayInvestmentsForPlayer paga a receita passiva do Investidor no início do turno do jogador
@@ -16,7 +16,7 @@ func PayInvestmentsForPlayer(registryRules *rules.Registry, roomData *rooms.Room
 
 	generalRules, err := roomData.GetGeneralRules(registryRules)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
@@ -80,7 +80,7 @@ func applyGreedCardLoss(roomData *rooms.Room, player *players.Player) {
 	}
 
 	if err := player.KillCard(aliveIndexes[0]); err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 	roomData.VerifyIfPlayerDead(player)

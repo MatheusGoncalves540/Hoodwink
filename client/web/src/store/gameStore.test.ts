@@ -91,11 +91,11 @@ describe("gameStore (troca de sala e reset)", () => {
 
   it("reset limpa a sala e a interface da sala", () => {
     s().loadFixture("Camarote", NOW);
-    useUiStore.setState({ openSheet: "chat", chatDraft: "oi", chatSeen: 5, targeting: { role: "ASSASSIN" } });
+    useUiStore.setState({ openSheet: "chat", chatSeen: 5, targeting: { role: "ASSASSIN" } });
 
     s().reset();
 
     expect({ room: s().room, log: s().log, presentation: s().presentation }).toEqual({ room: null, log: [], presentation: [] });
-    expect(useUiStore.getState()).toMatchObject({ openSheet: null, chatDraft: "", chatSeen: 0, targeting: null });
+    expect(useUiStore.getState()).toMatchObject({ openSheet: null, chatSeen: 0, targeting: null });
   });
 });

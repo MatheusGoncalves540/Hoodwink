@@ -2,14 +2,16 @@
  * Entrada (tela 1): cartaz do Proso, "Criar sala" e entrar pelo código.
  * Lobby.dc.html / LobbyDesk.dc.html; o perfil é o do login existente (Auth/).
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLayout } from "../../app/useLayout";
 import { useMotionPref } from "../../app/useMotionPref";
 import LoginModal from "../../componentsTSX/loginModal";
 import { copy } from "../../game/copy";
 import { useAuthStore } from "../../store/authStore";
+import { BugCard } from "../bugReport/BugCard";
+import { pendingOnOpen, type BugDraft } from "../bugReport/drafts";
 import { MotionToggles } from "../sheets/RoomMenu";
-import { createInput, roomCodeFromSearch, useSessionStore, usernameFromToken } from "../../store/sessionStore";
+import { createInput, playerIdFromToken, roomCodeFromSearch, useSessionStore, usernameFromToken } from "../../store/sessionStore";
 import { Button } from "../../ui/Button/Button";
 import { Label } from "../../ui/Label/Label";
 import { Moldura } from "../../ui/Moldura/Moldura";
@@ -23,7 +25,17 @@ const MIN_CODE = 4;
 const MAX_CODE = 12;
 
 /** Canto superior direito do cartaz: inicial do ator logado ou "Entrar com Google". */
-export function Profile({ signedIn, name, onLogin }: { signedIn: boolean; name: string; onLogin(): void }) {
+export function Profile({
+  signedIn,
+  name,
+  onLogin,
+  onProfile,
+}: {
+  signedIn: boolean;
+  name: string;
+  onLogin(): void;
+  onProfile(): void;
+}) {
   if (!signedIn) {
     return (
       <Button variant="outline" className={s.login} onClick={onLogin}>
@@ -33,9 +45,9 @@ export function Profile({ signedIn, name, onLogin }: { signedIn: boolean; name: 
   }
   const who = name || copy.you;
   return (
-    <span role="img" aria-label={copy.profile(who)} className={s.avatar}>
+    <button type="button" aria-label={copy.perfil.openLabel} className={s.avatar} onClick={onProfile}>
       {who.charAt(0).toUpperCase()}
-    </span>
+    </button>
   );
 }
 
@@ -49,8 +61,18 @@ export function Lobby() {
   const createRoom = useSessionStore((st) => st.create);
   const joinRoom = useSessionStore((st) => st.join);
   const username = useMemo(() => usernameFromToken(jwtToken), [jwtToken]);
-  const [mask, truth] = copy.epigraph.split(" e ele ");
   const motion = useMotionPref();
+
+  // Relato de bug: rascunho pendente de menos de 7 dias aparece uma vez por abertura.
+  const userId = useMemo(() => playerIdFromToken(jwtToken), [jwtToken]);
+  const [bugCard, setBugCard] = useState<{ draft?: BugDraft } | null>(null);
+  const autoOpened = useRef(false);
+  useEffect(() => {
+    if (autoOpened.current) return;
+    autoOpened.current = true;
+    const pending = typeof window === "undefined" ? [] : pendingOnOpen(Date.now(), userId);
+    if (pending[0]) setBugCard({ draft: pending[0] });
+  }, [userId]);
 
   const trimmed = code.trim();
   const valid = trimmed.length >= MIN_CODE;
@@ -90,7 +112,14 @@ export function Lobby() {
           <a className={s.camarim} href="#camarim">
             ☞ {copy.camarim.title}
           </a>
-          <Profile signedIn={!!jwtToken} name={username} onLogin={openLogin} />
+          <Profile
+            signedIn={!!jwtToken}
+            name={username}
+            onLogin={openLogin}
+            onProfile={() => {
+              window.location.hash = "#perfil";
+            }}
+          />
         </div>
 
         {/* Proso em placeholder até a arte nova: moldura tracejada em contorno + "?" com holofote */}
@@ -128,9 +157,6 @@ export function Lobby() {
             <ellipse cx="52" cy="150" rx="18" ry="4" fill="var(--hw-lampada)" />
           </svg>
         </h1>
-        <p className={s.epigraph}>
-          <i>{truth ? <>“{mask}<br />e ele {truth}”</> : <>“{copy.epigraph}”</>}</i>&nbsp;
-        </p>
       </Moldura>
 
       <section aria-label={copy.playRegion} className={cx("m-rise", s.actions)}>
@@ -166,9 +192,17 @@ export function Lobby() {
           <summary>{copy.prefsTitle}</summary>
           <MotionToggles motion={motion} onMotion={motion.setAll} onIdle={motion.setIdle} />
         </details>
+
+        <Button variant="link" onClick={() => setBugCard({})}>
+          {copy.bugReportLobby}
+        </Button>
       </section>
 
       <LoginModal />
+
+      {bugCard && (
+        <BugCard open onClose={() => setBugCard(null)} mode={layout} draft={bugCard.draft} token={jwtToken} />
+      )}
     </main>
   );
 }

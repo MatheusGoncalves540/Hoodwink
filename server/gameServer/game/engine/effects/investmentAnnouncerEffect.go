@@ -3,18 +3,17 @@ package effects
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func InvestmentAnnouncer(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
+func InvestmentAnnouncer(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
 	// decodifica o payload
 	InvestmentPayload, ok := effect.Payload.(structs.InvestmentPayload)
 	if !ok {
-		utils.LogError("payload inválido para InvestmentPayload")
+		pure.LogError("payload inválido para InvestmentPayload")
 		return nil
 	}
 

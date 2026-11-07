@@ -2,6 +2,8 @@ package utils
 
 import (
 	"bytes"
+	crand "crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -34,11 +36,16 @@ func ValidateInfos(w http.ResponseWriter, toValidate any) bool {
 	return true
 }
 
-// GenerateNewId cria um ID de 16 caracteres baseado em timestamp e fator randômico
+// GenerateNewId cria um ID hex de 16 caracteres (8 bytes) com entropia
+// criptográfica. O formato (hex minúsculo) é preservado para os callers.
 func GenerateNewId() string {
-	randomFactor := rand.Float64() * rand.Float64()
-	id := int64(randomFactor * float64(time.Now().UTC().UnixMilli()))
-	return strconv.FormatInt(id, 16)
+	b := make([]byte, 8)
+	if _, err := crand.Read(b); err != nil {
+		// Entropia indisponível (não ocorre em plataformas suportadas): usa o
+		// relógio como último recurso para nunca deixar a sala sem id.
+		return strconv.FormatInt(time.Now().UTC().UnixMilli(), 16)
+	}
+	return hex.EncodeToString(b)
 }
 
 // GetRandomElementFromSlice retorna um elemento aleatório de um slice genérico

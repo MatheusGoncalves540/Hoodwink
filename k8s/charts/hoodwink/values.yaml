@@ -25,6 +25,9 @@ secrets:
     gameJwtSecret: GAME_JWT_SECRET
     backendApiKey: BACKEND_API_KEY
     redisPassword: REDIS_PASSWORD
+    ticketPrivateKey: TICKET_PRIVATE_KEY
+    ticketPublicKey: TICKET_PUBLIC_KEY
+    replaySigningKey: REPLAY_SIGNING_KEY
 
 backend:
   replicas: 1
@@ -45,7 +48,7 @@ backend:
     PG_SSLMODE: disable
     GOOGLE_CLIENT_ID: ""
     JWT_EXPIRATION: "24"
-    JWT_REFRESH_MIDDLEWARE: "12"
+    TICKET_EXPIRATION: "2"
     DEBUG: "false"
     CORS: "false"
     AUTOMIGRATE: "false"
@@ -72,6 +75,8 @@ gameserver:
     ROOM_AFK_TTL_LIMIT: "180"
     PROCESSOR_BATCH_SIZE: "5"
     PROCESSOR_INTERVAL_MS: "300"
+    ROOM_LOCK_TTL_MS: "3000"
+    REPLAY_ENABLED: "true"
   resources: {}
   nodeSelector: {}
   tolerations: []

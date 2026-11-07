@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 // GetCardRules retorna as regras da carta específica para a sala
@@ -78,7 +78,7 @@ func (r *Room) MarkCardValueAsDoubled(registryRules *rules.Registry, card struct
 
 	cardRules, err := r.GetCardRules(registryRules, string(card))
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
@@ -262,7 +262,7 @@ func (r *Room) GetBasicKillCardCost(registryRules *rules.Registry) (int, error) 
 
 	cost := base
 	if r.Tax > 0 {
-		cost += utils.FloorDiv(r.Tax, 2)
+		cost += pure.FloorDiv(r.Tax, 2)
 	} else {
 		cost += r.Tax
 	}
@@ -278,7 +278,7 @@ func (r *Room) GetBasicSwapCost(coins int, twoCards bool) int {
 	if twoCards {
 		return coins
 	}
-	return utils.CeilDiv(coins, 2)
+	return pure.CeilDiv(coins, 2)
 }
 
 // EnforceInvestorMaxInvestments descarta investimentos excedentes de todos os jogadores
@@ -286,12 +286,12 @@ func (r *Room) GetBasicSwapCost(coins int, twoCards bool) int {
 func (r *Room) EnforceInvestorMaxInvestments(registryRules *rules.Registry) {
 	maxInvestments, err := r.GetCardValue(registryRules, structs.PlayInvestorCard, 0)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
-	for _, player := range r.Players {
-		player.TrimInvestments(maxInvestments)
+	for _, playerId := range r.SortedPlayerIDs() {
+		r.Players[playerId].TrimInvestments(maxInvestments)
 	}
 }
 
@@ -320,7 +320,8 @@ func (r *Room) ChangeCard(player *players.Player, index int) error {
 
 // ChangeAllCards troca todas as cartas de todos os jogadores por novas cartas
 func (r *Room) ChangeAllCards() error {
-	for _, player := range r.Players {
+	for _, playerId := range r.SortedPlayerIDs() {
+		player := r.Players[playerId]
 		for index := range player.Cards {
 			err := r.ChangeCard(player, index)
 			if err != nil {

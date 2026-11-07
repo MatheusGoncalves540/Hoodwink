@@ -1,7 +1,7 @@
+import { useMemo } from "react";
 import type { Layout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
 import { basicPrice, canSwap, priceOf, type Price } from "../../game/pricing";
-import type { RoleId } from "../../game/protocol";
 import { BASIC_GROUP, ROLE_GROUPS, type ActionId } from "../../game/roles";
 import { CLASSIC_RULES } from "../../game/rules.classic";
 import { kamikazeAlly, selectFootlights, selectYou, type GameView } from "../../game/selectors";
@@ -20,11 +20,21 @@ type Props = {
 /** Seu turno (tela 6): ações do turno no topo, personagens por grupo, preço de pricing.ts e o tempo da jogada no pé. */
 export function ActionBoard({ view, layout, onPick }: Props) {
   const room = view.room;
-  const you = selectYou(view);
-  const footlights = selectFootlights(view);
+  const you = useMemo(() => selectYou(view), [view]);
+  const footlights = useMemo(() => selectFootlights(view), [view]);
   const ev = room?.gameEvent;
   const total = footlights.suddenDeath ? CLASSIC_RULES.waitingAction.suddenDeath : CLASSIC_RULES.waitingAction.default;
-  const held = (role: RoleId) => you.cards.some((c) => c.role === role && !c.dead);
+  const held = useMemo(() => new Set(you.cards.filter((c) => c.role && !c.dead).map((c) => c.role)), [you]);
+  // preço de cada ação só muda com a sala/taxa ou com suas moedas
+  const prices = useMemo(() => {
+    const basic = new Map<ActionId, Price>();
+    const roles = new Map<string, Price>();
+    if (room) {
+      for (const action of BASIC_GROUP.actions) basic.set(action, basicPrice(action, room, you.coins));
+      for (const group of ROLE_GROUPS) for (const role of group.roles) roles.set(role, priceOf(role, room));
+    }
+    return { basic, roles };
+  }, [room, you.coins]);
   const short = (p: Price) => (p.kind !== "gain" && p.coins > you.coins ? p.coins - you.coins : null);
 
   return (
@@ -44,7 +54,7 @@ export function ActionBoard({ view, layout, onPick }: Props) {
           <div className={s.group}>
             <h2 className={s.groupTitle}>{BASIC_GROUP.title}</h2>
             {BASIC_GROUP.actions.map((action) => {
-              const price = room ? basicPrice(action, room, you.coins) : ({ kind: "cost", coins: 0 } as const);
+              const price = prices.basic.get(action) ?? ({ kind: "cost", coins: 0 } as const);
               const blocked = action === "SWAP_CARDS" && !canSwap(you.coins) ? copy.needSwapCoins(CLASSIC_RULES.basic.swapMinCoins) : undefined;
               return (
                 <ActionButton
@@ -64,7 +74,7 @@ export function ActionBoard({ view, layout, onPick }: Props) {
             <div key={group.title} className={s.group}>
               <h2 className={s.groupTitle}>{group.title}</h2>
               {group.roles.map((role) => {
-                const price: Price = room ? priceOf(role, room) : { kind: "cost", coins: 0 };
+                const price: Price = prices.roles.get(role) ?? { kind: "cost", coins: 0 };
                 const offTurn = !!group.offTurn;
                 const missing = offTurn ? null : short(price);
                 // no seu turno o Kamikaze só serve se você matar um Kamikaze vivo seu (kamikazeValidation.go)
@@ -74,7 +84,7 @@ export function ActionBoard({ view, layout, onPick }: Props) {
                     key={role}
                     role={role}
                     price={price}
-                    held={!offTurn && held(role)}
+                    held={!offTurn && held.has(role)}
                     offTurn={offTurn}
                     missing={blocked ? null : missing}
                     blocked={blocked}

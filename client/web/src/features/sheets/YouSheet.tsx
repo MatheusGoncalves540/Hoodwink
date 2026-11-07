@@ -49,7 +49,7 @@ export function YouSheetBody({
       <p className={s.rule}>{copy.overLimit(vm.limit)}</p>
 
       <div className={s.cards}>
-        {vm.cards.map((c, i) => {
+        {vm.cards.map((c) => {
           const state = stateOf(c);
           const card = (
             <SheetCard
@@ -60,12 +60,12 @@ export function YouSheetBody({
               bottom={c.dead ? undefined : copy.cardState[c.protected ? "protected" : "hidden"]}
             />
           );
-          if (!onPickCard) return <SheetCard key={i} state={state} role={c.role} protected={c.protected} top={c.dead ? undefined : copy.tableSees(c.protected ? "protected" : "back")} bottom={c.dead ? undefined : copy.cardState[c.protected ? "protected" : "hidden"]} />;
+          if (!onPickCard) return <SheetCard key={c.index} state={state} role={c.role} protected={c.protected} top={c.dead ? undefined : copy.tableSees(c.protected ? "protected" : "back")} bottom={c.dead ? undefined : copy.cardState[c.protected ? "protected" : "hidden"]} />;
           const disabled = cardDisabled ? cardDisabled(c.index) : c.dead;
           const label = copy.pickOwnCard(c.role ? roleName(c.role) : copy.cardState.hidden);
           return (
             <button
-              key={i}
+              key={c.index}
               type="button"
               className={s.pick}
               aria-label={label}

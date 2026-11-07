@@ -1,4 +1,4 @@
-import { useEffect, useRef, type Ref } from "react";
+import { useEffect, useRef, useState, type Ref } from "react";
 import { copy } from "../../game/copy";
 import type { ChatItem, GameView } from "../../game/selectors";
 import { selectChat } from "../../game/selectors";
@@ -41,8 +41,7 @@ type Props = { view: GameView; mode: "mobile" | "desktop"; onClose(): void };
 /** Conversa da mesa (telas 11 e 15): falas, acontecimentos e o campo no pé. */
 export function ChatSheet({ view, mode, onClose }: Props) {
   const items = selectChat(view);
-  const draft = useUiStore((st) => st.chatDraft);
-  const setDraft = useUiStore((st) => st.setDraft);
+  const [draft, setDraft] = useState("");
   const markSeen = useUiStore((st) => st.markChatSeen);
   const endRef = useRef<HTMLDivElement>(null);
   const count = view.room?.chat.length ?? 0;

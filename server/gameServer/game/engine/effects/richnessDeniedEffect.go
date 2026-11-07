@@ -3,17 +3,16 @@ package effects
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func RichnessDeniedEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func RichnessDeniedEffect(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	deniedPayload, ok := effect.Payload.(structs.RichnessDeniedPayload)
 	if !ok {
-		utils.LogError("payload inválido para RichnessDeniedPayload")
+		pure.LogError("payload inválido para RichnessDeniedPayload")
 		return
 	}
 
@@ -23,9 +22,9 @@ func RichnessDeniedEffect(ctx context.Context, rdb *redis.Client, registryRules 
 	if hasLast && lastEffect.Cause == structs.EffectInvestment && deniedPayload.TargetPlayer != nil {
 		targetPlayer, err := roomData.GetPlayer(*deniedPayload.TargetPlayer)
 		if err != nil {
-			utils.LogError(err)
+			pure.LogError(err)
 		} else if generalRules, err := roomData.GetGeneralRules(registryRules); err != nil {
-			utils.LogError(err)
+			pure.LogError(err)
 		} else {
 			targetPlayer.AddCoins(1, *generalRules.MaxCoins)
 		}

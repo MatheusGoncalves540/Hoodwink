@@ -8,10 +8,9 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/redis/go-redis/v9"
 )
 
-func InvestorProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
+func InvestorProtocol(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		return err
@@ -22,7 +21,7 @@ func InvestorProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	if err != nil {
 		return err
 	}
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
+	expiresAt := roomData.Now().Add(timeoutDuration * time.Second).UTC()
 
 	cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
 	if err != nil {
@@ -44,6 +43,6 @@ func InvestorProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 		return fmt.Errorf("falha ao registrar efeito investor: %w", err)
 	}
 
-	roomData.RegistryTimeout(rdb, ctx, expiresAt)
+	sink.RegistryTimeout(ctx, roomData, expiresAt)
 	return nil
 }

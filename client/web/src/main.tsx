@@ -5,6 +5,14 @@ import { App } from "./app/App";
 import { readPref, SKIN_KEY } from "./app/prefs";
 import { applySkin } from "./skins/applySkin";
 import { resolveEquip } from "./skins/equip";
+import { installBugContext } from "./net/bugContext";
+
+// contexto de bug antes do primeiro render; se falhar, o app abre do mesmo jeito
+try {
+  installBugContext();
+} catch {
+  /* o relato perde o contexto automático, mas a partida não quebra */
+}
 
 // skin antes do primeiro render (chunks pequenos); se falhar, segue com o padrão
 applySkin(document.documentElement, resolveEquip(readPref(SKIN_KEY)))

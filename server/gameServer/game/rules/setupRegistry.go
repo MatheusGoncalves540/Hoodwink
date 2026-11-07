@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 func SetupRulesRegistry(dir string) *Registry {
@@ -34,7 +32,9 @@ func SetupRulesRegistry(dir string) *Registry {
 		}
 
 		registry.Register(mode, r)
-		utils.LogDebug("✅ " + mode + " loaded successfully")
+		if os.Getenv("DEBUG") == "true" {
+			log.Println("✅ " + mode + " loaded successfully")
+		}
 	}
 
 	return registry

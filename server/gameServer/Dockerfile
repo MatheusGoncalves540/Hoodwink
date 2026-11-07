@@ -1,10 +1,12 @@
-# podman run -d --name hoodwink-gameserver --restart=always -p 4444:4444 --env-file .env hoodwink-gameserver
+# Build a partir da raiz do monorepo server/ (o gameServer depende do módulo local replay):
+#   sudo docker build -f server/gameServer/Dockerfile -t hoodwink-gameserver server
+#   podman run -d --name hoodwink-gameserver --restart=always -p 4444:4444 --env-file .env hoodwink-gameserver
 
 #############
 
 # Multi-stage build for lightweight and secure image
 # Build stage
-FROM docker.io/library/golang:1.24.4-alpine AS builder
+FROM docker.io/library/golang:1.26.5-alpine AS builder
 
 # Install necessary build tools
 RUN apk add --no-cache git ca-certificates
@@ -12,17 +14,19 @@ RUN apk add --no-cache git ca-certificates
 # Set working directory
 WORKDIR /app
 
-# Copy go mod files
-COPY go.mod go.sum ./
+# Copy go mod files dos módulos locais (replace ../replay)
+COPY replay/go.mod replay/go.sum ./replay/
+COPY gameServer/go.mod gameServer/go.sum ./gameServer/
 
 # Download dependencies
-RUN go mod download
+RUN cd gameServer && go mod download
 
 # Copy source code
-COPY . .
+COPY replay ./replay
+COPY gameServer ./gameServer
 
 # Build the application with optimizations
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o main .
+RUN cd gameServer && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-w -s" -o /app/main .
 
 # Runtime stage
 FROM docker.io/library/alpine:latest
@@ -41,7 +45,7 @@ WORKDIR /home/appuser/
 COPY --from=builder /app/main .
 
 # Copy game assets (rules, etc.) from builder stage
-COPY --from=builder /app/game /home/appuser/game
+COPY --from=builder /app/gameServer/game /home/appuser/game
 
 # Change ownership to non-root user
 RUN chown -R appuser:appgroup main game

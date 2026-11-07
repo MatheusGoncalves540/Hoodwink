@@ -12,8 +12,43 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  replay-wasm:
+    name: Replay — WASM por versão e manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.5"
+
+      - name: Instala brotli
+        run: sudo apt-get update && sudo apt-get install -y brotli
+
+      - name: Build do WASM + manifest
+        run: make -C server replay-wasm
+
+      - name: Confere existência e sha256 dos artefatos
+        run: |
+          test -s client/web/src/replay/manifest.gen.ts
+          test -s client/web/public/replay/wasm_exec.js
+          ls client/web/public/replay/replay-v*.wasm >/dev/null
+          ls client/web/public/replay/replay-v*.wasm.br >/dev/null
+          make -C server replay-wasm-check
+
+      # O job web baixa estes arquivos: assim o bundle do CI usa exatamente o
+      # .wasm gerado neste commit, sem depender de artefato commitado.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: replay-wasm
+          path: |
+            client/web/public/replay
+            client/web/src/replay/manifest.gen.ts
+          if-no-files-found: error
+
   web:
     name: Web — testes e build
+    needs: replay-wasm
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,6 +61,12 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: client/web/package-lock.json
+
+      - name: Baixa o WASM do replay gerado neste commit
+        uses: actions/download-artifact@v4
+        with:
+          name: replay-wasm
+          path: client/web
 
       - name: Install
         run: npm ci
@@ -60,6 +101,36 @@ jobs:
       - name: Tests
         run: go test ./...
 
+  replay:
+    name: Replay — formato, runner e e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.5"
+
+      - name: Testes do formato/runner
+        run: cd server/replay && go vet ./... && go test ./...
+
+      - name: E2E (200 partidas + golden)
+        run: cd server/replay/e2e && go vet ./... && go test ./...
+
+  engine-check:
+    name: Engine — versão e fecho do motor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.5"
+
+      - name: Checa versão e fecho do motor
+        run: make engine-check
+        working-directory: server
+
   # Build NATIVO na VM (arm64) + import no containerd, como no Summus: a rede
   # de pods do flannel não tem egress nesta VM Oracle, então não há registry.
   #
@@ -68,7 +139,7 @@ jobs:
   # Segredos da aplicação: $HOME/Hoodwink/k8s/.env.production na VM.
   deploy:
     name: Deploy na VM (Helm)
-    needs: [web, server]
+    needs: [web, server, replay, engine-check]
     if: github.ref == 'refs/heads/production' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: production
@@ -105,14 +176,20 @@ jobs:
             SHORT=$(git rev-parse --short HEAD)
 
             if [ ! -f k8s/.env.production ]; then
-              echo "::error::Crie $REPO/k8s/.env.production (chaves: PG_PASS, JWT_SECRET, GAME_JWT_SECRET, BACKEND_API_KEY, REDIS_PASSWORD)."
+              echo "::error::Crie $REPO/k8s/.env.production (chaves: PG_PASS, JWT_SECRET, GAME_JWT_SECRET, BACKEND_API_KEY, REDIS_PASSWORD, TICKET_PRIVATE_KEY, TICKET_PUBLIC_KEY, REPLAY_SIGNING_KEY)."
               exit 1
             fi
 
             echo "==> Build das imagens (nativo arm64) $SHORT"
-            sudo docker build -t "$PREFIX/hoodwink-backend:$SHORT" server/backend
-            sudo docker build -t "$PREFIX/hoodwink-gameserver:$SHORT" server/gameServer
-            sudo docker build -t "$PREFIX/hoodwink-web:$SHORT" client/web
+            set -a
+            . k8s/.env.production
+            set +a
+
+            sudo docker build -f server/backend/Dockerfile -t "$PREFIX/hoodwink-backend:$SHORT" server
+            sudo docker build -f server/gameServer/Dockerfile -t "$PREFIX/hoodwink-gameserver:$SHORT" server
+            sudo docker build \
+              --build-arg "VITE_REPLAY_PUBLIC_KEY=${REPLAY_PUBLIC_KEY_HEX:-}" \
+              -t "$PREFIX/hoodwink-web:$SHORT" client/web
 
             echo "==> Import no containerd do k3s"
             for image in backend gameserver web; do

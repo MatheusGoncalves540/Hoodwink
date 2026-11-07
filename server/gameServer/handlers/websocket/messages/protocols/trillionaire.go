@@ -8,16 +8,15 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/redis/go-redis/v9"
 )
 
-func TrillionaireProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
+func TrillionaireProtocol(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
 	// calcula o tempo de expiração do evento
 	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction")
 	if err != nil {
 		return err
 	}
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
+	expiresAt := roomData.Now().Add(timeoutDuration * time.Second).UTC()
 
 	// calcula as coins ganhas
 	earnedCoins, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), 0)
@@ -33,6 +32,6 @@ func TrillionaireProtocol(ctx context.Context, rdb *redis.Client, registryRules 
 		return fmt.Errorf("falha ao registrar efeito trillionaire: %w", err)
 	}
 
-	roomData.RegistryTimeout(rdb, ctx, expiresAt)
+	sink.RegistryTimeout(ctx, roomData, expiresAt)
 	return nil
 }

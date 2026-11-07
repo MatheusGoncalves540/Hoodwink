@@ -3,17 +3,16 @@ package cardEffects
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func PoliticalEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func PoliticalEffect(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	cardRules, err := roomData.GetCardRules(registryRules, string(effect.Cause))
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
@@ -29,7 +28,7 @@ func PoliticalEffect(ctx context.Context, rdb *redis.Client, registryRules *rule
 	roomData.EnforceInvestorMaxInvestments(registryRules)
 
 	if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventIncrementTaxes, effect.Payload)); err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 }

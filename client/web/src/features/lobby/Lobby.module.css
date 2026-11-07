@@ -2,7 +2,7 @@
 .screen {
   box-sizing: border-box;
   width: 100%;
-  height: 100dvh;
+  min-height: max(100svh, 720px);
   background: var(--hw-plateia);
   color: var(--hw-tinta);
   font-family: var(--hw-font-texto);
@@ -10,7 +10,8 @@
   flex-direction: column;
   padding: 20px 18px 24px;
   gap: 18px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .desk {
   flex-direction: row;
@@ -42,20 +43,25 @@
   justify-content: flex-end;
 }
 .avatar {
+  flex: none;
   width: 44px;
   height: 44px;
+  padding: 0;
   border-radius: 50%;
   border: 1.5px solid var(--hw-tinta);
+  background: none;
   color: var(--hw-tinta);
   font-family: var(--hw-font-texto);
   font-size: 17px;
   font-weight: 700;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 .profileRow .login {
-  height: 40px;
+  min-height: 44px;
   padding: 0 12px;
   flex: none;
   border-radius: var(--hw-radius-pill);
@@ -89,9 +95,12 @@
   height: 102px;
 }
 .prosoName {
+  max-width: 100%;
   font-family: var(--hw-font-display);
-  font-size: 28px;
-  line-height: 1;
+  font-size: clamp(20px, 6.5vw, 28px);
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: anywhere;
   color: var(--hw-titulo);
 }
 .prosoNote {
@@ -123,13 +132,7 @@
   height: 48px;
   flex: none;
 }
-.epigraph {
-  margin: 10px 0 0;
-  font-size: 17px;
-  line-height: 1.35;
-  max-width: 30ch;
-  font-weight: 700;
-}
+
 .actions {
   flex-shrink: 0;
   display: flex;
@@ -150,7 +153,11 @@
   text-align: left;
 }
 .how {
+  box-sizing: border-box;
+  min-height: 44px;
   align-self: center;
+  display: inline-flex;
+  align-items: center;
   padding: 10px;
   font-size: 17px;
   font-style: italic;
@@ -165,14 +172,16 @@
   width: 64px;
   height: 102px;
 }
-.desk .epigraph {
-  font-size: 22px;
-}
+
 .prefs {
   align-self: stretch;
   font-size: 15px;
 }
 .prefs summary {
+  box-sizing: border-box;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
   cursor: pointer;
   font-family: var(--hw-font-rotulo);
   font-weight: 700;
@@ -182,6 +191,10 @@
   color: var(--hw-ouro-texto);
 }
 .camarim {
+  box-sizing: border-box;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   margin-right: auto;
   font-size: 15px;
   align-self: center;

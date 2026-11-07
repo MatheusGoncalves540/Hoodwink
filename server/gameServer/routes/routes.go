@@ -10,7 +10,9 @@ import (
 
 func SetupRoutes(routesContext *ctx.RoutesContext) http.Handler {
 	routes := chi.NewRouter()
-	routes.Use(middlewares.RequestMiddleware)
+	routes.Use(func(next http.Handler) http.Handler {
+		return middlewares.RequestMiddleware(next, routesContext.Services.RequestLogShipper)
+	})
 	routes.Use(middlewares.CORSMiddleware)
 
 	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
@@ -32,9 +34,7 @@ func SetupRoutes(routesContext *ctx.RoutesContext) http.Handler {
 
 	// Rotas protegidas com ApiKey
 	routes.Group(func(r chi.Router) {
-		// r.Use(func(next http.Handler) http.Handler {
-		// 	return apiKey.APIKeyMiddleware(next, *handler)
-		// })
+		r.Use(middlewares.APIKeyMiddleware)
 
 		// Rotas para debug e monitoramento de instâncias
 		r.Get("/instances/status", routesContext.Handler.GetInstancesStatus(routesContext.Rdb))

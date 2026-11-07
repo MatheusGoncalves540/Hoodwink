@@ -4,18 +4,17 @@ import (
 	"context"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects/effectsValidations"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func KillAnnouncerCard(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
+func KillAnnouncerCard(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
 	// decodifica o killCardPayload
 	killCardPayload, ok := effect.Payload.(structs.KillCardPayload)
 	if !ok {
-		utils.LogError("payload inválido para KillCardPayload")
+		pure.LogError("payload inválido para KillCardPayload")
 		return nil
 	}
 

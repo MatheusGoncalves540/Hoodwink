@@ -3,7 +3,7 @@
  * A ordem é a de jogo a partir de quem vem depois de você.
  *
  * mobileSeats(k, S): tabela de Mesa6.dc.html para palco de 390 px, escalada por S/390.
- *   até 5 adversários: 96×104; de 6 a 9: 70×88.
+ *   até 5 adversários: 96×104; de 6 a 10: 70×88.
  * desktopSeats(k, S): parábola de 04-arquitetura.md, camarotes 132×140 (até 5) ou 108×120.
  *   passo = min(210, (S − 30 − W)/(k − 1)), x0 = S/2 − (passo·(k−1) + W)/2, u = i/(k−1),
  *   y = 92 + (k > 5 ? 150 : 128)·(2u − 1)².
@@ -23,6 +23,8 @@ const MOBILE_SEATS: Record<number, [number, number][]> = {
   7: [[8, 196], [8, 84], [84, 64], [160, 56], [236, 64], [312, 84], [312, 196]],
   8: [[8, 206], [84, 182], [8, 84], [107, 60], [213, 60], [312, 84], [234, 182], [312, 206]],
   9: [[8, 206], [84, 182], [8, 84], [84, 64], [160, 56], [236, 64], [312, 84], [234, 182], [312, 206]],
+  // 10 jogadores só existe no replay (na partida, você ocupa um dos lugares).
+  10: [[8, 206], [84, 182], [8, 84], [84, 64], [160, 56], [236, 64], [312, 84], [234, 182], [312, 206], [160, 182]],
 };
 
 export const MAX_OPPONENTS = 9;

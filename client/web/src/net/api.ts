@@ -56,3 +56,45 @@ export async function getTicket(token: string, roomId: string): Promise<string> 
   const raw = await postJson(`/getTicket/${encodeURIComponent(roomId)}`, token);
   return ticketSchema.parse(raw).data.ticket;
 }
+
+/** Resultado do refresh: ok (token novo) | unauthorized (401) | failed (rede/outro). */
+export type RefreshResult =
+  | { status: "ok"; token: string }
+  | { status: "unauthorized" }
+  | { status: "failed" };
+
+let refreshInFlight: Promise<RefreshResult> | null = null;
+
+/**
+ * Troca o token de login por um novo no backend. Uma Promise por vez: chamadas
+ * simultâneas reaproveitam a mesma requisição. Erro de rede mantém o token
+ * (failed); 401 é devolvido para o chamador limpar a sessão.
+ */
+export function refreshToken(token: string): Promise<RefreshResult> {
+  if (!refreshInFlight) {
+    refreshInFlight = doRefresh(token).finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+async function doRefresh(token: string): Promise<RefreshResult> {
+  let res: Response;
+  try {
+    res = await fetch(`${ENV.VITE_BACKEND_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    });
+  } catch {
+    return { status: "failed" };
+  }
+
+  if (res.status === 401) return { status: "unauthorized" };
+  if (!res.ok) return { status: "failed" };
+
+  const raw: unknown = await res.json().catch(() => null);
+  const newToken = (raw as { data?: { token?: unknown } } | null)?.data?.token;
+  if (typeof newToken === "string" && newToken) return { status: "ok", token: newToken };
+  return { status: "failed" };
+}

@@ -1,7 +1,7 @@
 /* Mesa6.dc.html → palco em top 312 px, nome em 52 px; Mesa6Desk → 410 px / 88 px (T17) */
 .stage {
   position: absolute;
-  top: 312px;
+  top: min(312px, 37svh);
   left: 0;
   right: 0;
   display: flex;
@@ -16,7 +16,7 @@
   margin: 0;
   font-family: var(--hw-font-display);
   font-weight: 400;
-  font-size: 52px;
+  font-size: clamp(38px, 6.2svh, 52px);
   line-height: 1.05;
   max-width: 100%;
   overflow: hidden;
@@ -30,10 +30,10 @@
 }
 
 .desk {
-  top: 410px;
+  top: min(410px, 45.6svh);
 }
 .desk .name {
-  font-size: 88px;
+  font-size: clamp(64px, 9.8svh, 88px);
 }
 .desk .fala {
   font-size: 22px;

@@ -6,10 +6,13 @@
 import { useEffect, useSyncExternalStore, type ComponentType } from "react";
 import { FIXTURE_NAMES, type FixtureName } from "../game/fixtures";
 import { selectScene } from "../game/selectors";
+import { AdminRequests } from "../features/admin/AdminRequests";
 import { FinaleScene } from "../features/endgame/Finale";
 import { Camarim } from "../features/camarim/Camarim";
 import { HowTo } from "../features/howto/HowTo";
 import { Lobby } from "../features/lobby/Lobby";
+import { Profile } from "../features/profile/Profile";
+import { ReplayScene } from "../features/replay/ReplayScene";
 import { RoomScene } from "../features/room/WaitingRoom";
 import { TableScene } from "../features/table/Table";
 import { GameSocket } from "../net/GameSocket";
@@ -28,8 +31,14 @@ const SCENES: Record<Scene, ComponentType> = { lobby: Lobby, room: RoomScene, ta
 
 const param = (name: string) => (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get(name));
 const isFixture = (s: string | null): s is FixtureName => FIXTURE_NAMES.includes(s as FixtureName);
-/** Telas por âncora (sem roteador): Como se joga e Camarim, abertas do Lobby e do Menu. */
-const HASH_SCENES: Record<string, ComponentType> = { "#como-se-joga": HowTo, "#camarim": Camarim };
+/** Telas por âncora (sem roteador): Como se joga, Camarim, Replay e a tela de super-admin (sem link no menu). */
+const HASH_SCENES: Record<string, ComponentType> = {
+  "#como-se-joga": HowTo,
+  "#camarim": Camarim,
+  "#admin": AdminRequests,
+  "#replay": ReplayScene,
+  "#perfil": Profile,
+};
 const useHash = () =>
   useSyncExternalStore(
     (cb) => {
@@ -72,6 +81,11 @@ export function App() {
 
   usePresentation();
 
+  // Renova o login ao abrir o app se já passou da metade da vida.
+  useEffect(() => {
+    void useAuthStore.getState().refreshIfNeeded();
+  }, []);
+
   useEffect(() => {
     if (isFixture(devFixture)) useGameStore.getState().loadFixture(devFixture);
   }, [devFixture]);
@@ -100,7 +114,9 @@ export function App() {
   }, [theme, motion.all, motion.idle]);
 
   if (devScene === "amostras") return <Amostras />;
-  const Scene = HASH_SCENES[hash] ?? SCENES[isScene(devScene) ? devScene : selectScene({ me, room, log })];
+  // `#replay?match=<id>` carrega a tela e a própria tela lê o parâmetro do hash.
+  const hashKey = hash.split("?")[0] ?? hash;
+  const Scene = HASH_SCENES[hashKey] ?? SCENES[isScene(devScene) ? devScene : selectScene({ me, room, log })];
   return (
     <>
       {ticket && <GameSocket ticket={ticket} />}

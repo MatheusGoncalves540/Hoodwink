@@ -1,0 +1,37 @@
+package effects
+
+import (
+	"context"
+
+	"github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/pure"
+	"github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/structs"
+	"github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/structs/rooms"
+)
+
+func EarnCoinsAnnouncer(ctx context.Context, sink rooms.Sink, roomData *rooms.Room, effect structs.Effect) error {
+	// decodifica o payload
+	EarnCoinsPayload, ok := effect.Payload.(structs.EarnCoinsPayload)
+	if !ok {
+		pure.LogError("payload inválido para KillCardPayload")
+		return nil
+	}
+
+	sourcePlayer, err := roomData.GetPlayer(effect.SourcePlayer)
+	if err != nil {
+		return err
+	}
+
+	// cria o payload de ganho de moedas
+	earnCoinsPayload := structs.NewEarnCoinsPayload(string(effect.Cause), EarnCoinsPayload.EarnedCoins, nil)
+
+	if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventEarnCoins, earnCoinsPayload)); err != nil {
+		return err
+	}
+
+	// registra o efeito de ganho de moedas
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectEarnCoins, sourcePlayer.Id, earnCoinsPayload)); err != nil {
+		return err
+	}
+
+	return nil
+}
