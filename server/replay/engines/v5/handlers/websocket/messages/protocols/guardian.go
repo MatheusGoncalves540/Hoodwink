@@ -1,0 +1,61 @@
+package protocols
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/MatheusGoncalves540/Hoodwink-replay/engines/v5/game/rules"
+	"github.com/MatheusGoncalves540/Hoodwink-replay/engines/v5/game/structs"
+	"github.com/MatheusGoncalves540/Hoodwink-replay/engines/v5/game/structs/rooms"
+)
+
+func GuardianProtocol(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, payload *structs.GuardianPayload) error {
+	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
+	if err != nil {
+		return err
+	}
+
+	// calcula o tempo de expiração do evento
+	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "DisplayImportantMessage")
+	if err != nil {
+		return err
+	}
+	expiresAt := roomData.Now().Add(timeoutDuration * time.Second).UTC()
+
+	guardianPayload := structs.GuardianPayload{}
+
+	switch roomData.GameEvent.Type {
+	case structs.EventWaitingFirstAction:
+		guardianPayload = structs.NewGuardianPayload(payload.TargetPlayer, payload.TargetCardIndex, "future")
+
+	case structs.EventCardKilled:
+		guardianPayload = structs.NewGuardianPayload(payload.TargetPlayer, payload.TargetCardIndex, "death")
+
+	case structs.EventCardPlayedClairvoyant:
+		guardianPayload = structs.NewGuardianPayload(payload.TargetPlayer, payload.TargetCardIndex, "sight")
+
+	default:
+		return fmt.Errorf("evento inválido para o uso da Guardian: %s", roomData.GameEvent.Type)
+	}
+
+	// marca a remoção de coins de acordo com o tipo de proteção
+	cardPrice, err := roomData.GetGuardianValue(registryRules, guardianPayload.ProtectedFrom)
+	if err != nil {
+		return err
+	}
+	sourcePlayer.RemoveCoins(cardPrice)
+
+	// registra o evento de jogo
+	roomData.GameEvent = structs.NewGameEvent(playerPlay.PlayerId, structs.EventCardPlayedGuardian, expiresAt, guardianPayload)
+
+	// registra o efeito pendente
+	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectGuardian, playerPlay.PlayerId, guardianPayload)); err != nil {
+		return fmt.Errorf("falha ao registrar efeito guardian: %w", err)
+	}
+
+	// registra o timeout no redis
+	sink.RegistryTimeout(ctx, roomData, expiresAt)
+
+	return nil
+}

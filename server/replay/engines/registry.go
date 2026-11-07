@@ -39,6 +39,12 @@ import (
 	structsv4 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v4/game/structs"
 	playersv4 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v4/game/structs/players"
 	roomsv4 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v4/game/structs/rooms"
+	enginev5 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v5/game/engine"
+	effectsv5 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v5/game/engine/effects"
+	rulesv5 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v5/game/rules"
+	structsv5 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v5/game/structs"
+	playersv5 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v5/game/structs/players"
+	roomsv5 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v5/game/structs/rooms"
 
 	"github.com/MatheusGoncalves540/Hoodwink-replay/format"
 )
@@ -940,10 +946,227 @@ func canonicalJSONV4(room *roomsv4.Room) ([]byte, error) {
 	return json.Marshal(v)
 }
 
+// EngineV5 liga as funções do motor v5 aos tipos congelados dessa versão.
+// O runner só conversa pela interface Engine, com a sala como any.
+type EngineV5 struct{}
+
+// Version identifica a versão deste motor.
+func (EngineV5) Version() int { return 5 }
+
+var rulesV5 struct {
+	once     sync.Once
+	registry *rulesv5.Registry
+	err      error
+}
+
+func loadRulesV5() (*rulesv5.Registry, error) {
+	rulesV5.once.Do(func() {
+		rulesV5.registry, rulesV5.err = rulesv5.LoadEmbeddedRegistry()
+	})
+	return rulesV5.registry, rulesV5.err
+}
+
+func sinkV5(raw any) roomsv5.Sink {
+	if s, ok := raw.(roomsv5.Sink); ok && s != nil {
+		return s
+	}
+	return roomsv5.NoopSink()
+}
+
+func roomV5(raw any) *roomsv5.Room { return raw.(*roomsv5.Room) }
+
+// NewRoom monta a sala inicial a partir do cabeçalho do replay. O baralho é
+// embaralhado com o RNG da sala (semeado), então o estado inicial é determinístico.
+func (EngineV5) NewRoom(replay *format.Replay) (any, error) {
+	registry, err := loadRulesV5()
+	if err != nil {
+		return nil, err
+	}
+	seed := roomsv5.Seed(replay.Seed)
+	matchID := matchIDString(replay.MatchID)
+
+	room := &roomsv5.Room{
+		ID:          matchID,
+		Rules:       structsv5.Rules(replay.Mode),
+		TimeoutType: string(rulesv5.TimeoutsTypeDefault),
+		Turn:        1,
+		DoubledCardValues: map[structsv5.TypePlayerPlays]structsv5.DoubledCardValues{
+			structsv5.PlayPoliticalCard: {},
+			structsv5.PlayRebelCard:     {},
+		},
+		Players:                   map[string]*playersv5.Player{},
+		GameEvent:                 structsv5.NewGameEvent("", structsv5.EventWaitingStart, time.Time{}, nil),
+		PendingEffects:            []structsv5.EffectDTO{},
+		PendingPresentationEvents: []structsv5.PresentationEventDTO{},
+		Created:                   time.UnixMilli(replay.StartedAtMs).UTC(),
+		MatchID:                   matchID,
+		Seed:                      seed,
+		Rng:                       roomsv5.NewRngState(seed),
+	}
+
+	general, err := room.GetGeneralRules(registry)
+	if err != nil {
+		return nil, err
+	}
+	if general.MaxPlayers != nil {
+		room.MaxPlayers = *general.MaxPlayers
+	}
+	if general.InitialCoins == nil {
+		return nil, errors.New("regras sem initialCoins")
+	}
+	if general.CopysOfEachCard == nil {
+		return nil, errors.New("regras sem copysOfEachCard")
+	}
+
+	deck := make([]structsv5.CardName, 0, *general.CopysOfEachCard*len(structsv5.AllCards))
+	for i := 0; i < *general.CopysOfEachCard; i++ {
+		deck = append(deck, structsv5.AllCards...)
+	}
+	room.Rand().Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
+	room.Deck = deck
+
+	for i, p := range replay.Players {
+		id := PlayerID(p.Index)
+		room.Players[id] = &playersv5.Player{
+			Id:       id,
+			Name:     p.Name,
+			MoveTime: i,
+			Cards: []structsv5.Card{
+				{Name: structsv5.CardKamikaze, Index: 0},
+				{Name: structsv5.CardKamikaze, Index: 1},
+			},
+			Coins: *general.InitialCoins,
+			Alive: true,
+		}
+		room.NextMoveTime++
+		room.AddConnected(id)
+	}
+
+	return room, nil
+}
+
+func (EngineV5) Clone(raw any) any { return roomV5(raw).Clone() }
+
+func (EngineV5) SetNow(raw any, now time.Time) { roomV5(raw).SetNow(now) }
+
+func (EngineV5) ClearNow(raw any) { roomV5(raw).ClearNow() }
+
+func (EngineV5) SetConnected(raw any, ids []string) { roomV5(raw).SetConnected(ids) }
+
+func (EngineV5) StartGame(raw, sink any) error {
+	return effectsv5.StartGameEffect(context.Background(), sinkV5(sink), roomV5(raw))
+}
+
+func (EngineV5) ApplyPlay(raw, sink any, player string, payload []byte) (bool, error) {
+	registry, err := loadRulesV5()
+	if err != nil {
+		return false, err
+	}
+	play, err := structsv5.ParsePlayerPlay(payload, player)
+	if err != nil {
+		return false, err
+	}
+	return enginev5.ApplyPlay(context.Background(), sinkV5(sink), roomV5(raw), play, registry), nil
+}
+
+func (EngineV5) Tick(raw, sink any) error {
+	registry, err := loadRulesV5()
+	if err != nil {
+		return err
+	}
+	enginev5.Tick(context.Background(), sinkV5(sink), registry, roomV5(raw))
+	return nil
+}
+
+func (EngineV5) CheckMode(mode string) error {
+	registry, err := loadRulesV5()
+	if err != nil {
+		return err
+	}
+	if _, err := registry.Get(mode); err != nil {
+		return fmt.Errorf("modo desconhecido %q: %w", mode, err)
+	}
+	return nil
+}
+
+func (EngineV5) GameOver(raw any) bool { return roomV5(raw).GameOver }
+
+func (EngineV5) WinnerID(raw any) string { return roomV5(raw).WinnerID }
+
+func (EngineV5) StateJSON(raw any) ([]byte, error) { return json.Marshal(raw) }
+
+func (EngineV5) CanonicalJSON(raw any) ([]byte, error) { return canonicalJSONV5(roomV5(raw)) }
+
+// normalizedV5 devolve a mesma canonicalização do gravador: campos de
+// exibição zerados, IDs de jogador na ordem lexicográfica (aqui já são os
+// índices), MoveTime denso, tempos truncados em ms.
+func normalizedV5(room *roomsv5.Room) *roomsv5.Room {
+	clone := room.Clone()
+	clone.ID = clone.MatchID
+	clone.Name = ""
+	clone.Password = ""
+	clone.MaxPlayers = 0
+	clone.CustomMatch = false
+	clone.Chat = nil
+	clone.NonReplayable = false
+
+	ids := make([]string, 0, len(clone.Players))
+	for id := range clone.Players {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+
+	moveOrder := append([]string(nil), ids...)
+	sort.Slice(moveOrder, func(i, j int) bool {
+		a, b := clone.Players[moveOrder[i]], clone.Players[moveOrder[j]]
+		if a.MoveTime != b.MoveTime {
+			return a.MoveTime < b.MoveTime
+		}
+		return moveOrder[i] < moveOrder[j]
+	})
+	moveRank := make(map[string]int, len(ids))
+	for i, id := range moveOrder {
+		moveRank[id] = i
+	}
+
+	players := make(map[string]*playersv5.Player, len(ids))
+	for id, p := range clone.Players {
+		p.Name = ""
+		p.Id = id
+		p.MoveTime = moveRank[id]
+		players[id] = p
+	}
+	clone.Players = players
+	clone.NextMoveTime = len(ids)
+
+	clone.StartTime = truncateForHash(clone.StartTime)
+	clone.Created = clone.StartTime
+	if clone.GameEvent != nil {
+		clone.GameEvent.ExpiresAt = truncateForHash(clone.GameEvent.ExpiresAt)
+	}
+
+	return clone
+}
+
+// canonicalJSONV5 serializa a sala canônica passando por map[string]any, para
+// os mapas saírem com chaves ordenadas exatamente como no gravador.
+func canonicalJSONV5(room *roomsv5.Room) ([]byte, error) {
+	data, err := json.Marshal(normalizedV5(room))
+	if err != nil {
+		return nil, err
+	}
+	var v any
+	if err := json.Unmarshal(data, &v); err != nil {
+		return nil, err
+	}
+	return json.Marshal(v)
+}
+
 // Registry associa o número da versão ao motor congelado.
 var Registry = map[int]Engine{
 	1: EngineV1{},
 	2: EngineV2{},
 	3: EngineV3{},
 	4: EngineV4{},
+	5: EngineV5{},
 }

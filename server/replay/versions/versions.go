@@ -16,6 +16,7 @@ var All = []Version{
 	{Number: 2, Hash: "87ccce0ebe030d6cb0da7231577c658be4bb990faefcc7a1c89d476b6783e8ee"},
 	{Number: 3, Hash: "f2b889c29902770896bf87cf40c85f9eaf2b1910b19c8878b152311e9335f5cc"},
 	{Number: 4, Hash: "36b4d88f382d1fb44a0159845159fb0b66e78bed908a52f9fe8d736d283907a1"},
+	{Number: 5, Hash: "e0bd2a4107a62aaca0e9f0dce9ec6c387a88519dc11239d258cfd662852c80ff"},
 }
 
 // Latest devolve o número da versão mais recente.
