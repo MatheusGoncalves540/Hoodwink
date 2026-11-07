@@ -8,7 +8,7 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "onSubmit"
   onChange(value: string): void;
   /** Texto do botão colado ("Entrar", "Falar", "Enviar"). Enter no campo também dispara. */
   action?: string;
-  /** Desabilita só o botão colado, sem tirar o campo do fluxo (Lobby: menos de 4 letras). */
+  /** Desabilita só o botão colado, sem tirar o campo do fluxo (Lobby: menos de 6 letras). */
   actionDisabled?: boolean;
   /** "dark" no trilho do desktop: o "Enviar" vira pílula de tinta. */
   tone?: "light" | "dark";
