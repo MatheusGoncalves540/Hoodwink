@@ -31,7 +31,13 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body ExternalAuthPayload
+	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			utils.SendError(w, "Corpo da requisição muito grande (máx. 16 KB)", http.StatusRequestEntityTooLarge)
+			return
+		}
 		utils.SendError(w, "payload inválido", http.StatusBadRequest)
 		return
 	}
@@ -72,7 +78,7 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Busca/criação do usuário
-	user, err := h.UserService.FindOrCreateOAuthUser(email, provider, body.Username)
+	user, err := h.UserService.FindOrCreateOAuthUser(r.Context(), email, provider, body.Username)
 	if err != nil {
 		if errors.Is(err, services.ErrMissingUsername) {
 			// Precisa de dados adicionais
@@ -80,6 +86,8 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 				Email:    email,
 				Provider: provider,
 				Temp:     true,
+				IP:       utils.ClientIP(r),
+				UA:       utils.UserAgent(r),
 			})
 			utils.SendSuccess(w, map[string]string{"token": tempToken}, "need_additional_data")
 			return
@@ -94,6 +102,8 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 		Username: user.Username,
 		Provider: provider,
 		Email:    user.Email,
+		IP:       utils.ClientIP(r),
+		UA:       utils.UserAgent(r),
 	})
 	if err != nil {
 		utils.SendError(w, "Erro ao gerar token", http.StatusInternalServerError)

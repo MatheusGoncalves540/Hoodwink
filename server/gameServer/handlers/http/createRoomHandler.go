@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -12,7 +13,13 @@ import (
 func (h *HTTPHandler) CreateCustomRoom(w http.ResponseWriter, r *http.Request) {
 	var reqBody endpointStructures.CreateRoomRequest
 
+	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			utils.SendError(w, "Corpo da requisição muito grande (máx. 16 KB)", http.StatusRequestEntityTooLarge)
+			return
+		}
 		utils.SendError(w, "JSON inválido", http.StatusBadRequest)
 		return
 	}
