@@ -32,6 +32,7 @@ const base: ProfileViewProps = {
   notice: "",
   busyId: "",
   onLogin() {},
+  onLogout() {},
   onWatch() {},
   onDownload() {},
   onLoadMore() {},
@@ -48,6 +49,14 @@ describe("Perfil: estados", () => {
     expect(out).toContain("Entre para ver seu perfil");
     expect(out).toContain("Entrar com Google");
     expect(out).not.toContain("Nenhuma partida ainda");
+  });
+
+  it("sem login não mostra o botão de sair da conta", () => {
+    expect(html({ signedIn: false })).not.toContain("Sair da conta");
+  });
+
+  it("logado mostra o botão de sair da conta", () => {
+    expect(html()).toContain("Sair da conta");
   });
 
   it("carregando anuncia o estado", () => {

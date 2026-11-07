@@ -25,17 +25,18 @@ func TestValidateTokenMapping(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tc.statusCode)
-				w.Write([]byte(`{"id":"p1","username":"ana"}`))
+				// Formato real do backend (utils.SendSuccess): campo sob `data`.
+				w.Write([]byte(`{"data":{"id":"p1","username":"ana","provider":"google"}}`))
 			}))
 			defer srv.Close()
 
 			svc := &BackendService{apiKey: "k", url: srv.URL, client: &http.Client{Timeout: time.Second}}
-			id, username, status := svc.ValidateToken(context.Background(), "tok")
+			id, username, provider, status := svc.ValidateToken(context.Background(), "tok")
 			if status != tc.want {
 				t.Fatalf("status esperado %d, veio %d", tc.want, status)
 			}
-			if tc.want == http.StatusOK && (id != "p1" || username != "ana") {
-				t.Fatalf("id/username inesperados: %q %q", id, username)
+			if tc.want == http.StatusOK && (id != "p1" || username != "ana" || provider != "google") {
+				t.Fatalf("id/username/provider inesperados: %q %q %q", id, username, provider)
 			}
 		})
 	}
@@ -43,8 +44,21 @@ func TestValidateTokenMapping(t *testing.T) {
 
 func TestValidateTokenConnectionRefused(t *testing.T) {
 	svc := &BackendService{apiKey: "k", url: "http://127.0.0.1:1", client: &http.Client{Timeout: time.Second}}
-	if _, _, status := svc.ValidateToken(context.Background(), "tok"); status != http.StatusServiceUnavailable {
+	if _, _, _, status := svc.ValidateToken(context.Background(), "tok"); status != http.StatusServiceUnavailable {
 		t.Fatalf("conexão recusada deveria mapear 503, veio %d", status)
+	}
+}
+
+func TestValidateTokenSemIdVira503(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"data":{"username":"ana"}}`))
+	}))
+	defer srv.Close()
+
+	svc := &BackendService{apiKey: "k", url: srv.URL, client: &http.Client{Timeout: time.Second}}
+	if _, _, _, status := svc.ValidateToken(context.Background(), "tok"); status != http.StatusServiceUnavailable {
+		t.Fatalf("resposta sem id deveria mapear 503, veio %d", status)
 	}
 }
 
@@ -58,7 +72,8 @@ func TestRequestTicketMapping(t *testing.T) {
 			t.Fatalf("ip/ua não enviados no corpo: %+v", body)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"ticket":"abc.def.ghi"}`))
+		// Formato real do backend (utils.SendSuccess): ticket sob `data`.
+		w.Write([]byte(`{"data":{"ticket":"abc.def.ghi"}}`))
 	}))
 	defer srv.Close()
 
@@ -66,6 +81,19 @@ func TestRequestTicketMapping(t *testing.T) {
 	ticket, status := svc.RequestTicket(context.Background(), "tok", "r1", "26.0.0.5", "hoodwink/1.0")
 	if status != http.StatusOK || ticket != "abc.def.ghi" {
 		t.Fatalf("esperado 200 com ticket, veio %d / %q", status, ticket)
+	}
+}
+
+func TestRequestTicketVazioVira503(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"data":{"ticket":""}}`))
+	}))
+	defer srv.Close()
+
+	svc := &BackendService{apiKey: "k", url: srv.URL, client: &http.Client{Timeout: time.Second}}
+	if ticket, status := svc.RequestTicket(context.Background(), "tok", "r1", "", ""); status != http.StatusServiceUnavailable || ticket != "" {
+		t.Fatalf("ticket vazio deveria mapear 503, veio %d / %q", status, ticket)
 	}
 }
 
@@ -82,7 +110,7 @@ func TestValidateTokenRespeitaContexto(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	_, _, status := svc.ValidateToken(ctx, "tok")
+	_, _, _, status := svc.ValidateToken(ctx, "tok")
 	if status != http.StatusServiceUnavailable {
 		t.Fatalf("contexto cancelado deveria mapear 503, veio %d", status)
 	}

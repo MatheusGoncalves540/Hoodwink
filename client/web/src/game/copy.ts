@@ -271,12 +271,12 @@ export const copy = {
   loginModal: {
     kicker: "Bilheteria",
     title: "Entrar",
-    text: "Entre com sua conta Google ou só com um nome, se estiver na mesma rede.",
+    text: "Entre com sua conta Google. Sem conta, entre como visitante pelo código de uma sala.",
     loading: "Carregando o Google…",
     back: "☜ Voltar",
-    localOr: "ou, na mesma rede",
-    localName: "Seu nome",
-    localEnter: "Entrar sem conta",
+    guestOr: "ou entre como visitante",
+    guestName: "Seu nome",
+    guestEnter: "Entrar como visitante",
     error: (reason: string) => `Não deu para entrar. ${reason}`,
     noToken: "A resposta do servidor veio sem login. Tente de novo.",
     usernameTaken: "Esse nome já está em uso. Escolha outro.",
@@ -297,6 +297,8 @@ export const copy = {
   invalidCode: "Esse código não abre nenhuma sala. Confira as letras com quem convidou.",
   roomFull: "Essa sala está cheia. Peça outro convite ou crie a sua.",
   connectionLost: "A conexão caiu. Tentando voltar à sala…",
+  guestCanOnlyJoin: "Visitante entra pelo código de uma sala. Para criar a sua, use uma conta Google.",
+  serverOffline: "Não deu para falar com o servidor do jogo. Confira se ele está no ar.",
 
   // relato de bug (plano 06). A pergunta do fim usa os turnos marcados no rascunho.
   bugReportButton: "Algo deu errado",
@@ -548,5 +550,6 @@ export const copy = {
     replayPending: "O replay ainda está sendo processado.",
     replayPendingHint: "Isso costuma levar alguns segundos.",
     login: "Entrar",
+    logout: "Sair da conta",
   },
 };

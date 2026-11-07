@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createInput,
   DEFAULT_MAX_PLAYERS,
+  isGuestToken,
   playerIdFromToken,
+  providerFromToken,
   roomCodeFromSearch,
   useSessionStore,
   usernameFromToken,
@@ -74,6 +76,14 @@ describe("sessionStore", () => {
     expect(playerIdFromToken(ticket)).toBe("eu");
     expect(playerIdFromToken(login)).toBe("eu");
     expect(playerIdFromToken("nada")).toBe("");
+  });
+
+  it("reconhece o login de visitante (guest e o antigo local)", () => {
+    expect(providerFromToken(mkToken({ id: "p1", provider: "google" }))).toBe("google");
+    expect(isGuestToken(mkToken({ id: "p1", provider: "guest" }))).toBe(true);
+    expect(isGuestToken(mkToken({ id: "p1", provider: "local" }))).toBe(true);
+    expect(isGuestToken(mkToken({ id: "p1", provider: "google" }))).toBe(false);
+    expect(isGuestToken("nada")).toBe(false);
   });
 
   it("renova o token antes de criar a sala e atualiza o authStore", async () => {

@@ -49,6 +49,15 @@ describe("api", () => {
     await expect(getTicket("jwt", "K7Q2")).rejects.toThrow();
   });
 
+  it("servidor fora do ar mostra um aviso claro, não 'Failed to fetch'", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      throw new TypeError("Failed to fetch");
+    }));
+    await expect(newRoom("jwt", { roomName: "Sala", maxPlayers: 6 })).rejects.toThrow(
+      "Não deu para falar com o servidor do jogo. Confira se ele está no ar.",
+    );
+  });
+
   describe("refreshToken", () => {
     it("devolve o token novo em 200", async () => {
       stubFetch(json({ data: { token: "novo.jwt" } }));

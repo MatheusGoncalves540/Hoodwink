@@ -14,6 +14,7 @@ interface AuthState {
   openLogin: () => void;
   closeLogin: () => void;
   clearSession: () => void;
+  logout: () => void;
   refreshIfNeeded: () => Promise<void>;
 }
 
@@ -36,6 +37,9 @@ export const useAuthStore = create<AuthState>()(
 
       // 401 do refresh (ou logout): apaga a sessão e abre o login de novo
       clearSession: () => set({ jwtToken: "", playerId: "", isLoginOpen: true }),
+
+      // Sair da conta pelo perfil: apaga a sessão sem abrir o login.
+      logout: () => set({ jwtToken: "", playerId: "", isLoginOpen: false }),
 
       // renova ao carregar se já passou da metade da vida; rede falhou mantém o token
       refreshIfNeeded: async () => {

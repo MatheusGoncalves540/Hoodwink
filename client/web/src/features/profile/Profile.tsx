@@ -24,7 +24,7 @@ import {
   type MyMatch,
 } from "../../net/replayApi";
 import { useAuthStore } from "../../store/authStore";
-import { playerIdFromToken, usernameFromToken } from "../../store/sessionStore";
+import { playerIdFromToken, useSessionStore, usernameFromToken } from "../../store/sessionStore";
 import { Button } from "../../ui/Button/Button";
 import { Moldura } from "../../ui/Moldura/Moldura";
 import { Ticket } from "../../ui/Ticket/Ticket";
@@ -74,6 +74,7 @@ export type ProfileViewProps = {
   notice: string;
   busyId: string;
   onLogin(): void;
+  onLogout(): void;
   onWatch(matchId: string): void;
   onDownload(match: MyMatch): void;
   onLoadMore(): void;
@@ -141,6 +142,7 @@ export function ProfileView({
   notice,
   busyId,
   onLogin,
+  onLogout,
   onWatch,
   onDownload,
   onLoadMore,
@@ -181,6 +183,9 @@ export function ProfileView({
                 <h2 className={s.userName}>{display}</h2>
                 <p className={s.userNote}>{copy.perfil.historyHint}</p>
               </div>
+              <Button variant="outline" className={s.logout} onClick={onLogout}>
+                {copy.perfil.logout}
+              </Button>
             </section>
 
             <section aria-label={copy.perfil.history} aria-busy={loading || loadingMore} className={s.section}>
@@ -349,6 +354,12 @@ export function Profile() {
     window.location.hash = `#replay?match=${encodeURIComponent(matchId)}`;
   };
 
+  // Sair da conta fecha a sala aberta e volta ao Lobby sem abrir o login.
+  const onLogout = () => {
+    useSessionStore.getState().reset();
+    useAuthStore.getState().logout();
+  };
+
   return (
     <>
       <ProfileView
@@ -363,6 +374,7 @@ export function Profile() {
         notice={notice}
         busyId={busyId}
         onLogin={openLogin}
+        onLogout={onLogout}
         onWatch={onWatch}
         onDownload={(match) => void onDownload(match)}
         onLoadMore={onLoadMore}
