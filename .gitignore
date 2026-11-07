@@ -1,0 +1,2 @@
+# PDFs são artefatos gerados (tools/skins-pdf/build.mjs), fora do versionamento.
+*.pdf
