@@ -26,6 +26,7 @@ import { SeatSheet } from "../sheets/SeatSheet";
 import { YouSheet } from "../sheets/YouSheet";
 import { OutOfScene } from "../endgame/OutOfScene";
 import { ActionBoard } from "../turn/ActionBoard";
+import { CenterCurtain } from "../turn/CenterCurtain";
 import { ContestPick } from "../turn/ContestPick";
 import { DeclaredCard } from "../turn/DeclaredCard";
 import { ReactionPanel } from "../turn/ReactionPanel";
@@ -55,6 +56,8 @@ export type TableSlots = {
   scenery?: ReactNode;
   /** Conteúdo do trilho de 420 px no desktop (T20). */
   rail?: ReactNode;
+  /** Ações/alvo no miolo da mesa, em cortina sobre os camarotes (T1/T2). */
+  curtain?: ReactNode;
   /** Cobre a tela inteira, inclusive cabeçalho e trilho (ações, aviso de morte súbita). */
   screenOverlay?: ReactNode;
 };
@@ -99,11 +102,16 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
 
       {slots.header ?? <Header turn={room?.turn ?? 0} tax={room?.tax ?? 0} unread={unread} layout={layout} sudden={footlights.suddenDeath} onMenu={onMenu} onChat={onChat} />}
 
-      <div ref={ref} className={s.tableArea}>
+      <div ref={ref} className={s.tableArea} data-slot="table-area">
         <Spotlight box={activeBox} width={width} top={desktop ? 64 : 0} />
         <SeatRing seats={seats} layoutSeats={layoutSeats} layout={layout} onSeat={onSeat} targeting={targeting} />
         {!slots.stageOverlay && <Stage vm={stage} layout={layout} live={stageLive} />}
         <Footlights vm={footlights} layout={layout} />
+        {slots.curtain && (
+          <div className={s.curtainSlot} data-slot="curtain">
+            {slots.curtain}
+          </div>
+        )}
         {slots.bottomPanel && <div className={s.bottomPanel}>{slots.bottomPanel}</div>}
       </div>
 
@@ -111,7 +119,7 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
       {desktop && <aside className={s.rail}>{slots.rail}</aside>}
       {slots.stageOverlay && <div className={s.stageOverlay}>{slots.stageOverlay}</div>}
       {slots.sheet}
-      {slots.screenOverlay && <div className={s.screenOverlay}>{slots.screenOverlay}</div>}
+      {slots.screenOverlay && <div className={s.screenOverlay} data-slot="screen-overlay">{slots.screenOverlay}</div>}
     </main>
   );
 }
@@ -144,12 +152,15 @@ export function TableScene() {
   const footlights = useMemo(() => selectFootlights(view), [view]);
   const stage = useMemo(() => selectStage(view), [view]);
   const [showAlert, setShowAlert] = useState(false);
+  // a cortina do miolo abre sozinha e fechar vale até o próximo evento da sala
+  const [curtainOpen, setCurtainOpen] = useState(true);
   const evKey = room?.gameEvent ? eventKey(room.gameEvent) : "";
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
 
   // evento novo (inclusive o fim da deixa) fecha o fluxo de alvo: a jogada antiga não vale mais
   useEffect(() => {
     if (useUiStore.getState().targeting) setTargeting(null);
+    setCurtainOpen(true);
   }, [evKey, setTargeting]);
 
   useEffect(() => {
@@ -309,15 +320,11 @@ export function TableScene() {
   const panel = reactPanel ?? pickPanel ?? outPanel;
   const board = decision.kind === "myTurn" && !targeting ? <ActionBoard view={view} layout={layout} onPick={pickRole} /> : undefined;
   const scenery = footlights.suddenDeath ? <Suspense fallback={null}><SuddenDeathStage layout={layout} /></Suspense> : undefined;
-  const screenOverlay = board || showAlert ? (
-    <>
-      {board}
-      {showAlert && (
-        <Suspense fallback={null}>
-          <SuddenDeathAlert layout={layout} seconds={CLASSIC_RULES.waitingAction.suddenDeath} />
-        </Suspense>
-      )}
-    </>
+  // o aviso de morte súbita continua cobrindo a tela inteira; só as ações saíram daqui
+  const screenOverlay = showAlert ? (
+    <Suspense fallback={null}>
+      <SuddenDeathAlert layout={layout} seconds={CLASSIC_RULES.waitingAction.suddenDeath} />
+    </Suspense>
   ) : undefined;
   const targetBar = targeting ? (
     <TargetBar
@@ -345,6 +352,11 @@ export function TableScene() {
         stageOverlay: stage.declared || stage.revealed ? <DeclaredCard view={view} layout={layout} /> : undefined,
         scenery,
         screenOverlay,
+        curtain: board ? (
+          <CenterCurtain open={curtainOpen} onToggle={setCurtainOpen}>
+            {board}
+          </CenterCurtain>
+        ) : undefined,
         bottomPanel: targeting ? targetBar : layout === "mobile" ? panel : undefined,
       }}
     />
