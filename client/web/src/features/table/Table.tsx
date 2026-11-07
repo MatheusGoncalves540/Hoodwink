@@ -352,12 +352,14 @@ export function TableScene() {
         stageOverlay: stage.declared || stage.revealed ? <DeclaredCard view={view} layout={layout} /> : undefined,
         scenery,
         screenOverlay,
-        curtain: board ? (
+        curtain: targeting ? (
+          <CenterCurtain open>{targetBar}</CenterCurtain>
+        ) : board ? (
           <CenterCurtain open={curtainOpen} onToggle={setCurtainOpen}>
             {board}
           </CenterCurtain>
         ) : undefined,
-        bottomPanel: targeting ? targetBar : layout === "mobile" ? panel : undefined,
+        bottomPanel: layout === "mobile" ? panel : undefined,
       }}
     />
   );

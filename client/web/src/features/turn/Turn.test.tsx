@@ -2,6 +2,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { fixture, type FixtureName } from "../../game/fixtures";
 import { selectDecision, type Decision, type GameView } from "../../game/selectors";
+import { play } from "../../net/actions";
+import { Table } from "../table/Table";
+import { CenterCurtain } from "./CenterCurtain";
 import { ContestPick } from "./ContestPick";
 import { DeclaredCard } from "./DeclaredCard";
 import { ReactionPanel } from "./ReactionPanel";
@@ -127,10 +130,41 @@ describe("barra de alvo (regras v2)", () => {
     expect(out).toContain("Escolha a carta sua que vai trocar.");
   });
 
-  it("Clarividente escolhe se a carta aparece para todos; os outros não têm a chave", () => {
-    expect(html(<TargetBar role="CLAIRVOYANT" onBack={() => {}} showToAll={false} onShowToAll={() => {}} />)).toContain(
-      'role="switch" aria-checked="false"',
+  it("Clarividente escolhe Sim/Não com Não marcado; os outros não têm o par", () => {
+    const out = html(<TargetBar role="CLAIRVOYANT" onBack={() => {}} showToAll={false} onShowToAll={() => {}} />);
+    expect(out).toContain('role="group" aria-label="Mostrar para todos"');
+    expect(out).toMatch(/aria-pressed="true"[^>]*>Não</);
+    expect(out).toMatch(/aria-pressed="false"[^>]*>Sim</);
+    expect(out).toContain("só você vê a carta");
+    // o valor escolhido vai no payload até a jogada confirmar
+    expect(play("CLAIRVOYANT", "me", { playerId: "bruno", cardIndex: 0, showToAll: true }).payload).toMatchObject({
+      showToAllPlayers: true,
+    });
+    expect(html(<TargetBar role="KILL_CARD" onBack={() => {}} />)).not.toContain("aria-pressed");
+  });
+});
+
+describe("Clarividente na cortina", () => {
+  it("o alvo fica na cortina com Sim/Não e a faixa Você continua como HUD", () => {
+    const out = html(
+      <Table
+        view={view("Mesa6")}
+        targeting
+        slots={{
+          curtain: (
+            <CenterCurtain open>
+              <TargetBar role="CLAIRVOYANT" onBack={() => {}} showToAll={false} onShowToAll={() => {}} />
+            </CenterCurtain>
+          ),
+        }}
+      />,
     );
-    expect(html(<TargetBar role="KILL_CARD" onBack={() => {}} />)).not.toContain('role="switch"');
+    expect(out).toContain('data-slot="curtain"');
+    expect(out).toContain("Mostrar para todos");
+    expect(out).toMatch(/aria-pressed="true"[^>]*>Não</);
+    // HUD continua: a faixa Você aparece depois da cortina
+    expect(out.indexOf('aria-label="Você"')).toBeGreaterThan(out.indexOf('data-slot="curtain"'));
+    // durante o alvo a cortina não recolhe: sem handle
+    expect(out).not.toContain("Fechar ações");
   });
 });
