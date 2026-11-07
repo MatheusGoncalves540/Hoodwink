@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { fixture, type FixtureName } from "../../game/fixtures";
+import type { LogEntry } from "../../game/log";
 import { selectChat, selectSeatSheet, selectYouSheet, type GameView } from "../../game/selectors";
 import { ChatSheetBody } from "./ChatSheet";
 import { MotionToggles, RoomMenuContent } from "./RoomMenu";
@@ -12,6 +13,17 @@ const view = (name: FixtureName): GameView => {
   const f = fixture(name, NOW);
   return { me: f.me, room: f.room, log: f.log };
 };
+
+/** Entrada do diário como appendLog grava o REVEALED_CARD (alvo bruno, carta 1). */
+const revealEntry = (showToAll: boolean): LogEntry => ({
+  key: `REVEALED_CARD|ana|bruno|1|${showToAll}`,
+  turn: 5,
+  at: NOW,
+  actorId: "ana",
+  actorName: "Ana",
+  pred: "revelou uma carta de Bruno: Kamikaze como Clarividente.",
+  reveal: { targetId: "bruno", cardIndex: 1, card: "KAMIKAZE", showToAll },
+});
 
 describe("gavetas (fumaça em Node)", () => {
   it("camarote: cartas no estado da mesa, diário do ator e rodadas", () => {
@@ -25,6 +37,27 @@ describe("gavetas (fumaça em Node)", () => {
     expect(out).toContain("Roubou 3 de Eva como Trapaceiro.");
     expect(out).toContain("Recebeu 4 como Trilionário.");
     expect(out).toContain("Se disse Assassino, alguém duvidou e perdeu a carta.");
+  });
+
+  it("revelação pública: selo no alvo e linha no o que a mesa já viu", () => {
+    const base = view("Mesa6");
+    const entry = revealEntry(true);
+    const vm = selectSeatSheet({ ...base, log: [...base.log, entry] }, "bruno")!;
+    const out = renderToStaticMarkup(<SeatSheetBody vm={vm} />);
+    expect(out).toContain('role="note"');
+    expect(out).toContain("Carta revelada no turno 5");
+    expect(out).toContain(">Kamikaze<");
+    expect(out).toContain("Teve a carta Kamikaze revelada para todos.");
+    // a memória é do diário: a carta continua escondida na fileira
+    expect(out).toContain("escondida");
+  });
+
+  it("revelação privada não aparece na gaveta do alvo", () => {
+    const base = view("Mesa6");
+    const vm = selectSeatSheet({ ...base, log: [...base.log, revealEntry(false)] }, "bruno")!;
+    const out = renderToStaticMarkup(<SeatSheetBody vm={vm} />);
+    expect(out).not.toContain("Carta revelada no turno");
+    expect(out).not.toContain("revelada para todos");
   });
 
   it("CamaroteLongo traz as 14 linhas do diário", () => {
