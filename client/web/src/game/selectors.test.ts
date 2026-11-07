@@ -52,7 +52,7 @@ describe("Mesa6", () => {
       ],
       investments: [2],
       nextInvestment: 2,
-      timer: { expiresAt: NOW + 8000, total: 10, ownerName: "Carla", caption: "Vez de Carla. Escolha uma ação." },
+      timer: { expiresAt: NOW + 8000, total: 30, ownerName: "Carla", caption: "Vez de Carla. Escolha uma ação." },
     });
   });
 
@@ -173,13 +173,13 @@ describe("relógio e cena", () => {
     expect(selectScene({ ...waiting, room: { ...(waiting.room as PublicRoom), gameEvent: null } })).toBe("room");
   });
 
-  it("timer usa a janela do evento (ação 10 s, contestação 6 s, guardiã 8 s)", () => {
-    expect(selectYou(withEvent(base, "WAITING_FIRST_ACTION", "me")).timer?.total).toBe(10);
+  it("timer usa a janela do evento (ação 30 s, contestação 6 s, guardiã 8 s)", () => {
+    expect(selectYou(withEvent(base, "WAITING_FIRST_ACTION", "me")).timer?.total).toBe(30);
     expect(selectYou(withEvent(base, "CONTEST", "ana")).timer?.total).toBe(6);
     expect(selectYou(withEvent(base, "CARD_PLAYED_GUARDIAN", "ana")).timer?.total).toBe(8);
 
     const sudden = view("MesaSubita");
-    expect(selectYou(withEvent(sudden, "WAITING_FIRST_ACTION", "me")).timer?.total).toBe(5);
+    expect(selectYou(withEvent(sudden, "WAITING_FIRST_ACTION", "me")).timer?.total).toBe(15);
     expect(selectYou(withEvent(sudden, "CONTEST", "ana")).timer?.total).toBe(3);
     expect(selectYou(withEvent(sudden, "CARD_PLAYED_GUARDIAN", "ana")).timer?.total).toBe(4);
   });
@@ -205,10 +205,10 @@ describe("outras telas", () => {
     });
   });
 
-  it("morte súbita liga com baralho vazio e deixa de 5 s", () => {
+  it("morte súbita liga com baralho vazio e deixa de 15 s", () => {
     const v = view("MesaSubita");
     expect(selectFootlights(v).suddenDeath).toBe(true);
-    expect(selectYou(v).timer?.total).toBe(5);
+    expect(selectYou(v).timer?.total).toBe(15);
     expect(selectFootlights(view("Sala")).suddenDeath).toBe(false);
   });
 

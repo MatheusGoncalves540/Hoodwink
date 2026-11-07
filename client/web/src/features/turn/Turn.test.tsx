@@ -31,7 +31,7 @@ describe("reação e contestação", () => {
     );
     expect(out).toContain("Ana se diz");
     expect(out).toContain(">Assassino<");
-    expect(out).toContain("Ana paga 4 moedas e mira uma carta sua.");
+    expect(out).toContain("Ana paga 5 moedas e mira uma carta sua.");
     expect(out).toContain("dita, não mostrada");
     expect(out).toContain("Sua vez de reagir");
     expect(out).toContain("Na mão: Guardiã e Trilionário");

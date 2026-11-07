@@ -1,6 +1,6 @@
 /**
- * Números de Hoodwink-server/gameServer/game/rules/modes/ClassicRules.yaml, copiados à mão (regras v2, plans/02-regras-v2.md).
- * Se o YAML mudar, atualize aqui (pricing.test.ts cobre a fórmula, não os números).
+ * Números de server/gameServer/game/rules/modes/ClassicRules.yaml, copiados à mão (regras v2, plans/02-regras-v2.md).
+ * Se o YAML mudar, atualize aqui: `rules.classic.test.ts` compara cópia e YAML campo a campo.
  */
 import type { RoleId } from "./protocol";
 
@@ -39,13 +39,13 @@ export type Rules = {
 
 export const CLASSIC_RULES: Rules = {
   cards: {
-    ASSASSIN: { value: 3, taxMinimum: 2, affectedByTaxes: true },
+    ASSASSIN: { value: 4, taxMinimum: 3, affectedByTaxes: true },
     KAMIKAZE: { affectedByTaxes: false },
     POLITICAL: { fixedValue: 1, value: 2, affectedByTaxes: false, roundsUntilDecrease: 3, maxDoubled: 2 },
     REBEL: { fixedValue: 1, value: 2, affectedByTaxes: false, roundsUntilDecrease: 3, maxDoubled: 2 },
     TRILLIONAIRE: { value: 3, taxMinimum: 1, affectedByTaxes: true },
     CLAIRVOYANT: { value: 4, taxMinimum: 2, affectedByTaxes: true },
-    GUARDIAN: { value: 5, taxMinimum: 4, affectedByTaxes: true },
+    GUARDIAN: { value: 5, taxMinimum: 3, affectedByTaxes: true },
     TRICKSTER: { value: 2, taxMinimum: 2, taxMaximum: 5, affectedByTaxes: true },
     GRAVEDIGGER: { value: 5, taxMinimum: 3, affectedByTaxes: true },
     CROUPIER: { value: 6, taxMinimum: 4, affectedByTaxes: true },
@@ -58,7 +58,7 @@ export const CLASSIC_RULES: Rules = {
   selfishThreshold: 2,
   investorCap: { value: 4, taxMinimum: 2, taxMaximum: 6 },
   investorGrace: 6,
-  waitingAction: { default: 10, suddenDeath: 5 },
+  waitingAction: { default: 30, suddenDeath: 15 },
   displayMessage: { default: 6, suddenDeath: 3 },
   displayImportantMessage: { default: 8, suddenDeath: 4 },
   investorStake: 1,

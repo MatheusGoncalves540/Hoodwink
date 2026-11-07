@@ -29,7 +29,7 @@ describe("ActionBoard", () => {
   });
 
   it("usa o preço de pricing.ts e marca o que está na mão", () => {
-    expect(out).toContain('aria-label="Assassino, custa 4"');
+    expect(out).toContain('aria-label="Assassino, custa 5"');
     expect(out).toContain('aria-label="Trilionário, recebe 4 moedas"');
     // sem Kamikaze vivo na mão o servidor recusaria o sacrifício: botão desligado com o motivo
     expect(out).toContain('aria-label="Kamikaze, Precisa de um Kamikaze vivo na mão"');

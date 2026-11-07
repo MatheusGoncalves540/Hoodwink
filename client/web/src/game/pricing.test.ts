@@ -16,7 +16,7 @@ describe("cardValue (regras v2)", () => {
   it("valores com taxa +1", () => {
     const r = room(1);
     expect(Object.fromEntries(ROLE_IDS.map((id) => [id, cardValue(id, r)]))).toEqual({
-      TRILLIONAIRE: 4, TRICKSTER: 3, INVESTOR: 1, ASSASSIN: 4, CLAIRVOYANT: 5, KAMIKAZE: 0,
+      TRILLIONAIRE: 4, TRICKSTER: 3, INVESTOR: 1, ASSASSIN: 5, CLAIRVOYANT: 5, KAMIKAZE: 0,
       GUARDIAN: 6, GRAVEDIGGER: 6, CROUPIER: 7, POLITICAL: 2, REBEL: 2, SELFISH: 6,
     });
   });
@@ -24,8 +24,8 @@ describe("cardValue (regras v2)", () => {
   it("mínimos da tabela 3 com taxa −5 e sem teto onde o 02 não define", () => {
     const lo = room(-5);
     expect(["ASSASSIN", "GRAVEDIGGER", "CROUPIER", "CLAIRVOYANT", "TRILLIONAIRE", "GUARDIAN", "SELFISH"].map((id) => cardValue(id as never, lo)))
-      .toEqual([2, 3, 4, 2, 1, 4, 3]);
-    expect(cardValue("ASSASSIN", room(5))).toBe(8);
+      .toEqual([3, 3, 4, 2, 1, 3, 3]);
+    expect(cardValue("ASSASSIN", room(5))).toBe(9);
     expect(cardValue("SELFISH", room(5))).toBe(8); // teto 8
   });
 
@@ -43,7 +43,7 @@ describe("cardValue (regras v2)", () => {
 describe("priceOf", () => {
   it("separa custo, ganho, investimento e reação (taxa +1)", () => {
     const r = room(1);
-    expect(priceOf("ASSASSIN", r)).toEqual({ kind: "cost", coins: 4 });
+    expect(priceOf("ASSASSIN", r)).toEqual({ kind: "cost", coins: 5 });
     expect(priceOf("TRILLIONAIRE", r)).toEqual({ kind: "gain", coins: 4 });
     expect(priceOf("TRICKSTER", r)).toEqual({ kind: "gain", coins: 2, steals: 3 });
     expect(priceOf("INVESTOR", r)).toEqual({ kind: "invest", coins: 1, lasts: 6, cap: 5 });
@@ -66,8 +66,8 @@ describe("priceOf", () => {
 });
 
 describe("Guardiã: três preços", () => {
-  it("reação 5 + t mín 4, contra Clarividente 4 + t mín 2, no seu turno 6 + t mín 5", () => {
-    expect(porTaxa((t) => guardianPrice("reaction", room(t)))).toEqual([4, 4, 4, 4, 4, 5, 6, 7, 8, 9, 10]);
+  it("reação 5 + t mín 3, contra Clarividente 4 + t mín 2, no seu turno 6 + t mín 5", () => {
+    expect(porTaxa((t) => guardianPrice("reaction", room(t)))).toEqual([3, 3, 3, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect(porTaxa((t) => guardianPrice("clairvoyant", room(t)))).toEqual([2, 2, 2, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(porTaxa((t) => guardianPrice("ownTurn", room(t)))).toEqual([5, 5, 5, 5, 5, 6, 7, 8, 9, 10, 11]);
   });

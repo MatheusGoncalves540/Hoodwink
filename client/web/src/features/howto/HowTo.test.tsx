@@ -53,9 +53,9 @@ describe("Como se joga", () => {
   });
 
   it("os preços mudam com a taxa de teste", () => {
-    expect(sheetOf("ASSASSIN", 0).price).toBe("3");
-    expect(sheetOf("ASSASSIN", 3).price).toBe("6");
-    expect(sheetOf("ASSASSIN", -5).price).toBe("2");
+    expect(sheetOf("ASSASSIN", 0).price).toBe("4");
+    expect(sheetOf("ASSASSIN", 3).price).toBe("7");
+    expect(sheetOf("ASSASSIN", -5).price).toBe("3");
     expect(sheetOf("TRILLIONAIRE", -5).price).toBe("+1");
     expect(sheetOf("GUARDIAN", 0).faixa).toBe("Reação: 5 · contra Clarividente: 4 · no seu turno: 6");
     expect(sheetOf("SELFISH", 2).efeito).toBe("Por 1, impede alguém de receber 4 ou mais moedas. Por 7, impede de receber uma carta.");

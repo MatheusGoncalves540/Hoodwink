@@ -61,7 +61,7 @@ Em cada turno, o jogador pode realizar **uma das ações abaixo**:
 
 Exemplos:
 - **Político**: aumenta as taxas em 1 (efeito acumulativo).
-- **Assassino**: mata uma carta por 3 moedas (+ taxas).
+- **Assassino**: mata uma carta por 4 moedas (+ taxas).
 - **Guardiã**: impede ataques.
 - **Trapaceiro**: rouba moedas.
 - **Egoísta**: impede que o adversário receba moedas ou cartas.
