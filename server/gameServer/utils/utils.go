@@ -3,13 +3,11 @@ package utils
 import (
 	"bytes"
 	crand "crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand/v2"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -36,16 +34,32 @@ func ValidateInfos(w http.ResponseWriter, toValidate any) bool {
 	return true
 }
 
-// GenerateNewId cria um ID hex de 16 caracteres (8 bytes) com entropia
-// criptográfica. O formato (hex minúsculo) é preservado para os callers.
+// roomCodeAlphabet é o alfabeto do código da sala: dígitos e maiúsculas sem os
+// que se confundem na leitura (0/O, 1/I/L). 32 caracteres para o índice sair de
+// um byte sem viés (256 é múltiplo de 32).
+const roomCodeAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+
+// roomCodeLength é o tamanho do código que o jogador digita e da URL `?sala=`.
+const roomCodeLength = 6
+
+// GenerateNewId cria o código da sala: roomCodeLength caracteres do
+// roomCodeAlphabet com entropia criptográfica.
 func GenerateNewId() string {
-	b := make([]byte, 8)
-	if _, err := crand.Read(b); err != nil {
+	code := make([]byte, roomCodeLength)
+	if _, err := crand.Read(code); err != nil {
 		// Entropia indisponível (não ocorre em plataformas suportadas): usa o
 		// relógio como último recurso para nunca deixar a sala sem id.
-		return strconv.FormatInt(time.Now().UTC().UnixMilli(), 16)
+		n := uint64(time.Now().UTC().UnixNano())
+		for i := range code {
+			code[i] = roomCodeAlphabet[n&31]
+			n >>= 5
+		}
+		return string(code)
 	}
-	return hex.EncodeToString(b)
+	for i := range code {
+		code[i] = roomCodeAlphabet[code[i]&31]
+	}
+	return string(code)
 }
 
 // GetRandomElementFromSlice retorna um elemento aleatório de um slice genérico
