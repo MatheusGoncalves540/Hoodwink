@@ -22,7 +22,7 @@ func JWTBackendMiddleware(next http.Handler, h *httpHandlers.HTTPHandler) http.H
 		}
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 
-		id, username, status := h.BackendService.ValidateToken(r.Context(), tokenStr)
+		id, username, provider, status := h.BackendService.ValidateToken(r.Context(), tokenStr)
 		if status != http.StatusOK {
 			if status == http.StatusServiceUnavailable {
 				utils.SendError(w, "Servidor de login indisponível", http.StatusServiceUnavailable)
@@ -35,6 +35,7 @@ func JWTBackendMiddleware(next http.Handler, h *httpHandlers.HTTPHandler) http.H
 		player := &endpointStructures.ClaimsBackend{
 			Id:       id,
 			Username: username,
+			Provider: provider,
 		}
 
 		if info, ok := r.Context().Value(reqInfoContextKey).(*ReqInfo); ok {

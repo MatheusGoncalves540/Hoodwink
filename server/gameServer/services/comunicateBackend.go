@@ -43,8 +43,16 @@ func (bs *BackendService) endpoint(path string) string {
 	return strings.TrimRight(bs.url, "/") + path
 }
 
-// postJSON envia um POST com x-api-key e decodifica a resposta (2xx) em out.
-// Retorna o status HTTP; erros de rede/timeout são retornados como error.
+// backendEnvelope é o envelope das respostas internas do backend: os handlers
+// usam utils.SendSuccess, que responde {"data": {...}, "message": ""}. O
+// gameServer precisa desembrulhar `data`; decodificar o corpo cru deixa todo
+// campo vazio (era a causa do ticket em branco no /getTicket).
+type backendEnvelope struct {
+	Data json.RawMessage `json:"data"`
+}
+
+// postJSON envia um POST com x-api-key e decodifica o `data` da resposta (2xx)
+// em out. Retorna o status HTTP; erros de rede/timeout são retornados como error.
 // O ctx do request propaga cancelamento/timeout ao client compartilhado.
 func (bs *BackendService) postJSON(ctx context.Context, path string, payload any, out any) (int, error) {
 	body, err := json.Marshal(payload)
@@ -66,8 +74,14 @@ func (bs *BackendService) postJSON(ctx context.Context, path string, payload any
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 && out != nil {
-		if err := json.NewDecoder(resp.Body).Decode(out); err != nil {
+		var envelope backendEnvelope
+		if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {
 			return resp.StatusCode, err
+		}
+		if len(envelope.Data) > 0 {
+			if err := json.Unmarshal(envelope.Data, out); err != nil {
+				return resp.StatusCode, err
+			}
 		}
 	} else {
 		io.Copy(io.Discard, resp.Body)
@@ -78,22 +92,28 @@ func (bs *BackendService) postJSON(ctx context.Context, path string, payload any
 
 // ValidateToken chama POST /internal/validateToken e devolve o status já
 // mapeado para o cliente: 200 (ok), 401 (token recusado) ou 503 (backend fora).
-func (bs *BackendService) ValidateToken(ctx context.Context, token string) (id, username string, status int) {
+func (bs *BackendService) ValidateToken(ctx context.Context, token string) (id, username, provider string, status int) {
 	var out struct {
 		Id       string `json:"id"`
 		Username string `json:"username"`
+		Provider string `json:"provider"`
 	}
 	st, err := bs.postJSON(ctx, "/internal/validateToken", map[string]string{"token": token}, &out)
 	if err != nil {
-		return "", "", http.StatusServiceUnavailable
+		return "", "", "", http.StatusServiceUnavailable
 	}
 	if st == http.StatusUnauthorized {
-		return "", "", http.StatusUnauthorized
+		return "", "", "", http.StatusUnauthorized
 	}
 	if st != http.StatusOK {
-		return "", "", http.StatusServiceUnavailable
+		return "", "", "", http.StatusServiceUnavailable
 	}
-	return out.Id, out.Username, http.StatusOK
+	// Sem id não há jogador: melhor 503 ("servidor de login indisponível") do que
+	// seguir com id vazio e criar sala/ticket sem dono.
+	if out.Id == "" {
+		return "", "", "", http.StatusServiceUnavailable
+	}
+	return out.Id, out.Username, out.Provider, http.StatusOK
 }
 
 // RequestTicket chama POST /internal/tickets e devolve o status já mapeado
@@ -116,6 +136,11 @@ func (bs *BackendService) RequestTicket(ctx context.Context, token, roomId, ip, 
 		return "", http.StatusUnauthorized
 	}
 	if st != http.StatusOK {
+		return "", http.StatusServiceUnavailable
+	}
+	// Ticket vazio nunca é válido; sem esta guarda o cliente recebia 200 e
+	// quebrava no schema ("Too small: expected string to have >=1 characters").
+	if out.Ticket == "" {
 		return "", http.StatusServiceUnavailable
 	}
 	return out.Ticket, http.StatusOK

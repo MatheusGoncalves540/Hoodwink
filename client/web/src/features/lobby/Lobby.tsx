@@ -11,7 +11,7 @@ import { useAuthStore } from "../../store/authStore";
 import { BugCard } from "../bugReport/BugCard";
 import { pendingOnOpen, type BugDraft } from "../bugReport/drafts";
 import { MotionToggles } from "../sheets/RoomMenu";
-import { createInput, playerIdFromToken, roomCodeFromSearch, useSessionStore, usernameFromToken } from "../../store/sessionStore";
+import { createInput, isGuestToken, playerIdFromToken, roomCodeFromSearch, useSessionStore, usernameFromToken } from "../../store/sessionStore";
 import { Button } from "../../ui/Button/Button";
 import { Label } from "../../ui/Label/Label";
 import { Moldura } from "../../ui/Moldura/Moldura";
@@ -61,6 +61,7 @@ export function Lobby() {
   const createRoom = useSessionStore((st) => st.create);
   const joinRoom = useSessionStore((st) => st.join);
   const username = useMemo(() => usernameFromToken(jwtToken), [jwtToken]);
+  const guest = useMemo(() => isGuestToken(jwtToken), [jwtToken]);
   const motion = useMotionPref();
 
   // Relato de bug: rascunho pendente de menos de 7 dias aparece uma vez por abertura.
@@ -94,6 +95,7 @@ export function Lobby() {
 
   const onCreate = async () => {
     if (!jwtToken) return openLogin();
+    if (guest) return;
     const roomCode = await createRoom(jwtToken, createInput(username));
     if (roomCode) goToRoom(roomCode);
   };
@@ -160,9 +162,10 @@ export function Lobby() {
       </Moldura>
 
       <section aria-label={copy.playRegion} className={cx("m-rise", s.actions)}>
-        <Ticket size="l" disabled={busy} onClick={onCreate}>
+        <Ticket size="l" disabled={busy || guest} reason={guest ? copy.guestCanOnlyJoin : undefined} onClick={onCreate}>
           {copy.createRoom}
         </Ticket>
+        {guest && <p className={s.note}>{copy.guestCanOnlyJoin}</p>}
 
         <TextField
           label={copy.roomCodePlaceholder}
