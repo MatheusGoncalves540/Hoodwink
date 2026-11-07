@@ -65,14 +65,16 @@
 .desk .curtainSlot {
   right: 420px;
 }
-/* a faixa Você cobre a gaveta guardada; com ela aberta, desce para dar lugar e volta depois que a gaveta afunda */
+/* a faixa Você cobre a gaveta guardada; com ela aberta, fica parada e a gaveta sobe por cima (bottom sheet).
+   Não desloca a faixa: translate para fora da tela vira área rolável no .screen (overflow-y: auto).
+   Ao fechar, só volta para cima depois que a gaveta afunda (0.34s em CenterCurtain.module.css). */
 .youOverDrawer {
   z-index: 6;
-  transition: translate 0.36s var(--m-drawer) 0.2s;
+  transition: z-index 0s 0.34s;
 }
 .youAway {
-  translate: 0 110%;
-  transition: translate 0.26s cubic-bezier(0.4, 0, 1, 1) 0.04s;
+  z-index: 4;
+  transition: none;
 }
 
 /* Cartaz da escolha de alvo: no pé, acima da mesa apagada (TargetSpotlight z 7) e dos camarotes acesos (z 8) */
