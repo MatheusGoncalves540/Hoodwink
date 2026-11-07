@@ -320,7 +320,7 @@ export const copy = {
   wonAtRound: (round: number, coins: number) => `Venceu na rodada ${round}, com ${coins} moedas.`,
   exitOrder: "Ordem de saída",
   place: (n: number) => `${n}º`,
-  newRoom: "Criar outra sala",
+  playAgain: "Jogar novamente",
   backToEntrance: "☜ Voltar à entrada",
   afterShow: "Depois da partida",
 

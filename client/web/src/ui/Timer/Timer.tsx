@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { copy } from "../../game/copy";
 import { cx } from "../cx";
 import s from "./Timer.module.css";
-import { useCountdown } from "./timer";
+import { useCountdown } from "./countdown";
 
 type Props = {
   /** Fim da janela, em ms (gameEvent.expiresAt). */

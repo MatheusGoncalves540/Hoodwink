@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countdown } from "./timer";
+import { countdown } from "./countdown";
 
 describe("countdown", () => {
   it("número arredonda para cima e barra usa a fração exata do mesmo now", () => {

@@ -12,7 +12,7 @@ import {
   listMyMatches,
   saveReplayFile,
 } from "../../net/replayApi";
-import { createInput, playerIdFromToken, useSessionStore, usernameFromToken } from "../../store/sessionStore";
+import { playerIdFromToken, useSessionStore } from "../../store/sessionStore";
 import { useAuthStore } from "../../store/authStore";
 import { useGameStore } from "../../store/gameStore";
 import { BugCard } from "../bugReport/BugCard";
@@ -81,7 +81,7 @@ export function Finale({ vm, layout, onNewRoom, onLobby, replay }: Props) {
 
       <section aria-label={copy.afterShow} className={cx("m-rise", s.actions)}>
         <Ticket size="l" onClick={onNewRoom}>
-          {copy.newRoom}
+          {copy.playAgain}
         </Ticket>
         {replay && (
           <section aria-label={copy.perfil.replayTitle} className={s.replay}>
@@ -255,23 +255,23 @@ const clearRoomUrl = () => {
   window.history.replaceState(null, "", url);
 };
 
-/** Liga o cartaz ao estado: nova sala usa o login da sessão; voltar limpa tudo. */
+/** Liga o cartaz ao estado: jogar novamente usa o login da sessão; voltar limpa tudo. */
 export function FinaleScene() {
   const me = useGameStore((st) => st.me);
   const room = useGameStore((st) => st.room);
   const log = useGameStore((st) => st.log);
   const jwtToken = useAuthStore((st) => st.jwtToken);
   const openLogin = useAuthStore((st) => st.openLogin);
-  const create = useSessionStore((st) => st.create);
+  const rematch = useSessionStore((st) => st.rematch);
   const layout = useLayout();
   const vm = selectFinaleVm({ me, room, log });
 
   const onNewRoom = async () => {
-    if (!jwtToken) {
+    if (!jwtToken || !room?.id) {
       onLobby();
       return;
     }
-    const code = await create(jwtToken, createInput(usernameFromToken(jwtToken)));
+    const code = await rematch(jwtToken, room.id);
     if (!code) return;
     const url = new URL(window.location.href);
     url.searchParams.delete("cena");

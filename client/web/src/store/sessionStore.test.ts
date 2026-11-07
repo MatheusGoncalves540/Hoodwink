@@ -36,6 +36,22 @@ describe("sessionStore", () => {
     expect(fetch.mock.calls.map(([url]) => String(url).split("4444")[1])).toEqual(["/newRoom", "/getTicket/k7q2"]);
   });
 
+  it("revanche entra na sala devolvida pelo servidor", async () => {
+    const fetch = vi.fn(async (url: string) =>
+      String(url).includes("/rematch/") ? json({ RoomId: "n3w4rm" }) : json({ data: { ticket: "ticket.jwt" } }),
+    );
+    vi.stubGlobal("fetch", fetch);
+
+    await expect(s().rematch("jwt", "oldrm1")).resolves.toBe("n3w4rm");
+    expect({ roomCode: s().roomCode, ticket: s().ticket, busy: s().busy, error: s().error }).toEqual({
+      roomCode: "n3w4rm",
+      ticket: "ticket.jwt",
+      busy: false,
+      error: null,
+    });
+    expect(fetch.mock.calls.map(([url]) => String(url).split("4444")[1])).toEqual(["/rematch/oldrm1", "/getTicket/n3w4rm"]);
+  });
+
   it("entrar com sala inexistente guarda a mensagem do servidor e não abre sessão", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => json({ message: "Sala não encontrada" }, 401)));
     await expect(s().join("jwt", "zzzz")).resolves.toBeNull();

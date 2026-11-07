@@ -47,7 +47,7 @@ describe("fim de jogo", () => {
     expect(out).toContain("2º");
     expect(out).toContain("rodada 17");
     expect(out).toContain("Você");
-    expect(out).toContain("Criar outra sala");
+    expect(out).toContain("Jogar novamente");
     expect(out).toContain("☜ Voltar à entrada");
   });
 
