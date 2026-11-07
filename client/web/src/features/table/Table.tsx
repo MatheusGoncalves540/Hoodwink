@@ -116,7 +116,7 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
       </div>
 
       {!slots.bottomPanel && !hideYou && <YouBar vm={you} suddenDeath={footlights.suddenDeath} layout={layout} />}
-      {desktop && <aside className={s.rail}>{slots.rail}</aside>}
+      {desktop && <aside className={s.rail} data-slot="rail">{slots.rail}</aside>}
       {slots.stageOverlay && <div className={s.stageOverlay}>{slots.stageOverlay}</div>}
       {slots.sheet}
       {slots.screenOverlay && <div className={s.screenOverlay} data-slot="screen-overlay">{slots.screenOverlay}</div>}
