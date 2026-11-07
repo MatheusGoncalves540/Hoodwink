@@ -12,7 +12,7 @@ import { eventKey } from "../../game/log";
 import { CLASSIC_RULES } from "../../game/rules.classic";
 import { desktopSeats, mobileSeats } from "../../game/seats";
 import type { GameView } from "../../game/selectors";
-import { kamikazeAlly, selectDecision, selectFootlights, selectSeats, selectStage, selectYou } from "../../game/selectors";
+import { kamikazeAlly, selectDecision, selectFootlights, selectSeatSheet, selectSeats, selectStage, selectYou } from "../../game/selectors";
 import { contest, contestPenalty, pass, play, type Target } from "../../net/actions";
 import { send } from "../../net/GameSocket";
 import { useGameStore } from "../../store/gameStore";
@@ -32,11 +32,13 @@ import { ContestPick } from "../turn/ContestPick";
 import { DeclaredCard } from "../turn/DeclaredCard";
 import { ReactionPanel } from "../turn/ReactionPanel";
 import { TargetBar } from "../turn/TargetBar";
+import { TargetPrompt } from "../turn/TargetPrompt";
 import { Footlights } from "./Footlights";
 import { Header } from "./Header";
 import { SeatRing } from "./SeatRing";
 import { Spotlight } from "./Spotlight";
 import { Stage } from "./Stage";
+import { TargetSpotlight } from "./TargetSpotlight";
 import { YouBar } from "./YouBar";
 import { useStageWidth } from "./useStageWidth";
 import { Timer } from "../../ui/Timer/Timer";
@@ -62,6 +64,8 @@ export type TableSlots = {
   curtain?: ReactNode;
   /** Holofote de pergunta global (GlobalQuestion): cobre a mesa do cabeçalho ao pé, faixa Você inclusive. */
   center?: ReactNode;
+  /** Cartaz da escolha de alvo (TargetPrompt), no pé da mesa apagada. */
+  prompt?: ReactNode;
   /** Cobre a tela inteira, inclusive cabeçalho e trilho (ações, aviso de morte súbita). */
   screenOverlay?: ReactNode;
 };
@@ -72,7 +76,10 @@ type Props = {
   onSeat?(id: string): void;
   onMenu?(): void;
   onChat?(): void;
-  targeting?: boolean;
+  /** Escolha de alvo: ids dos camarotes acesos (TargetSpotlight); o resto da mesa apaga. */
+  targets?: string[];
+  /** Gaveta de ações aberta: a faixa Você desce e dá lugar a ela. */
+  youAway?: boolean;
   /** Reação/contestação no trilho: a faixa Você some no desktop (MainDesk). */
   hideYou?: boolean;
   /** Morte súbita: a mesa inteira fica escura. */
@@ -82,7 +89,7 @@ type Props = {
   slots?: TableSlots;
 };
 
-export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hideYou, dark, stageLive, slots = {} }: Props) {
+export function Table({ view, unread = 0, onSeat, onMenu, onChat, targets, youAway, hideYou, dark, stageLive, slots = {} }: Props) {
   const layout = useLayout();
   const desktop = layout === "desktop";
   const [ref, width] = useStageWidth(desktop ? 1020 : 390);
@@ -98,6 +105,10 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
   const activeBox = activeIndex >= 0 ? layoutSeats.boxes[activeIndex] : undefined;
   const decision = useMemo(() => selectDecision(view), [view]);
   const room = view.room;
+  const litBoxes = useMemo(
+    () => (targets ? seats.flatMap((seat, i) => (targets.includes(seat.id) && layoutSeats.boxes[i] ? [layoutSeats.boxes[i]] : [])) : []),
+    [targets, seats, layoutSeats],
+  );
 
   return (
     // data-deixa: na sua vez o ambiente para; só o timer e o botão de ação tremem (motion.css)
@@ -108,28 +119,16 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
 
       <div ref={ref} className={s.tableArea} data-slot="table-area">
         <Spotlight box={activeBox} width={width} top={desktop ? 64 : 0} />
-        <SeatRing seats={seats} layoutSeats={layoutSeats} layout={layout} onSeat={onSeat} targeting={targeting} />
+        <SeatRing seats={seats} layoutSeats={layoutSeats} layout={layout} onSeat={onSeat} targets={targets} />
         {!slots.stageOverlay && <Stage vm={stage} layout={layout} live={stageLive} />}
         <Footlights vm={footlights} layout={layout} />
-        {targeting && (
-          <div className={s.targetLight} aria-hidden="true" data-slot="target-light">
-            {seats.map((seat, i) => {
-              const box = layoutSeats.boxes[i];
-              if (!box || seat.out) return null;
-              return (
-                <span
-                  key={seat.id}
-                  className={s.pool}
-                  style={{ left: box.x - 18, top: box.y - 18, width: box.w + 36, height: box.h + 36, animationDelay: `${i * 45}ms` }}
-                />
-              );
-            })}
-          </div>
-        )}
         {slots.bottomPanel && <div className={s.bottomPanel}>{slots.bottomPanel}</div>}
       </div>
 
-      {!slots.bottomPanel && !hideYou && <YouBar vm={you} suddenDeath={footlights.suddenDeath} layout={layout} />}
+      {/* com a gaveta, a faixa Você fica por cima dela (a gaveta mora atrás) e desce quando ela abre */}
+      {!slots.bottomPanel && !hideYou && (
+        <YouBar vm={you} suddenDeath={footlights.suddenDeath} layout={layout} className={cx(slots.curtain && s.youOverDrawer, youAway && s.youAway)} />
+      )}
       {/* cortina e holofote global descem até o pé, por cima da faixa Você (as cartas aparecem no quadro de ações) */}
       {slots.curtain && (
         <div className={s.curtainSlot} data-slot="curtain">
@@ -142,10 +141,50 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
         </div>
       )}
       {desktop && <aside className={s.rail} data-slot="rail">{slots.rail}</aside>}
+      {targets && <TargetSpotlight boxes={litBoxes} desktop={desktop} />}
+      {slots.prompt && (
+        <div className={s.prompt} data-slot="prompt">
+          {slots.prompt}
+        </div>
+      )}
       {slots.stageOverlay && <div className={s.stageOverlay}>{slots.stageOverlay}</div>}
       {slots.sheet}
       {slots.screenOverlay && <div className={s.screenOverlay} data-slot="screen-overlay">{slots.screenOverlay}</div>}
     </main>
+  );
+}
+
+/** Papéis que, além do jogador, escolhem a carta dele (etapa "qual carta"). */
+const NEEDS_CARD = new Set<ActionId>(["ASSASSIN", "KAMIKAZE", "CLAIRVOYANT", "KILL_CARD"]);
+
+type TargetStepProps = {
+  view: GameView;
+  role: ActionId;
+  showToAll?: boolean;
+  seatId: string | null;
+  needsCard: boolean;
+  onBack(): void;
+  onPickCard(index: number): void;
+  timer?: ReactNode;
+};
+
+/** Monta o cartaz da etapa atual: "quem" (camarotes acesos) ou "qual carta" (cartas vivas do escolhido). */
+function TargetStep({ view, role, showToAll, seatId, needsCard, onBack, onPickCard, timer }: TargetStepProps) {
+  const seat = useMemo(() => (seatId ? selectSeatSheet(view, seatId) : null), [view, seatId]);
+  const clair = role === "CLAIRVOYANT";
+  const total = (clair ? 1 : 0) + (needsCard ? 2 : 1);
+  const n = (clair ? 1 : 0) + (seat ? 2 : 1);
+  return (
+    <TargetPrompt
+      step={copy.targetStep(actionDef(role).name, n, total)}
+      question={seat ? copy.targetWhich(seat.name) : (copy.targetWho[role] ?? copy.targetWhoFallback)}
+      context={seat ? copy.targetTapCard : clair ? `${copy.targetTapSeat} ${copy.revealNote(!!showToAll)}` : copy.targetTapSeat}
+      backLabel={seat ? copy.changeTarget : undefined}
+      onBack={onBack}
+      timer={timer}
+      seat={seat}
+      onPickCard={seat ? onPickCard : undefined}
+    />
   );
 }
 
@@ -183,12 +222,24 @@ export function TableScene() {
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
   // Clarividente: a revelação é escolhida antes do alvo ("revelar para" dentro do holofote)
   const revealChoice = !!targeting && targeting.role === "CLAIRVOYANT" && targeting.showToAll === undefined;
+  // alvo em outro jogador: a mesa apaga e acende os elegíveis (etapa "quem"), depois só o escolhido (etapa "qual carta")
+  const pickingOther = !!targeting && !revealChoice && actionDef(targeting.role).target === "other";
+  const needsCard = pickingOther && NEEDS_CARD.has(targeting.role);
+  const [targetSeat, setTargetSeat] = useState<string | null>(null);
+  const seats = useMemo(() => selectSeats(view), [view]);
+  const targets = useMemo(
+    () => (pickingOther ? (targetSeat ? [targetSeat] : seats.filter((seat) => !seat.out).map((seat) => seat.id)) : undefined),
+    [pickingOther, targetSeat, seats],
+  );
 
   // evento novo (inclusive o fim da deixa) fecha o fluxo de alvo: a jogada antiga não vale mais
   useEffect(() => {
     if (useUiStore.getState().targeting) setTargeting(null);
     setCurtainOpen(true);
   }, [evKey, setTargeting]);
+
+  // papel novo ou outra resposta na pergunta global: a escolha volta para a etapa "quem"
+  useEffect(() => setTargetSeat(null), [targeting?.role, targeting?.showToAll]);
 
   useEffect(() => {
     if (!footlights.suddenDeath || !room) return;
@@ -240,23 +291,27 @@ export function TableScene() {
     (seatId: string) => {
       // ainda escolhendo "revelar para": a mesa de alvos vem depois
       if (revealChoice) return;
-      if (targeting) {
-        const needsCard = ["ASSASSIN", "KAMIKAZE", "CLAIRVOYANT", "KILL_CARD"].includes(targeting.role);
-        if (!needsCard) {
-          sendPlay(targeting.role, { playerId: seatId });
-          return;
-        }
+      if (pickingOther && targeting) {
+        // etapa "qual carta": a escolha está no cartaz
+        if (targetSeat) return;
+        if (!needsCard) return sendPlay(targeting.role, { playerId: seatId });
+        const alive = room?.players[seatId]?.cards.filter((c) => !c.dead) ?? [];
+        // só uma carta viva: a etapa da carta é pulada
+        if (alive.length === 1) return sendPlay(targeting.role, { playerId: seatId, cardIndex: alive[0].index });
+        if (alive.length > 1) setTargetSeat(seatId);
+        return;
       }
       open({ seat: seatId });
     },
-    [revealChoice, targeting, sendPlay, open],
+    [revealChoice, pickingOther, targeting, targetSeat, needsCard, room, sendPlay, open],
   );
 
-  const pickSeatCard = (index: number) => {
-    if (!targeting || typeof openSheet !== "object" || !openSheet) return;
-    sendPlay(targeting.role, { playerId: openSheet.seat, cardIndex: index });
-    close();
-  };
+  const targetBack = useCallback(() => {
+    if (targetSeat) setTargetSeat(null);
+    // Clarividente volta para a pergunta "revelar para quem?"
+    else if (targeting?.role === "CLAIRVOYANT") setTargeting({ role: "CLAIRVOYANT" });
+    else setTargeting(null);
+  }, [targetSeat, targeting?.role, setTargeting]);
 
   const pickOwnCard = (index: number) => {
     if (!targeting) return;
@@ -289,8 +344,6 @@ export function TableScene() {
         seatId={openSheet.seat}
         mode={layout}
         onClose={closeSheet}
-        backLabel={targeting ? copy.backToActions : undefined}
-        onPickCard={targeting && actionDef(targeting.role).target === "other" ? pickSeatCard : undefined}
       />
     ) : undefined;
 
@@ -359,12 +412,11 @@ export function TableScene() {
       <SuddenDeathAlert layout={layout} seconds={CLASSIC_RULES.waitingAction.suddenDeath} />
     </Suspense>
   ) : undefined;
-  const targetBar = targeting && !revealChoice ? (
+  const targetBar = targeting && !revealChoice && !pickingOther ? (
     <TargetBar
       role={targeting.role}
       onBack={() => setTargeting(null)}
       onSwapBoth={targeting.role === "SWAP_CARDS" ? () => sendPlay("SWAP_CARDS", { cardIndex: 0, both: true }) : undefined}
-      note={targeting.role === "CLAIRVOYANT" ? copy.revealNote(!!targeting.showToAll) : undefined}
     />
   ) : undefined;
   const curtain = targetBar ? (
@@ -387,12 +439,25 @@ export function TableScene() {
   const center = revealChoice ? (
     <RevealChoice onPick={(all) => setTargeting({ ...targeting, showToAll: all })} onBack={() => setTargeting(null)} timer={moveTimer} />
   ) : undefined;
+  const prompt = pickingOther && targeting ? (
+    <TargetStep
+      view={view}
+      role={targeting.role}
+      showToAll={targeting.showToAll}
+      seatId={targetSeat}
+      needsCard={needsCard}
+      onBack={targetBack}
+      onPickCard={(index) => targetSeat && sendPlay(targeting.role, { playerId: targetSeat, cardIndex: index })}
+      timer={moveTimer}
+    />
+  ) : undefined;
 
   return (
     <Table
       view={view}
       unread={unread}
-      targeting={!!targeting && !revealChoice && actionDef(targeting.role).target === "other"}
+      targets={targets}
+      youAway={!!board && curtainOpen}
       hideYou={layout === "desktop" && !!panel}
       dark={footlights.suddenDeath}
       onMenu={() => open("menu")}
@@ -406,6 +471,7 @@ export function TableScene() {
         screenOverlay,
         center,
         curtain,
+        prompt,
         bottomPanel: layout === "mobile" ? panel : undefined,
       }}
     />

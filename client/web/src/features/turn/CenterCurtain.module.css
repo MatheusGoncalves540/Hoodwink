@@ -14,10 +14,13 @@
   flex-direction: column;
   /* fechada: a gaveta desce até sobrar só o handle no pé do slot */
   transform: translateY(calc(100% - var(--curtain-handle-h) - var(--curtain-rest, 0px)));
-  transition: transform 0.32s var(--m-drawer);
+  /* fechar: afunda mais rápido de volta atrás da faixa Você */
+  transition: transform 0.34s cubic-bezier(0.55, 0, 0.75, 0.4);
 }
 .open .drawer {
   transform: none;
+  /* abrir: sobe macio e assenta */
+  transition: transform 0.46s var(--m-drawer);
 }
 /* sem handle (durante o alvo) não há o que recolher */
 .curtain:not(.hasHandle) .drawer {
@@ -101,6 +104,7 @@
   border-bottom: 1px solid var(--hw-filete);
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -18px 44px var(--hw-sombra);
+  transition: border-radius 0.38s var(--m-drawer);
   text-transform: none;
   letter-spacing: normal;
   font-size: inherit;
@@ -113,4 +117,8 @@
   align-self: center;
   width: 48px;
   height: 5px;
+}
+/* aberta, a gaveta vira tela: as quinas se endireitam junto com a subida */
+.open.hasPeek .handle {
+  border-radius: 0;
 }

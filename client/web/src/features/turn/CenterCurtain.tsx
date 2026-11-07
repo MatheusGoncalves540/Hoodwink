@@ -33,8 +33,8 @@ type Props = {
 
 /**
  * Gaveta da mesa, puxada de baixo para cima: o handle é a borda de cima e sobe junto com o painel
- * (fechada, só ele fica à vista no pé, acima da faixa Você). Toque ou arraste abre e fecha;
- * aberta, para em --curtain-top e deixa o palco de cima à vista. O conteúdo fechado sai do foco com
+ * (fechada, mora atrás da faixa Você e só o handle fica à vista acima dela). Toque ou arraste abre e fecha;
+ * aberta, ocupa a coluna do palco inteira, cabeçalho inclusive. O conteúdo fechado sai do foco com
  * `inert` + `visibility`. Com Menos movimento a troca é instantânea
  * ([data-motion="reduced"] em styles/motion.css).
  */
@@ -75,7 +75,7 @@ export function CenterCurtain({ open, onToggle, peek, children }: Props) {
   }, [open, collapsible, onToggle]);
 
   return (
-    <div className={cx(s.curtain, open && s.open, collapsible && s.hasHandle, peek != null && s.hasPeek)} data-open={open || undefined}>
+    <div className={cx(s.curtain, open && s.open, collapsible && s.hasHandle, peek != null && s.hasPeek)} data-curtain="" data-open={open || undefined}>
       <div className={s.drawer}>
         {collapsible && (
           <button

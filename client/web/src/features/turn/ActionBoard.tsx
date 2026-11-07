@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo, type CSSProperties, type ReactNode } from "react";
 import type { Layout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
 import { basicPrice, canSwap, priceOf, type Price } from "../../game/pricing";
@@ -10,6 +10,9 @@ import { Timer } from "../../ui/Timer/Timer";
 import { cx } from "../../ui/cx";
 import { ActionButton } from "./ActionButton";
 import s from "./ActionBoard.module.css";
+
+/** Ordem na cascata de entrada da gaveta (ActionBoard.module.css). */
+const cascade = (i: number) => ({ "--i": i }) as CSSProperties;
 
 type Props = {
   view: GameView;
@@ -103,7 +106,7 @@ export function ActionBoard({ view, layout, onPick }: Props) {
         )}
 
         <div className={s.list}>
-          <div className={s.group}>
+          <div className={s.group} style={cascade(1)}>
             <h2 className={s.groupTitle}>{BASIC_GROUP.title}</h2>
             {BASIC_GROUP.actions.map((action) => {
               const price = prices.basic.get(action) ?? ({ kind: "cost", coins: 0 } as const);
@@ -122,12 +125,12 @@ export function ActionBoard({ view, layout, onPick }: Props) {
               );
             })}
           </div>
-          {ROLE_GROUPS.map((group) => {
+          {ROLE_GROUPS.map((group, gi) => {
             // o que está na mão já aparece no topo
             const rest = group.roles.filter((role) => !held.has(role));
             if (rest.length === 0) return null;
             return (
-              <div key={group.title} className={s.group}>
+              <div key={group.title} className={s.group} style={cascade(gi + 2)}>
                 <h2 className={s.groupTitle}>{group.title}</h2>
                 {rest.map((role) => roleButton(role, group, false))}
               </div>

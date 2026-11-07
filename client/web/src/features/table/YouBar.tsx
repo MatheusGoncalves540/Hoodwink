@@ -9,14 +9,14 @@ import { cx } from "../../ui/cx";
 import s from "./YouBar.module.css";
 
 /** Faixa "Você": 236 px no mobile e linha de 196 px no desktop. */
-export function YouBar({ vm, suddenDeath, layout }: { vm: ReturnType<typeof selectYou>; suddenDeath: boolean; layout: Layout }) {
+export function YouBar({ vm, suddenDeath, layout, className }: { vm: ReturnType<typeof selectYou>; suddenDeath: boolean; layout: Layout; className?: string }) {
   const timer = vm.timer;
   const turn = timer ? copy.turnOf(timer.ownerName) : null;
   const seconds = CLASSIC_RULES.waitingAction.suddenDeath;
   const cardSize = layout === "desktop" ? "d" : "s";
 
   return (
-    <section aria-label={copy.youRegion} className={cx(s.bar, layout === "desktop" && s.desk, suddenDeath && s.sudden)}>
+    <section aria-label={copy.youRegion} className={cx(s.bar, layout === "desktop" && s.desk, suddenDeath && s.sudden, className)}>
       <div className={s.top}>
         <div className={s.cards}>
           {vm.cards.map((c) =>

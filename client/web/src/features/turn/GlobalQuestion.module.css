@@ -90,11 +90,13 @@
   fill: var(--hw-lampada);
 }
 
-.card {
+.cardBase {
   position: relative;
-  width: min(580px, calc(100% - 28px));
   border-radius: var(--hw-radius-m);
   box-shadow: 0 30px 80px var(--hw-sombra);
+}
+.card {
+  width: min(580px, calc(100% - 28px));
 }
 .inner {
   container-type: inline-size;

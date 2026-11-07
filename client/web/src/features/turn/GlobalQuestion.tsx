@@ -30,18 +30,10 @@ type Props<T> = {
 export function GlobalQuestion<T>({ step, question, context, options, onPick, onBack, timer }: Props<T>) {
   const titleId = useId();
   const firstRef = useRef<HTMLButtonElement>(null);
-  const mark = question.endsWith("?");
-
-  // diálogo: o foco vai para a primeira resposta e Esc volta às ações
-  // shortcut: sem prender o Tab no cartaz; prender se a mesa por baixo virar problema de foco
+  // diálogo: o foco vai para a primeira resposta (Esc fica no QuestionCard)
   useEffect(() => {
     firstRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onBack();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onBack]);
+  }, []);
 
   return (
     <div className={s.stage} data-slot="global-question">
@@ -57,44 +49,80 @@ export function GlobalQuestion<T>({ step, question, context, options, onPick, on
         <ellipse cx="48" cy="45" rx="16" ry="4.5" className={s.lens} />
       </svg>
 
-      <Moldura lugar="pergunta" as="section" role="dialog" aria-modal="true" aria-labelledby={titleId} className={cx("m-rise", s.card)}>
-        <div className={s.inner}>
-          <p className={s.step}>{step}</p>
-          <h2 id={titleId} className={s.question}>
-            {mark ? question.slice(0, -1) : question}
-            {mark && <span className={s.mark}>?</span>}
-          </h2>
-          {context && <p className={s.context}>{context}</p>}
-          <div role="group" aria-labelledby={titleId} className={s.options}>
-            {options.map((o, i) => (
-              <button
-                key={String(o.value)}
-                ref={i === 0 ? firstRef : undefined}
-                type="button"
-                className={cx("hw-botao2", s.option)}
-                onClick={() => onPick(o.value)}
-              >
-                {(o.icon || o.tag) && (
-                  <span className={s.optionHead}>
-                    {o.icon}
-                    {o.tag && <span className={s.tag}>{o.tag}</span>}
-                  </span>
-                )}
-                <span className={s.optionText}>
-                  <span className={s.title}>{o.title}</span>
-                  <span className={s.hint}>{o.hint}</span>
+      <QuestionCard step={step} question={question} context={context} titleId={titleId} onBack={onBack} timer={timer} className={s.card}>
+        <div role="group" aria-labelledby={titleId} className={s.options}>
+          {options.map((o, i) => (
+            <button
+              key={String(o.value)}
+              ref={i === 0 ? firstRef : undefined}
+              type="button"
+              className={cx("hw-botao2", s.option)}
+              onClick={() => onPick(o.value)}
+            >
+              {(o.icon || o.tag) && (
+                <span className={s.optionHead}>
+                  {o.icon}
+                  {o.tag && <span className={s.tag}>{o.tag}</span>}
                 </span>
-              </button>
-            ))}
-          </div>
-          <div className={s.foot}>
-            <Button variant="link" className={s.back} onClick={onBack}>
-              {copy.backToActions}
-            </Button>
-            {timer && <div className={s.timer}>{timer}</div>}
-          </div>
+              )}
+              <span className={s.optionText}>
+                <span className={s.title}>{o.title}</span>
+                <span className={s.hint}>{o.hint}</span>
+              </span>
+            </button>
+          ))}
         </div>
-      </Moldura>
+      </QuestionCard>
     </div>
+  );
+}
+
+type CardProps = {
+  step: string;
+  question: string;
+  context?: string;
+  titleId: string;
+  onBack(): void;
+  backLabel?: string;
+  timer?: ReactNode;
+  className?: string;
+  children?: ReactNode;
+};
+
+/**
+ * Cartaz do holofote: sobretítulo da etapa, pergunta (o "?" final na cor da marca), contexto, o miolo de quem usa
+ * (respostas, cartas) e o pé com voltar + timer. Moldura lugar="pergunta": cada skin veste sem CSS próprio.
+ * Esc chama onBack. Usado pela pergunta global e pela escolha de alvo (TargetPrompt).
+ */
+export function QuestionCard({ step, question, context, titleId, onBack, backLabel = copy.backToActions, timer, className, children }: CardProps) {
+  const mark = question.endsWith("?");
+
+  // shortcut: sem prender o Tab no cartaz; prender se a mesa por baixo virar problema de foco
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onBack();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onBack]);
+
+  return (
+    <Moldura lugar="pergunta" as="section" role="dialog" aria-modal="true" aria-labelledby={titleId} className={cx("m-rise", s.cardBase, className)}>
+      <div className={s.inner}>
+        <p className={s.step}>{step}</p>
+        <h2 id={titleId} className={s.question}>
+          {mark ? question.slice(0, -1) : question}
+          {mark && <span className={s.mark}>?</span>}
+        </h2>
+        {context && <p className={s.context}>{context}</p>}
+        {children}
+        <div className={s.foot}>
+          <Button variant="link" className={s.back} onClick={onBack}>
+            {backLabel}
+          </Button>
+          {timer && <div className={s.timer}>{timer}</div>}
+        </div>
+      </div>
+    </Moldura>
   );
 }

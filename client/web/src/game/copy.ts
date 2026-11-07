@@ -164,7 +164,7 @@ export const copy = {
   swapBothWarn: "Custa todas as suas moedas.",
   revealFor: "Revelar para",
   revealQuestion: "Revelar para quem?",
-  revealStep: "Clarividente · etapa 1 de 2",
+  revealStep: "Clarividente · etapa 1 de 3",
   revealContext: "Você vai espiar a carta de outro ator.",
   revealEveryoneTag: "Para a plateia",
   revealOnlyMeTag: "Na coxia",
@@ -185,6 +185,20 @@ export const copy = {
   actionOffTurn: (name: string) => `${name}, fora do seu turno`,
   backToActions: "☜ Voltar às ações",
   pickCardOf: (name: string) => `Escolha a carta de ${name}`,
+  // escolha de alvo no holofote (TargetPrompt): uma pergunta por etapa
+  targetStep: (role: string, n: number, total: number) => `${role} · etapa ${n} de ${total}`,
+  targetWho: {
+    ASSASSIN: "Quem vai sofrer?",
+    CLAIRVOYANT: "De quem é a carta?",
+    KAMIKAZE: "Quem vai junto?",
+    KILL_CARD: "Quem perde a carta?",
+    TRICKSTER: "De quem roubar?",
+  } as Partial<Record<string, string>>,
+  targetWhoFallback: "Quem é o alvo?",
+  targetWhich: (name: string) => `Qual carta de ${name}?`,
+  targetTapSeat: "Toque num camarote iluminado.",
+  targetTapCard: "Toque numa das cartas vivas.",
+  changeTarget: "☜ Trocar o alvo",
 
   // reação e dúvida
   claims: (name: string, role: string) => `${name} se diz ${role}`,

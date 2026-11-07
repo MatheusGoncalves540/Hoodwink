@@ -1,0 +1,75 @@
+/* Um refletor por camarote elegível. --x/--y/--w/--h = caixa do camarote (game/seats.ts), relativa à tela.
+   Acima de cabeçalho, faixa Você e trilho; abaixo dos camarotes acesos (.targetable) e do cartaz. */
+.layer {
+  --lamp-w: 48px;
+  --lamp-h: 32px;
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  overflow: hidden;
+  pointer-events: none;
+  animation: m-fade 0.24s ease-out both;
+}
+.desk {
+  --lamp-w: 60px;
+  --lamp-h: 40px;
+}
+/* o escuro segura o clique: só os camarotes acesos (acima dele) e o cartaz respondem */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--hw-scrim);
+  pointer-events: auto;
+}
+.light {
+  position: absolute;
+  inset: 0;
+}
+/* feixe da lente até o pé do camarote, um pouco mais largo que ele */
+.beam {
+  position: absolute;
+  left: calc(var(--x) - 22px);
+  top: calc(var(--lamp-h) - 2px);
+  width: calc(var(--w) + 44px);
+  height: calc(var(--y) + var(--h) - var(--lamp-h) + 2px);
+  clip-path: polygon(41% 0, 59% 0, 100% 100%, 0 100%);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--hw-lampada) 38%, transparent),
+    var(--hw-cone) 72%,
+    color-mix(in srgb, var(--hw-lampada) 18%, transparent)
+  );
+}
+.pool {
+  position: absolute;
+  left: calc(var(--x) - 30px);
+  top: calc(var(--y) + var(--h) - 26px);
+  width: calc(var(--w) + 60px);
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--hw-lampada) 62%, transparent), var(--hw-poca) 58%, transparent);
+}
+.lamp {
+  position: absolute;
+  top: 0;
+  left: calc(var(--x) + var(--w) / 2 - var(--lamp-w) / 2);
+  width: var(--lamp-w);
+  height: var(--lamp-h);
+}
+.truss {
+  stroke: var(--hw-filete);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.yoke {
+  stroke: var(--hw-ouro);
+  stroke-width: 3;
+}
+.can {
+  fill: var(--hw-veludo);
+  stroke: var(--hw-ouro);
+  stroke-width: 2;
+}
+.lens {
+  fill: var(--hw-lampada);
+}
