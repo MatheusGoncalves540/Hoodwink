@@ -2,8 +2,8 @@
 
 Cards:
   ASSASSIN:
-    value: 3
-    taxMinimum: 2
+    value: 4
+    taxMinimum: 3
     affectedByTaxes: true
 
   KAMIKAZE:
@@ -38,7 +38,7 @@ Cards:
 
   GUARDIAN:
     value: 5
-    taxMinimum: 4
+    taxMinimum: 3
     futureProtectionTaxMinimum: 5
     futureProtectionSurcharge: 1
     clairvoyantBlockDiscount: 1
@@ -81,11 +81,11 @@ Timeouts:
   DEFAULT:
     displayMessage: 6
     displayImportantMessage: 8
-    waitingAction: 10
-  SUDDEN_DEATH: 
+    waitingAction: 30
+  SUDDEN_DEATH:
     displayMessage: 3
     displayImportantMessage: 4
-    waitingAction: 5
+    waitingAction: 15
 
 General:
   # As taxas só mudam por efeito de cartas (Político/Rebelde) no modo clássico.
