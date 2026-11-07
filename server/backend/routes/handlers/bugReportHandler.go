@@ -112,18 +112,29 @@ RETURNING id, turns, (xmax = 0) AS created`
 
 func (s gormBugReportStore) UpsertTurn(ctx context.Context, userID, username, matchID, ip, ua string, turn int32) (int64, []int32, bool, error) {
 	var id int64
-	var turns []int32
+	var turns models.Int32Array
 	var created bool
 	err := s.db.WithContext(ctx).Raw(upsertTurnSQL, userID, username, matchID, turn, ip, ua, turn, turn).
 		Row().
 		Scan(&id, &turns, &created)
-	return id, turns, created, err
+	return id, []int32(turns), created, err
 }
 
 // --- lobby ---
 
+// insertLobbyBugSQL grava o relato do Lobby em SQL cru: turns fica no default
+// (`{}`) porque nenhuma escrita de array pode passar pelo driver.Valuer, que
+// devolve text e o Postgres recusa em int[]/uuid[]. RETURNING repõe id e datas.
+const insertLobbyBugSQL = `
+INSERT INTO bug_reports (user_id, username, source, match_id, category, description, context, ip, user_agent, status)
+VALUES (?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?)
+RETURNING id, created_at, updated_at`
+
 func (s gormBugReportStore) Create(ctx context.Context, report *models.BugReport) error {
-	return s.db.WithContext(ctx).Create(report).Error
+	return s.db.WithContext(ctx).Raw(insertLobbyBugSQL,
+		report.UserID, report.Username, report.Source, report.MatchID,
+		report.Category, report.Description, report.Context, report.IP, report.UserAgent, report.Status,
+	).Row().Scan(&report.ID, &report.CreatedAt, &report.UpdatedAt)
 }
 
 // --- patch / admin ---
@@ -233,7 +244,7 @@ type bugReportDTO struct {
 }
 
 func toBugReportDTO(m models.BugReport) bugReportDTO {
-	turns := m.Turns
+	turns := []int32(m.Turns)
 	if turns == nil {
 		turns = []int32{}
 	}
@@ -463,7 +474,6 @@ func createLobbyBug(w http.ResponseWriter, r *http.Request, user structures.User
 		UserID:      userID,
 		Username:    username,
 		Source:      source,
-		Turns:       []int32{},
 		Category:    &req.Category,
 		Description: &req.Description,
 		Context:     ctxJSON,

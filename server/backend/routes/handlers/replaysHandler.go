@@ -70,7 +70,7 @@ WHERE match_id = ? AND player_ids @> ARRAY[?]::uuid[]`
 func (s gormReplayStore) Insert(ctx context.Context, r *models.MatchReplay) error {
 	return s.db.WithContext(ctx).Exec(insertReplaySQL,
 		r.MatchID, r.RoomID, r.EngineVersion, r.StartedAt, r.EndedAt, r.WinnerID,
-		uuidArrayLiteral(r.PlayerIDs), r.Data,
+		uuidArrayLiteral([]string(r.PlayerIDs)), r.Data,
 	).Error
 }
 
@@ -129,7 +129,7 @@ func toMatchDTO(m models.MatchReplay) matchDTO {
 		StartedAt:     m.StartedAt,
 		EndedAt:       m.EndedAt,
 		WinnerID:      m.WinnerID,
-		PlayerIDs:     m.PlayerIDs,
+		PlayerIDs:     []string(m.PlayerIDs),
 	}
 }
 
