@@ -65,6 +65,10 @@ button:not([aria-disabled="true"]):active{transform:scale(.97)}
 .m-respira:nth-child(3n+2){animation-delay:-1.2s}
 .m-respira:nth-child(3n){animation-delay:-2.4s}
 .m-respira .m-respira{animation:none}
+/* RESPIRA FORTE: o momento da escolha no holofote (Clarividente). Mais amplitude e mais rápido que a respiração comum. */
+@keyframes m-respira-forte{0%,100%{translate:0 3px;rotate:-1.8deg}50%{translate:0 -9px;rotate:1.8deg}}
+.m-respira-forte{animation:m-respira-forte 2.4s ease-in-out infinite}
+.m-respira-forte .m-respira-forte{animation:none}
 /* 3 QUADROS: só o papel do cartão (fundo e sombra no ::before); o texto fica parado. Só no Como se joga. */
 .m-q3{position:relative;isolation:isolate}
 .m-q3::before{content:"";position:absolute;inset:0;z-index:-1;animation:m-q3 var(--q3-ciclo,1.5s) steps(1,end) infinite}
@@ -76,7 +80,7 @@ button:not([aria-disabled="true"]):active{transform:scale(.97)}
 [data-deixa] .m-deixa :is(.m-tira>*,.m-contorno>.m-f){animation-play-state:running;--tira-ciclo:.75s}
 
 /* Animações de espera desligada (ou aba escondida): tudo parado no quadro 1. */
-[data-idle="off"] :is(.m-tira>*,.m-contorno>.m-f,.m-letreiro>.m-f,.m-respira,.m-q3::before,.m-canhoto .m-f){animation:none}
+[data-idle="off"] :is(.m-tira>*,.m-contorno>.m-f,.m-letreiro>.m-f,.m-respira,.m-respira-forte,.m-q3::before,.m-canhoto .m-f){animation:none}
 [data-idle="off"] :is(.m-contorno,.m-letreiro,.m-canhoto)>.m-f:first-of-type{opacity:1}
 
 /* Animações desligada: nada se mexe. Estados finais que importam vêm logo abaixo. */

@@ -1,4 +1,4 @@
-/* Acoes.dc.html: topo de 112 px (128 no desktop), quadro em --hw-luz e pé fixo. */
+/* Ações na gaveta do miolo: sem cabeçalho próprio (o da mesa já mostra rodada e taxa). */
 .screen {
   display: flex;
   flex-direction: column;
@@ -6,28 +6,6 @@
   background: var(--hw-plateia);
   color: var(--hw-tinta);
   font-family: var(--hw-font-texto);
-}
-.top {
-  height: 112px;
-  flex-shrink: 0;
-  padding: 0 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.round {
-  font-family: var(--hw-font-rotulo);
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-size: 14px;
-  color: var(--hw-ouro-texto);
-}
-.title {
-  font-family: var(--hw-font-display);
-  font-size: 40px;
-  line-height: 1.05;
-  color: var(--hw-titulo);
 }
 .board {
   flex: 1;
@@ -39,7 +17,7 @@
   flex-direction: column;
 }
 .head {
-  padding: 14px 18px 10px;
+  padding: 12px 18px 8px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -57,7 +35,7 @@
   flex-shrink: 0;
   display: flex;
   gap: 6px;
-  padding: 8px 18px 10px;
+  padding: 6px 18px 8px;
   overflow-x: auto;
   border-bottom: 1px solid color-mix(in srgb, var(--hw-tinta) 20%, transparent);
 }
@@ -84,11 +62,11 @@
 }
 .foot {
   flex-shrink: 0;
-  padding: 10px 18px 22px;
+  padding: 8px 18px 14px;
   border-top: 3px double var(--hw-tinta);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .footLabel {
   font-family: var(--hw-font-rotulo);
@@ -98,16 +76,9 @@
   font-size: 12px;
 }
 
-/* Desktop (AcoesDesk): topo de 128 px, quadro em 3 colunas dentro de borda dupla. */
-.desk .top {
-  height: 128px;
-  padding: 0 48px;
-}
-.desk .title {
-  font-size: 56px;
-}
+/* Desktop (AcoesDesk): quadro em 3 colunas dentro de borda dupla. */
 .desk .board {
-  margin: 0 40px 32px;
+  margin: 0 40px;
   border: 3px double var(--hw-tinta);
   border-radius: var(--hw-radius-m);
   overflow: hidden;

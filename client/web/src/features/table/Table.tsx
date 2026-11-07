@@ -27,6 +27,7 @@ import { YouSheet } from "../sheets/YouSheet";
 import { OutOfScene } from "../endgame/OutOfScene";
 import { ActionBoard } from "../turn/ActionBoard";
 import { CenterCurtain } from "../turn/CenterCurtain";
+import { RevealChoice } from "../turn/RevealChoice";
 import { ContestPick } from "../turn/ContestPick";
 import { DeclaredCard } from "../turn/DeclaredCard";
 import { ReactionPanel } from "../turn/ReactionPanel";
@@ -58,6 +59,8 @@ export type TableSlots = {
   rail?: ReactNode;
   /** Ações/alvo no miolo da mesa, em cortina sobre os camarotes (T1/T2). */
   curtain?: ReactNode;
+  /** Conteúdo centrado sobre o holofote (escolha do Clarividente). */
+  center?: ReactNode;
   /** Cobre a tela inteira, inclusive cabeçalho e trilho (ações, aviso de morte súbita). */
   screenOverlay?: ReactNode;
 };
@@ -69,6 +72,8 @@ type Props = {
   onMenu?(): void;
   onChat?(): void;
   targeting?: boolean;
+  /** Holofote em cone no lugar das poças: primeira etapa da escolha (Clarividente). */
+  cone?: boolean;
   /** Reação/contestação no trilho: a faixa Você some no desktop (MainDesk). */
   hideYou?: boolean;
   /** Morte súbita: a mesa inteira fica escura. */
@@ -78,7 +83,7 @@ type Props = {
   slots?: TableSlots;
 };
 
-export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hideYou, dark, stageLive, slots = {} }: Props) {
+export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, cone, hideYou, dark, stageLive, slots = {} }: Props) {
   const layout = useLayout();
   const desktop = layout === "desktop";
   const [ref, width] = useStageWidth(desktop ? 1020 : 390);
@@ -107,6 +112,33 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
         <SeatRing seats={seats} layoutSeats={layoutSeats} layout={layout} onSeat={onSeat} targeting={targeting} />
         {!slots.stageOverlay && <Stage vm={stage} layout={layout} live={stageLive} />}
         <Footlights vm={footlights} layout={layout} />
+        {targeting && (
+          <div className={s.targetLight} aria-hidden="true" data-slot="target-light">
+            {cone ? (
+              <>
+                <div className={s.cone} />
+                <div className={s.coneBase} />
+              </>
+            ) : (
+              seats.map((seat, i) => {
+                const box = layoutSeats.boxes[i];
+                if (!box || seat.out) return null;
+                return (
+                  <span
+                    key={seat.id}
+                    className={s.pool}
+                    style={{ left: box.x - 18, top: box.y - 18, width: box.w + 36, height: box.h + 36, animationDelay: `${i * 45}ms` }}
+                  />
+                );
+              })
+            )}
+          </div>
+        )}
+        {slots.center && (
+          <div className={s.center} data-slot="center">
+            {slots.center}
+          </div>
+        )}
         {slots.curtain && (
           <div className={s.curtainSlot} data-slot="curtain">
             {slots.curtain}
@@ -156,6 +188,8 @@ export function TableScene() {
   const [curtainOpen, setCurtainOpen] = useState(true);
   const evKey = room?.gameEvent ? eventKey(room.gameEvent) : "";
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
+  // Clarividente: a revelação é escolhida antes do alvo ("revelar para" dentro do holofote)
+  const revealChoice = !!targeting && targeting.role === "CLAIRVOYANT" && targeting.showToAll === undefined;
 
   // evento novo (inclusive o fim da deixa) fecha o fluxo de alvo: a jogada antiga não vale mais
   useEffect(() => {
@@ -211,6 +245,8 @@ export function TableScene() {
 
   const onSeat = useCallback(
     (seatId: string) => {
+      // ainda escolhendo "revelar para": a mesa de alvos vem depois
+      if (revealChoice) return;
       if (targeting) {
         const needsCard = ["ASSASSIN", "KAMIKAZE", "CLAIRVOYANT", "KILL_CARD"].includes(targeting.role);
         if (!needsCard) {
@@ -220,7 +256,7 @@ export function TableScene() {
       }
       open({ seat: seatId });
     },
-    [targeting, sendPlay, open],
+    [revealChoice, targeting, sendPlay, open],
   );
 
   const pickSeatCard = (index: number) => {
@@ -326,21 +362,30 @@ export function TableScene() {
       <SuddenDeathAlert layout={layout} seconds={CLASSIC_RULES.waitingAction.suddenDeath} />
     </Suspense>
   ) : undefined;
-  const targetBar = targeting ? (
+  const targetBar = targeting && !revealChoice ? (
     <TargetBar
       role={targeting.role}
       onBack={() => setTargeting(null)}
       onSwapBoth={targeting.role === "SWAP_CARDS" ? () => sendPlay("SWAP_CARDS", { cardIndex: 0, both: true }) : undefined}
-      showToAll={targeting.role === "CLAIRVOYANT" ? !!targeting.showToAll : undefined}
-      onShowToAll={(v) => setTargeting({ ...targeting, showToAll: v })}
+      note={targeting.role === "CLAIRVOYANT" ? copy.revealNote(!!targeting.showToAll) : undefined}
     />
   ) : undefined;
+  const curtain = targetBar ? (
+    <CenterCurtain open>{targetBar}</CenterCurtain>
+  ) : board && !revealChoice ? (
+    <CenterCurtain open={curtainOpen} onToggle={setCurtainOpen}>
+      {board}
+    </CenterCurtain>
+  ) : undefined;
+  // Clarividente: primeiro "revelar para", no holofote; a mesa dos alvos vem depois
+  const center = revealChoice ? <RevealChoice onPick={(all) => setTargeting({ ...targeting, showToAll: all })} onBack={() => setTargeting(null)} /> : undefined;
 
   return (
     <Table
       view={view}
       unread={unread}
-      targeting={!!targeting}
+      targeting={!!targeting && actionDef(targeting.role).target === "other"}
+      cone={revealChoice}
       hideYou={layout === "desktop" && !!panel}
       dark={footlights.suddenDeath}
       onMenu={() => open("menu")}
@@ -352,13 +397,8 @@ export function TableScene() {
         stageOverlay: stage.declared || stage.revealed ? <DeclaredCard view={view} layout={layout} /> : undefined,
         scenery,
         screenOverlay,
-        curtain: targeting ? (
-          <CenterCurtain open>{targetBar}</CenterCurtain>
-        ) : board ? (
-          <CenterCurtain open={curtainOpen} onToggle={setCurtainOpen}>
-            {board}
-          </CenterCurtain>
-        ) : undefined,
+        center,
+        curtain,
         bottomPanel: layout === "mobile" ? panel : undefined,
       }}
     />

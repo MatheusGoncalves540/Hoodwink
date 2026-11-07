@@ -40,11 +40,6 @@ export function ActionBoard({ view, layout, onPick }: Props) {
 
   return (
     <div className={cx(s.screen, layout === "desktop" && s.desk)}>
-      <div className={s.top}>
-        <span className={s.round}>{copy.roundTax(room?.turn ?? 0, footlights.tax)}</span>
-        <span className={s.title}>{copy.yourTurnInScene}</span>
-      </div>
-
       <section aria-label={copy.chooseAction} className={s.board}>
         <div className={s.head}>
           <h1 className={s.h1}>{copy.declareRole}</h1>

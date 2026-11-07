@@ -5,6 +5,7 @@ import { selectDecision, type Decision, type GameView } from "../../game/selecto
 import { play } from "../../net/actions";
 import { Table } from "../table/Table";
 import { CenterCurtain } from "./CenterCurtain";
+import { RevealChoice } from "./RevealChoice";
 import { ContestPick } from "./ContestPick";
 import { DeclaredCard } from "./DeclaredCard";
 import { ReactionPanel } from "./ReactionPanel";
@@ -130,22 +131,27 @@ describe("barra de alvo (regras v2)", () => {
     expect(out).toContain("Escolha a carta sua que vai trocar.");
   });
 
-  it("Clarividente escolhe Sim/Não com Não marcado; os outros não têm o par", () => {
-    const out = html(<TargetBar role="CLAIRVOYANT" onBack={() => {}} showToAll={false} onShowToAll={() => {}} />);
-    expect(out).toContain('role="group" aria-label="Mostrar para todos"');
-    expect(out).toMatch(/aria-pressed="true"[^>]*>Não</);
-    expect(out).toMatch(/aria-pressed="false"[^>]*>Sim</);
-    expect(out).toContain("só você vê a carta");
+  it("os outros papéis não têm a pergunta de revelar", () => {
+    expect(html(<TargetBar role="KILL_CARD" onBack={() => {}} />)).not.toContain("Revelar para");
+  });
+});
+
+describe("escolha do Clarividente", () => {
+  it("oferece revelar para todos ou só para você, sem escolha pronta", () => {
+    const out = html(<RevealChoice onPick={() => {}} onBack={() => {}} />);
+    expect(out).toContain('aria-label="Revelar para"');
+    expect(out).toContain(">Todos<");
+    expect(out).toContain(">Apenas você<");
+    expect(out).toContain("A mesa toda vê a carta.");
+    expect(out).toContain("Só você vê a carta.");
+    expect(out).not.toContain("aria-pressed");
     // o valor escolhido vai no payload até a jogada confirmar
     expect(play("CLAIRVOYANT", "me", { playerId: "bruno", cardIndex: 0, showToAll: true }).payload).toMatchObject({
       showToAllPlayers: true,
     });
-    expect(html(<TargetBar role="KILL_CARD" onBack={() => {}} />)).not.toContain("aria-pressed");
   });
-});
 
-describe("Clarividente na cortina", () => {
-  it("o alvo fica na cortina com Sim/Não e a faixa Você continua como HUD", () => {
+  it("depois da escolha, a mesa dos alvos fica visível com o que foi decidido", () => {
     const out = html(
       <Table
         view={view("Mesa6")}
@@ -153,18 +159,28 @@ describe("Clarividente na cortina", () => {
         slots={{
           curtain: (
             <CenterCurtain open>
-              <TargetBar role="CLAIRVOYANT" onBack={() => {}} showToAll={false} onShowToAll={() => {}} />
+              <TargetBar role="CLAIRVOYANT" onBack={() => {}} note="A carta vai aparecer para todos." />
             </CenterCurtain>
           ),
         }}
       />,
     );
-    expect(out).toContain('data-slot="curtain"');
-    expect(out).toContain("Mostrar para todos");
-    expect(out).toMatch(/aria-pressed="true"[^>]*>Não</);
+    expect(out).toContain("Escolha o alvo");
+    expect(out).toContain("A carta vai aparecer para todos.");
     // HUD continua: a faixa Você aparece depois da cortina
     expect(out.indexOf('aria-label="Você"')).toBeGreaterThan(out.indexOf('data-slot="curtain"'));
     // durante o alvo a cortina não recolhe: sem handle
     expect(out).not.toContain("Fechar ações");
+  });
+
+  it("o holofote em cone traz a pergunta no centro, por cima da mesa escura", () => {
+    const out = html(
+      <Table view={view("Mesa6")} targeting cone slots={{ center: <RevealChoice onPick={() => {}} onBack={() => {}} /> }} />,
+    );
+    expect(out).toContain('data-slot="target-light"');
+    expect(out).toContain('data-slot="center"');
+    expect(out).toContain("Revelar para");
+    // o cartão fica depois do holofote (por cima dele)
+    expect(out.indexOf('data-slot="center"')).toBeGreaterThan(out.indexOf('data-slot="target-light"'));
   });
 });

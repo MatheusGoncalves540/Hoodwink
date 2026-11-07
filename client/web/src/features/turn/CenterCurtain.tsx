@@ -23,9 +23,9 @@ type Props = {
 };
 
 /**
- * Painel central em cortina sobre a área dos jogadores. Sobe de baixo para cima,
- * deixa o handle focável quando fechada e prende o conteúdo com `inert` +
- * `visibility: hidden`. Com Menos movimento a troca é instantânea
+ * Gaveta do miolo da mesa: o handle é a borda de cima e sobe junto com o painel
+ * (fechada, só ele fica à vista no pé). O conteúdo fechado sai do foco com
+ * `inert` + `visibility`. Com Menos movimento a troca é instantânea
  * ([data-motion="reduced"] em styles/motion.css).
  */
 export function CenterCurtain({ open, onToggle, children }: Props) {
@@ -42,7 +42,6 @@ export function CenterCurtain({ open, onToggle, children }: Props) {
     else el.setAttribute("inert", "");
   }, [open]);
 
-  // Esc recolhe a cortina e devolve o foco ao handle
   const move = useCallback(
     (next: CurtainMove) => {
       if (!onToggle) return;
@@ -51,6 +50,7 @@ export function CenterCurtain({ open, onToggle, children }: Props) {
     [open, onToggle],
   );
 
+  // Esc recolhe a gaveta e devolve o foco ao handle
   useEffect(() => {
     if (!open || !collapsible) return;
     const onKey = (e: KeyboardEvent) => {
@@ -63,23 +63,25 @@ export function CenterCurtain({ open, onToggle, children }: Props) {
   }, [open, collapsible, onToggle]);
 
   return (
-    <div className={cx(s.curtain, open && s.open)} data-open={open || undefined}>
-      <div id={bodyId} ref={bodyRef} className={s.body} aria-hidden={open ? undefined : true}>
-        {children}
+    <div className={cx(s.curtain, open && s.open, collapsible && s.hasHandle)} data-open={open || undefined}>
+      <div className={s.drawer}>
+        {collapsible && (
+          <button
+            ref={handleRef}
+            type="button"
+            className={s.handle}
+            aria-expanded={open}
+            aria-controls={bodyId}
+            onClick={() => move("toggle")}
+          >
+            <span aria-hidden="true" className={s.grip} />
+            <span className={s.handleLabel}>{open ? copy.curtainClose : copy.curtainOpen}</span>
+          </button>
+        )}
+        <div id={bodyId} ref={bodyRef} className={s.body} aria-hidden={open ? undefined : true}>
+          {children}
+        </div>
       </div>
-      {collapsible && (
-        <button
-          ref={handleRef}
-          type="button"
-          className={s.handle}
-          aria-expanded={open}
-          aria-controls={bodyId}
-          onClick={() => move("toggle")}
-        >
-          <span aria-hidden="true" className={s.grip} />
-          <span className={s.handleLabel}>{open ? copy.curtainClose : copy.curtainOpen}</span>
-        </button>
-      )}
     </div>
   );
 }
