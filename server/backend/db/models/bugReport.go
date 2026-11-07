@@ -14,7 +14,7 @@ type BugReport struct {
 	Username    *string         `gorm:"column:username"`
 	Source      string          `gorm:"not null"`
 	MatchID     *string         `gorm:"column:match_id;type:uuid"`
-	Turns       []int32         `gorm:"column:turns;type:int[]"`
+	Turns       Int32Array      `gorm:"column:turns;type:int[]"`
 	Category    *string         `gorm:"column:category"`
 	Description *string         `gorm:"column:description"`
 	Context     json.RawMessage `gorm:"column:context;type:jsonb"`

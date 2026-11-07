@@ -146,7 +146,7 @@ func toMatchDTO(m models.MatchReplay) matchDTO {
 		StartedAt:     m.StartedAt,
 		EndedAt:       m.EndedAt,
 		WinnerID:      m.WinnerID,
-		PlayerIDs:     m.PlayerIDs,
+		PlayerIDs:     []string(m.PlayerIDs),
 	}
 }
 
