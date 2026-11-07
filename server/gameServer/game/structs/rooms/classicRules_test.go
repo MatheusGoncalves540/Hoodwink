@@ -60,8 +60,8 @@ func TestBasicActionCosts(t *testing.T) {
 
 	room.Tax = -5
 	amount, _ := room.GetBasicTakeCoinsAmount(registry)
-	if amount != 0 {
-		t.Fatalf("moedas ao coletar com tax -5 = %d, quer 0", amount)
+	if amount != 1 {
+		t.Fatalf("moedas ao coletar com tax -5 = %d, quer 1", amount)
 	}
 
 	room.Tax = 5

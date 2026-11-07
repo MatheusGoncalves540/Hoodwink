@@ -57,7 +57,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     const previous = sameRoom ? prev : null;
     const baseLog = sameRoom ? log : [];
     const basePresentation = sameRoom ? presentation : [];
-    const room = keepMyCardNames(previous, incoming, me);
+    const kept = keepMyCardNames(previous, incoming, me);
+    // O broadcast privado (dados confidenciais) chega depois do público e vem sem o chat
+    // (redisFuncs/broadcast.go → clonePublicForPrivate): sem isto, a última atualização apagava a conversa.
+    const room = kept.chat.length === 0 && previous?.chat.length ? { ...kept, chat: previous.chat } : kept;
     const ev = room.gameEvent;
     // Evento já vencido (reconexão/reload) entra no diário mas não na fila: a janela de animação acabou.
     const fresh =

@@ -40,7 +40,15 @@ export function ReactionPanel({ view, decision, layout, onContest, onBlock, onPa
         <Coin size={52} value={you.coins} label={copy.coins(you.coins)} />
       </div>
 
-      {you.timer && <Timer expiresAt={you.timer.expiresAt} total={you.timer.total} label={copy.reactionTimer} decision />}
+      {you.timer && (
+        <Timer
+          expiresAt={you.timer.expiresAt}
+          total={you.timer.total}
+          label={copy.reactionTimer}
+          decision
+          caption={you.timer.caption}
+        />
+      )}
 
       {block && (
         <Ticket className={s.block} disabled={you.coins < block.cost} onClick={onBlock}>

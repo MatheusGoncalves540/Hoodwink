@@ -204,13 +204,19 @@ export const copy = {
   protectedWarn: "se for esta, cai só a proteção",
   sorteEscolhe: (s: number) => `Em ${s} s, a sorte escolhe por você.`,
   sorteEscolheOther: (name: string, s: number) => `${name} tem ${s} s. Depois, a sorte escolhe.`,
-  declaredEffect: (name: string, role: RoleId, price: Price, targetsMe: boolean) => {
-    const target = targetsMe ? "uma carta sua" : "uma carta de outro jogador";
+  /** "uma carta sua" / "uma carta de Ana", para as frases com alvo. */
+  targetText: (target: { name: string; mine: boolean } | null) =>
+    target ? (target.mine ? "uma carta sua" : `uma carta de ${target.name}`) : "uma carta de outro jogador",
+  /** "sua" / "de Ana", para "qual carta … cai". */
+  possessive: (name: string, mine: boolean) => (mine ? "sua" : `de ${name}`),
+  declaredEffect: (name: string, role: RoleId, price: Price, target: { name: string; mine: boolean } | null) => {
+    const card = copy.targetText(target);
+    const who = target ? (target.mine ? "você" : target.name) : "alguém";
     switch (role) {
-      case "ASSASSIN": return `${name} paga ${price.coins} moedas e mira ${target}.`;
-      case "CLAIRVOYANT": return `${name} paga ${price.coins} moedas e revela ${target}.`;
-      case "TRICKSTER": return `${name} rouba ${price.kind === "gain" ? price.steals ?? 0 : 0} de ${targetsMe ? "você" : "alguém"}.`;
-      case "KAMIKAZE": return `${name} se sacrifica e leva ${target} junto.`;
+      case "ASSASSIN": return `${name} paga ${price.coins} moedas e mira ${card}.`;
+      case "CLAIRVOYANT": return `${name} paga ${price.coins} moedas e revela ${card}.`;
+      case "TRICKSTER": return `${name} rouba ${price.kind === "gain" ? price.steals ?? 0 : 0} de ${who}.`;
+      case "KAMIKAZE": return `${name} se sacrifica e leva ${card} junto.`;
       case "GUARDIAN": return `${name} paga ${price.coins} moedas e protege uma carta sua.`;
       case "GRAVEDIGGER": return `${name} paga ${price.coins} moedas e revive uma carta.`;
       case "CROUPIER": return `${name} paga ${price.coins} moedas e puxa uma carta nova.`;
@@ -220,6 +226,47 @@ export const copy = {
       case "REBEL": return `${name} baixa a taxa em 1. O preço do Rebelde dobra.`;
       default: return "";
     }
+  },
+
+  // contestação: os dois lados sempre com nome
+  doubtedBy: (contester: string) => `${contester} duvidou.`,
+  bluffEffect: (contested: string, role: string, chooser: string, poss: string) =>
+    `${contested} não tinha ${role}. ${chooser} escolhe qual carta ${poss} cai.`,
+  truthEffect: (contested: string, chooser: string, poss: string) =>
+    `${contested} mostrou a carta e escolhe qual carta ${poss} cai.`,
+
+  // carta revelada (Clarividente)
+  revealedLead: (name: string, poss: string) => `${name} revelou uma carta ${poss}.`,
+  revealedCard: (role: string) => `É ${role}.`,
+  revealedPrivate: (name: string) => `Só ${name} viu a carta.`,
+  revealedPrivateMe: "Só você viu a carta.",
+  revealedToAll: "A mesa toda viu a carta.",
+  revealedHidden: "A carta continua escondida para você.",
+
+  /** Narração de um acontecimento, com os dois lados: alimenta o palco e o texto do relógio. */
+  stageLine: {
+    turn: (name: string) => `Vez de ${name}. Escolha uma ação.`,
+    yourTurn: "Sua vez. Escolha uma ação.",
+    declared: (name: string, role: string) => `${name} se diz ${role}. Os outros podem duvidar.`,
+    doubted: (contester: string, contested: string) => `${contester} duvidou de ${contested}.`,
+    chooseCardOf: (chooser: string, poss: string) => `${chooser} escolhe qual carta ${poss} cai.`,
+    revealed: (name: string, poss: string) => `${name} revelou uma carta ${poss}.`,
+    revealedCard: (role: string, poss: string) => `${role}, carta ${poss}.`,
+    revealedPrivateMe: (role: string, poss: string) => `Só você viu: ${role}, carta ${poss}.`,
+    killed: (name: string, card: string) => `${name} matou ${card}.`,
+    kamikaze: (name: string, card: string) => `${name} levou ${card} junto com o Kamikaze.`,
+    lostCard: (name: string) => `${name} perdeu uma carta.`,
+    greed: (name: string) => `${name} passou de 20 moedas e perdeu uma carta.`,
+    revived: (name: string) => `${name} reviveu uma carta.`,
+    changed: (name: string) => `${name} trocou uma carta.`,
+    earned: (name: string, coins: number) => `${name} recebeu ${plural(coins, "moeda", "moedas")}.`,
+    took: (name: string, coins: number) => `${name} pegou ${plural(coins, "moeda", "moedas")}.`,
+    stole: (name: string, coins: number, target: string) => `${name} roubou ${plural(coins, "moeda", "moedas")} de ${target}.`,
+    invested: (name: string) => `${name} investiu.`,
+    taxUp: (name: string) => `${name} subiu a taxa.`,
+    taxDown: (name: string) => `${name} baixou a taxa.`,
+    denied: (name: string, target: string) => `${name} barrou o ganho de ${target}.`,
+    suddenDeath: "O baralho acabou. Morte súbita.",
   },
 
   // fim de jogo
@@ -338,12 +385,14 @@ export const copy = {
   log: {
     declared: (role: string) => `se disse ${role}.`,
     noContest: " Ninguém duvidou.",
-    contested: (role: string) => `se disse ${role}, alguém duvidou`,
-    lostCard: " e perdeu a carta.",
-    showedCard: " e mostrou a carta.",
+    contested: (role: string, contester: string) => `se disse ${role}, ${contester} duvidou.`,
+    penaltyHad: (contested: string, contester: string) => ` ${contested} mostrou a carta e escolhe uma carta de ${contester}.`,
+    penaltyBluff: (contested: string, contester: string) => ` ${contested} perdeu a carta e ${contester} escolhe qual cai.`,
     contestedBy: (target: string) => `duvidou de ${target}.`,
     lostACard: "perdeu uma carta.",
-    revealed: (target: string) => `revelou uma carta de ${target} como Clarividente.`,
+    killedByRole: (target: string, role: string) => `matou uma carta de ${target} como ${role}.`,
+    kamikaze: (target: string) => `levou uma carta de ${target} com o Kamikaze.`,
+    revealed: (target: string, card?: string) => `revelou uma carta de ${target}${card ? `: ${card}` : ""} como Clarividente.`,
     revived: "reviveu uma carta como Coveiro.",
     changed: "puxou uma carta nova como Crupiê.",
     changedContested: "trocou a carta mostrada depois da dúvida.",

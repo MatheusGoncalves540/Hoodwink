@@ -225,7 +225,8 @@ func (r *Room) GetGuardianValue(registryRules *rules.Registry, protectedFrom str
 	return value, nil
 }
 
-// GetBasicTakeCoinsAmount retorna quantas moedas a ação básica de coletar concede (1 + taxas).
+// GetBasicTakeCoinsAmount retorna quantas moedas a ação básica de coletar concede.
+// A taxa só soma quando é positiva: taxa negativa não reduz o valor-base.
 func (r *Room) GetBasicTakeCoinsAmount(registryRules *rules.Registry) (int, error) {
 	generalRules, err := r.GetGeneralRules(registryRules)
 	if err != nil {
@@ -236,11 +237,10 @@ func (r *Room) GetBasicTakeCoinsAmount(registryRules *rules.Registry) (int, erro
 		base = *generalRules.BasicTakeCoins
 	}
 
-	amount := base + r.Tax
-	if amount < 0 {
-		amount = 0
+	if r.Tax > 0 {
+		base += r.Tax
 	}
-	return amount, nil
+	return base, nil
 }
 
 // GetBasicKillCardCost retorna o custo da ação básica de matar uma carta.

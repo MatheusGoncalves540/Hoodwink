@@ -64,12 +64,12 @@ func TestPricesGains(t *testing.T) {
 			tb.wantCoins("ana", (x+1)/2)
 		})
 
-		t.Run(fmt.Sprintf("Pegar moeda 1+t, nunca negativo/taxa %d", tax), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Pegar moeda 1+t, taxa negativa não reduz/taxa %d", tax), func(t *testing.T) {
 			tb := newTable(t, seat("ana", 2, structs.CardRebel, structs.CardRebel), seat("bia", 0, structs.CardRebel, structs.CardRebel))
 			tb.room.Tax = tax
 			tb.mustPlay("ana", `{"type":"TAKE_COINS"}`)
 			tb.settle()
-			tb.wantCoins("ana", 2+max(0, 1+tax))
+			tb.wantCoins("ana", 2+max(1, 1+tax))
 		})
 	}
 }

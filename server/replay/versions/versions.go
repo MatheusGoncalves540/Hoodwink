@@ -13,6 +13,7 @@ type Version struct {
 // All lista todas as versões congeladas, em ordem crescente.
 var All = []Version{
 	{Number: 1, Hash: "1059f86c00fe1f0bdeeef8e2c966d6c0ea970ecebecdda8543b3df20038285b6"},
+	{Number: 2, Hash: "87ccce0ebe030d6cb0da7231577c658be4bb990faefcc7a1c89d476b6783e8ee"},
 }
 
 // Latest devolve o número da versão mais recente.

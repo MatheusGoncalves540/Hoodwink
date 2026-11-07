@@ -73,13 +73,13 @@ export const killCost = (tax: number, rules: Rules = CLASSIC_RULES) =>
 export const swapCost = (coins: number, both = false) => (both ? coins : Math.ceil(coins / 2));
 
 /**
- * Preço das ações do turno. Pegar moeda: 1 + t, nunca negativo
- * (ponytail: D2 do 02 propõe mínimo 1; o servidor dá 0 hoje. Muda aqui quando o autor decidir).
+ * Preço das ações do turno. Pegar moeda: 1 + t quando t > 0; taxa negativa não reduz
+ * (mínimo o valor-base, nunca 0).
  */
 export function basicPrice(action: BasicAction, room: PriceRoom, coins: number, rules: Rules = CLASSIC_RULES): Price {
   switch (action) {
     case "TAKE_COINS":
-      return { kind: "gain", coins: Math.max(0, rules.basic.takeCoins + room.tax) };
+      return { kind: "gain", coins: rules.basic.takeCoins + Math.max(0, room.tax) };
     case "KILL_CARD":
       return { kind: "cost", coins: killCost(room.tax, rules) };
     case "SWAP_CARDS":

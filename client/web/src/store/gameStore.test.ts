@@ -46,6 +46,17 @@ describe("gameStore", () => {
     expect(s().log).toHaveLength(1);
   });
 
+  it("o broadcast privado (sem chat) não apaga a conversa", () => {
+    const base = fixture("Conversa", NOW).room!;
+    s().applyRoom(base, NOW);
+    const chat = s().room!.chat;
+    expect(chat.length).toBeGreaterThan(0);
+
+    // redisFuncs/broadcast.go → clonePublicForPrivate: o pacote de dados confidenciais chega depois, sem chat
+    s().applyRoom({ ...base, chat: [] }, NOW + 1);
+    expect(s().room!.chat).toEqual(chat);
+  });
+
   it("mantém o nome das suas cartas quando a versão pública chega sem eles", () => {
     const base = fixture("Mesa6", NOW).room!;
     s().applyRoom(base, NOW);
@@ -73,7 +84,7 @@ describe("gameStore (fila de apresentação)", () => {
     s().applyRoom(contested, NOW + 10);
     expect(s().presentation.map((e) => e.type)).toEqual(["CONTEST"]);
     expect(s().log).toHaveLength(1);
-    expect(s().log[0].pred).toContain("alguém duvidou");
+    expect(s().log[0].pred).toContain("Bruno duvidou");
   });
 });
 
