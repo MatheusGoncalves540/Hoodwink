@@ -87,8 +87,8 @@ func TestCardValueRespectsTaxLimits(t *testing.T) {
 		role structs.TypePlayerPlays
 		want int
 	}{
-		{-5, structs.PlayAssassinCard, 2},
-		{5, structs.PlayAssassinCard, 8},
+		{-5, structs.PlayAssassinCard, 3},
+		{5, structs.PlayAssassinCard, 9},
 		{-5, structs.PlayGravediggerCard, 3},
 		{0, structs.PlayGravediggerCard, 5},
 		{5, structs.PlayGravediggerCard, 10},
@@ -167,7 +167,7 @@ func TestGuardianPrices(t *testing.T) {
 		sight  int
 		future int
 	}{
-		{-5, 4, 2, 5},
+		{-5, 3, 2, 5},
 		{0, 5, 4, 6},
 		{5, 10, 9, 11},
 	}

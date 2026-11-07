@@ -21,7 +21,7 @@ func TestPricesPaidOnDeclaration(t *testing.T) {
 		raw   string
 		price func(tax int) int
 	}{
-		{"Assassino 3+t, mín 2", structs.CardAssassin, `{"type":"ASSASSIN","payload":{"targetPlayer":"bia","targetCardIndex":0}}`, func(t int) int { return max(2, 3+t) }},
+		{"Assassino 4+t, mín 3", structs.CardAssassin, `{"type":"ASSASSIN","payload":{"targetPlayer":"bia","targetCardIndex":0}}`, func(t int) int { return max(3, 4+t) }},
 		{"Clarividente 4+t, mín 2", structs.CardClairvoyant, `{"type":"CLAIRVOYANT","payload":{"targetPlayer":"bia","targetCardIndex":0,"showToAllPlayers":false}}`, func(t int) int { return max(2, 4+t) }},
 		{"Guardiã no turno 6+t, mín 5", structs.CardGuardian, `{"type":"GUARDIAN","payload":{"targetPlayer":"ana","targetCardIndex":0}}`, func(t int) int { return max(5, 6+t) }},
 		{"Matar 6 + t/2 (t>0) ou 6+t, mín 3", structs.CardRebel, `{"type":"KILL_CARD","payload":{"targetPlayer":"bia","targetCardIndex":0}}`, func(t int) int {
@@ -76,13 +76,13 @@ func TestPricesGains(t *testing.T) {
 
 func TestPricesReactions(t *testing.T) {
 	for _, tax := range taxes {
-		t.Run(fmt.Sprintf("Guardiã na hora do ataque 5+t, mín 4/taxa %d", tax), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Guardiã na hora do ataque 5+t, mín 3/taxa %d", tax), func(t *testing.T) {
 			tb := newTable(t, seat("bia", 15, structs.CardAssassin, structs.CardRebel), seat("ana", 15, structs.CardGuardian, structs.CardRebel))
 			tb.room.Tax = tax
 			tb.mustPlay("bia", `{"type":"ASSASSIN","payload":{"targetPlayer":"ana","targetCardIndex":0}}`)
 			tb.tickUntil(structs.EventCardKilled)
 			tb.mustPlay("ana", `{"type":"GUARDIAN","payload":{"targetPlayer":"ana","targetCardIndex":0}}`)
-			tb.wantCoins("ana", 15-max(4, 5+tax))
+			tb.wantCoins("ana", 15-max(3, 5+tax))
 		})
 
 		t.Run(fmt.Sprintf("Guardiã contra Clarividente 4+t, mín 2/taxa %d", tax), func(t *testing.T) {

@@ -29,7 +29,7 @@ func TestKamikazeOnOwnTurnSacrificesItselfAndKills(t *testing.T) {
 
 func TestKamikazeRetaliatesWhenKilled(t *testing.T) {
 	tb := newTable(t,
-		seat("bia", 3, structs.CardAssassin, structs.CardRebel),
+		seat("bia", 4, structs.CardAssassin, structs.CardRebel),
 		seat("ana", 0, structs.CardKamikaze, structs.CardRebel),
 	)
 
@@ -46,7 +46,7 @@ func TestKamikazeRetaliatesWhenKilled(t *testing.T) {
 func TestKamikazeReactionRules(t *testing.T) {
 	t.Run("só a carta Kamikaze que está morrendo reage", func(t *testing.T) {
 		tb := newTable(t,
-			seat("bia", 3, structs.CardAssassin, structs.CardRebel),
+			seat("bia", 4, structs.CardAssassin, structs.CardRebel),
 			seat("ana", 0, structs.CardKamikaze, structs.CardRebel),
 		)
 		tb.mustPlay("bia", `{"type":"ASSASSIN","payload":{"targetPlayer":"ana","targetCardIndex":1}}`)
@@ -56,7 +56,7 @@ func TestKamikazeReactionRules(t *testing.T) {
 
 	t.Run("quem não é o alvo não reage", func(t *testing.T) {
 		tb := newTable(t,
-			seat("bia", 3, structs.CardAssassin, structs.CardRebel),
+			seat("bia", 4, structs.CardAssassin, structs.CardRebel),
 			seat("ana", 0, structs.CardRebel, structs.CardRebel),
 			seat("cris", 0, structs.CardKamikaze, structs.CardRebel),
 		)
