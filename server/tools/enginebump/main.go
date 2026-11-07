@@ -148,7 +148,7 @@ func run(gameServerDir, replayDir string) (int, error) {
 	return next, nil
 }
 
-var recorderVersionRE = regexp.MustCompile(`(?m)^const EngineVersion = \d+$`)
+var recorderVersionRE = regexp.MustCompile(`(?m)^const EngineVersion = \d+\r?$`)
 
 // writeRecorderVersion mantém o const do recorder igual à versão congelada.
 func writeRecorderVersion(gameServerDir string, version int) error {

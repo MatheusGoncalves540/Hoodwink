@@ -108,7 +108,7 @@ func run(gameServerDir, replayDir string) error {
 	return nil
 }
 
-var recorderVersionRE = regexp.MustCompile(`(?m)^const EngineVersion = (\d+)$`)
+var recorderVersionRE = regexp.MustCompile(`(?m)^const EngineVersion = (\d+)\r?$`)
 
 // readRecorderVersion lê o const que o recorder usa no cabeçalho do .hwr.
 func readRecorderVersion(gameServerDir string) (int, error) {

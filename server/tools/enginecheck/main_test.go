@@ -57,6 +57,12 @@ func TestReadRecorderVersion(t *testing.T) {
 		t.Fatalf("2 => (%d, %v)", n, err)
 	}
 
+	// Checkout no Windows aplica CRLF; o check precisa funcionar assim também.
+	write("package services\r\n\r\nconst EngineVersion = 3\r\n")
+	if n, err := readRecorderVersion(dir); err != nil || n != 3 {
+		t.Fatalf("3 em CRLF => (%d, %v)", n, err)
+	}
+
 	write("package services\n\nconst engineVersion = 2\n")
 	if _, err := readRecorderVersion(dir); err == nil {
 		t.Fatal("const com nome errado deveria falhar")
