@@ -77,9 +77,9 @@ Secrets/vars do repositório (os mesmos nomes do Summus):
 | secret | `VM_USER`    | `ubuntu`         |
 | secret | `VM_SSH_KEY` | chave privada SSH |
 
-Os segredos da aplicação vivem no **environment `production` do GitHub** e são
-materializados na VM pelo job de deploy (o `k8s/.env.production` é gerado,
-usado e apagado no mesmo run):
+Os segredos da aplicação vivem no **environment `production` do GitHub**. O job
+de deploy cria/atualiza diretamente o Secret `hoodwink-secrets` no cluster com
+`kubectl --from-literal`; **não existe arquivo `.env.production` na VM**.
 
 ```dotenv
 PG_PASS=<senha do Postgres>
@@ -94,10 +94,10 @@ REPLAY_PUBLIC_KEY_HEX=<64 hex da chave pública Ed25519>
 ```
 
 Cadastre com `gh secret set <NOME> --env production` (o valor é pedido no
-prompt, sem ficar no histórico). O `init-secrets.sh` continua disponível para
-gerar os pares localmente, mas não é mais necessário na VM. O
-`REPLAY_PUBLIC_KEY_HEX` é passado no build do web
-(`--build-arg VITE_REPLAY_PUBLIC_KEY=...`); sem ele o bundle usa a chave de dev
+prompt, sem ficar no histórico). O `init-secrets.sh` é legado: só serve para
+gerar pares localmente, não é usado no deploy. O `REPLAY_PUBLIC_KEY_HEX` é
+passado no build do web (`--build-arg VITE_REPLAY_PUBLIC_KEY=...`); sem ele o
+bundle usa a chave de dev
 e os replays de produção aparecem como "não oficial" (ainda reproduzem).
 
 ## Chaves do ticket

@@ -136,7 +136,8 @@ jobs:
   #
   # Secrets/vars do repositório:
   #   vars.VM_HOST | secrets.VM_USER | secrets.VM_SSH_KEY
-  # Segredos da aplicação: $HOME/Hoodwink/k8s/.env.production na VM.
+  # Segredos da aplicação: environment production do GitHub; o job cria/atualiza
+  # direto o Secret hoodwink-secrets no cluster, sem arquivo na VM.
   deploy:
     name: Deploy na VM (Helm)
     needs: [web, server, replay, engine-check]
@@ -185,7 +186,7 @@ jobs:
             git checkout -f "$SHA"
             SHORT=$(git rev-parse --short HEAD)
 
-            echo "==> Materializando segredos do GitHub"
+            echo "==> Validando segredos do GitHub"
             required="PG_PASS JWT_SECRET GAME_JWT_SECRET BACKEND_API_KEY REDIS_PASSWORD TICKET_PRIVATE_KEY TICKET_PUBLIC_KEY REPLAY_SIGNING_KEY REPLAY_PUBLIC_KEY_HEX"
             for name in $required; do
               if [ -z "${!name:-}" ]; then
@@ -194,25 +195,10 @@ jobs:
               fi
             done
 
-            umask 077
-            cat > k8s/.env.production <<ENVFILE
-            PG_PASS=$PG_PASS
-            JWT_SECRET=$JWT_SECRET
-            GAME_JWT_SECRET=$GAME_JWT_SECRET
-            BACKEND_API_KEY=$BACKEND_API_KEY
-            REDIS_PASSWORD=$REDIS_PASSWORD
-            TICKET_PRIVATE_KEY=$TICKET_PRIVATE_KEY
-            TICKET_PUBLIC_KEY=$TICKET_PUBLIC_KEY
-            REPLAY_SIGNING_KEY=$REPLAY_SIGNING_KEY
-            REPLAY_PUBLIC_KEY_HEX=$REPLAY_PUBLIC_KEY_HEX
-            ENVFILE
-            chmod 600 k8s/.env.production
-            trap 'rm -f k8s/.env.production' EXIT
+            # Legado: o deploy antigo lia este arquivo. Hoje a fonte é o Secret do cluster.
+            rm -f k8s/.env.production
 
             echo "==> Build das imagens (nativo arm64) $SHORT"
-            set -a
-            . k8s/.env.production
-            set +a
 
             sudo docker build -f server/backend/Dockerfile -t "$PREFIX/hoodwink-backend:$SHORT" server
             sudo docker build -f server/gameServer/Dockerfile -t "$PREFIX/hoodwink-gameserver:$SHORT" server
@@ -231,7 +217,15 @@ jobs:
             echo "==> Namespace + Secret"
             kubectl apply -f k8s/namespace.yaml
             kubectl -n "$NS" create secret generic hoodwink-secrets \
-              --from-env-file=k8s/.env.production \
+              --from-literal=PG_PASS="$PG_PASS" \
+              --from-literal=JWT_SECRET="$JWT_SECRET" \
+              --from-literal=GAME_JWT_SECRET="$GAME_JWT_SECRET" \
+              --from-literal=BACKEND_API_KEY="$BACKEND_API_KEY" \
+              --from-literal=REDIS_PASSWORD="$REDIS_PASSWORD" \
+              --from-literal=TICKET_PRIVATE_KEY="$TICKET_PRIVATE_KEY" \
+              --from-literal=TICKET_PUBLIC_KEY="$TICKET_PUBLIC_KEY" \
+              --from-literal=REPLAY_SIGNING_KEY="$REPLAY_SIGNING_KEY" \
+              --from-literal=REPLAY_PUBLIC_KEY_HEX="$REPLAY_PUBLIC_KEY_HEX" \
               --dry-run=client -o yaml | kubectl apply -f -
 
             echo "==> Helm upgrade --install --atomic"
