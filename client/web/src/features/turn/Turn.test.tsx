@@ -31,7 +31,7 @@ describe("reação e contestação", () => {
     );
     expect(out).toContain("Ana se diz");
     expect(out).toContain(">Assassino<");
-    expect(out).toContain("Ana paga 4 moedas e mira uma carta sua.");
+    expect(out).toContain("Ana paga 5 moedas e mira uma carta sua.");
     expect(out).toContain("dita, não mostrada");
     expect(out).toContain("Sua vez de reagir");
     expect(out).toContain("Na mão: Guardiã e Trilionário");
@@ -164,8 +164,9 @@ describe("escolha do Clarividente", () => {
       />,
     );
     expect(out).toContain('data-slot="target-light"');
-    // um refletor por camarote aceso (a lâmpada é o svg de cada luz)
-    expect(out.match(/viewBox="0 0 96 64"/g)?.length).toBe(lit.length);
+    // um canhão só cobre todos (uma lâmpada, um feixe), e cada camarote aceso ganha a sua poça
+    expect(out.match(/viewBox="0 0 96 64"/g)?.length).toBe(1);
+    expect(out.match(/--x:/g)?.length).toBe(lit.length);
     expect(out).toContain("Clarividente · etapa 2 de 3");
     expect(out).toContain('data-lugar="pergunta"');
     expect(out).toContain("A carta vai aparecer para todos.");

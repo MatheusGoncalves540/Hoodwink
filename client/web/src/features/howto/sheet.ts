@@ -55,7 +55,7 @@ export function sheetOf(id: RoleId, tax: number): Sheet {
       return { ...base, price: "1", efeito: "Investe 1 moeda. Em todo turno seu, rende metade do que está investido, em moedas inteiras.", quando: `${T}, 1 moeda por turno`, alvo: "Ninguém", faixa: `Até ${cap} moedas investidas (4 + taxa, de 2 a 6)`, barra: "Egoísta barra o investimento, nunca o rendimento", contesta: "Só quando investe", nota: "Cada moeda volta para a sua mão após 6 turnos. Se a taxa cair, o que passar do teto é descartado." };
     }
     case "ASSASSIN":
-      return { ...base, efeito: "Mata uma carta de outro jogador.", alvo: "Uma carta de outro jogador", faixa: "3 + taxa, no mínimo 2", barra: "Guardiã" };
+      return { ...base, efeito: "Mata uma carta de outro jogador.", alvo: "Uma carta de outro jogador", faixa: "4 + taxa, no mínimo 3", barra: "Guardiã" };
     case "CLAIRVOYANT":
       return { ...base, efeito: "Revela uma carta de outro jogador, para todos ou só para você.", alvo: "Uma carta de outro jogador", faixa: "4 + taxa, no mínimo 2", barra: "Guardiã", nota: "Depois a carta volta a se esconder, no mesmo lugar." };
     case "KAMIKAZE":

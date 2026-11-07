@@ -115,3 +115,18 @@
 .dimmed {
   opacity: 0.4;
 }
+
+/* Grade do celular (Camarotes.dc.html, 6+ adversários): 120×62, arco achatado, nome inteiro em cima,
+   cartas e moeda embaixo; o "···" sai (a gaveta do camarote continua no toque). */
+.wide {
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px 4px;
+  border-radius: 60px 60px 4px 4px / 24px 24px 4px 4px;
+}
+.wide .name {
+  font-size: 15px;
+}
+.wide .dots {
+  display: none;
+}

@@ -260,7 +260,7 @@ export function selectFootlights(v: GameView) {
 
 export type YouCard = { role?: RoleId; protected: boolean; dead: boolean; index: number };
 
-/** Janela de cada deixa (ClassicRules.yaml): ação 10 s, mensagem 6 s, importante 8 s. */
+/** Janela de cada deixa (ClassicRules.yaml): ação 30 s, mensagem 6 s, importante 8 s. */
 function eventWindow(type: string | undefined, suddenDeath: boolean): number {
   const w = suddenDeath ? "suddenDeath" : "default";
   if (type === "WAITING_FIRST_ACTION" || (type?.startsWith("CARD_PLAYED_") && type !== "CARD_PLAYED_GUARDIAN")) return CLASSIC_RULES.waitingAction[w];
@@ -308,7 +308,7 @@ export function selectDecision(v: GameView): Decision {
   const p = payload(v);
   const mine = ev.playerId === me.id;
   const role = declaredRole(ev.type);
-  // Guardiã: reação a ataque 5 + t (mín 4); contra Clarividente 4 + t (mín 2). 02 §3.
+  // Guardiã: reação a ataque 5 + t (mín 3); contra Clarividente 4 + t (mín 2). 02 §3.
   const guardian = (when: "reaction" | "clairvoyant"): Block => ({ role: "GUARDIAN", cost: guardianPrice(when, r), payload: "guardian" });
 
   if (ev.type === "WAITING_FIRST_ACTION") return mine ? { kind: "myTurn" } : { kind: "none" };
