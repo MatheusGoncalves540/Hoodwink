@@ -6,6 +6,8 @@
   max-width: 480px;
   /* altura da faixa Você: a cortina do miolo usa a mesma clamp para não encostar */
   --hw-youbar-h: clamp(180px, 28svh, 236px);
+  /* ribalta: a gaveta e o holofote do alvo param aqui, para não cobrir baralho e taxa */
+  --hw-footlights-top: min(540px, 64svh);
   /* a composição tem 700 px de base: em landscape/teclado aberto a tela rola em vez de cortar */
   min-height: max(100svh, 700px);
   margin: 0 auto;
@@ -18,6 +20,7 @@
 .desk {
   max-width: none;
   --hw-youbar-h: clamp(160px, 21.8svh, 196px);
+  --hw-footlights-top: min(596px, 66.3svh);
 }
 .tableArea {
   position: absolute;
@@ -46,16 +49,83 @@
   z-index: 4;
 }
 
-/* Cortina do miolo: abaixo do cabeçalho e acima da faixa Você, sem cobrir trilho. */
+/* Cortina do miolo: abaixo do cabeçalho e acima da ribalta, sem cobrir trilho. */
 .curtainSlot {
   position: absolute;
   left: 0;
   right: 0;
   top: 52px;
-  bottom: var(--hw-youbar-h);
+  bottom: calc(100% - var(--hw-footlights-top));
   z-index: 5;
 }
 .desk .curtainSlot {
+  top: 64px;
+}
+
+/* Escolha de alvo (Clarividente, Assassino, Matar, Trapaceiro, Kamikaze):
+   a mesa escurece e cada camarote elegível ganha uma poça de luz. O recorte
+   mantém cabeçalho, faixa Você e trilho legíveis. */
+.targetLight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52px;
+  bottom: calc(100% - var(--hw-footlights-top));
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--hw-scrim);
+  animation: m-fade 0.24s ease-out both;
+}
+.desk .targetLight {
+  top: 64px;
+}
+.pool {
+  position: absolute;
+  background:
+    radial-gradient(closest-side, var(--hw-poca), transparent 74%),
+    radial-gradient(closest-side, var(--hw-poca), transparent 62%),
+    radial-gradient(closest-side, var(--hw-poca), transparent 52%);
+  animation: m-fade 0.3s ease-out both;
+}
+/* Primeira etapa da escolha: um cone de luz do palco até o pé da mesa.
+   Mesmo desenho do <Spotlight> (cone em --hw-cone, poça em --hw-poca), sem tocar nele. */
+.cone {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 4%, var(--hw-cone) 94%);
+  clip-path: polygon(50% 0%, 94% 100%, 6% 100%);
+  animation: m-fade 0.4s ease-out both;
+}
+.coneBase {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 1%;
+  height: 18%;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 50%, var(--hw-poca), transparent 72%),
+    radial-gradient(ellipse at 50% 50%, var(--hw-poca), transparent 60%);
+  animation: m-fade 0.5s ease-out both;
+}
+
+/* Cartão centrado sobre o holofote (escolha do Clarividente). */
+.center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52px;
+  bottom: calc(100% - var(--hw-footlights-top));
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.center > * {
+  pointer-events: auto;
+}
+.desk .center {
   top: 64px;
 }
 

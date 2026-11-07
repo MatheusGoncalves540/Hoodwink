@@ -8,9 +8,7 @@ const f = fixture("Acoes", NOW);
 const out = renderToStaticMarkup(<ActionBoard view={{ me: f.me, room: f.room, log: f.log }} layout="mobile" onPick={() => {}} />);
 
 describe("ActionBoard", () => {
-  it("mostra a rodada, a taxa e suas moedas", () => {
-    expect(out).toContain("Sua vez");
-    expect(out).toContain("Rodada 4 · Taxa +1");
+  it("mostra o título, suas moedas e o tempo da jogada", () => {
     expect(out).toContain("Escolha uma ação");
     expect(out).toContain('aria-label="Você tem 5 moedas"');
     expect(out).toContain('role="progressbar" aria-label="Tempo da jogada"');

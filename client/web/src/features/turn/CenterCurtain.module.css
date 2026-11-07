@@ -1,54 +1,42 @@
-/* Cortina do miolo da mesa: cobre só a área dos jogadores (o slot em Table.module.css
-   já recorta cabeçalho, trilho e faixa Você). Fechada, sobra o handle no pé. */
+/* Gaveta do miolo da mesa: cobre só a área dos jogadores (o slot em Table.module.css
+   já recorta cabeçalho, trilho e faixa Você). O handle é a borda de cima da gaveta e
+   sobe junto com o painel; fechada, só ele fica à vista no pé do slot. */
 .curtain {
+  --curtain-handle-h: 44px;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.drawer {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  /* a área dos jogadores continua clicável: só o painel e o handle recebem toque */
-  pointer-events: none;
-}
-.body {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: hidden;
-  pointer-events: none;
-  visibility: hidden;
-  transform: translateY(100%);
-  transition:
-    transform 0.32s var(--m-drawer),
-    visibility 0s linear 0.32s;
-}
-.body > * {
-  pointer-events: auto;
-}
-.open .body {
-  visibility: visible;
-  transform: none;
+  /* fechada: a gaveta desce até sobrar só o handle no pé do slot */
+  transform: translateY(calc(100% - var(--curtain-handle-h)));
   transition: transform 0.32s var(--m-drawer);
 }
-/* fechada, o corpo não ocupa altura: o handle desce até o pé do slot */
-.curtain:not(.open) .body {
-  flex: 0 0 0;
+.open .drawer {
+  transform: none;
+}
+/* sem handle (durante o alvo) não há o que recolher */
+.curtain:not(.hasHandle) .drawer {
+  transform: none;
 }
 .handle {
-  flex-shrink: 0;
-  align-self: center;
+  flex: 0 0 var(--curtain-handle-h);
+  width: 100%;
   box-sizing: border-box;
-  min-height: 44px;
-  padding: 6px 18px 10px;
+  height: var(--curtain-handle-h);
+  padding: 0 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   pointer-events: auto;
-  border: 2px solid var(--hw-tinta);
-  border-bottom: 0;
-  border-radius: var(--hw-radius-m) var(--hw-radius-m) 0 0;
+  border: 0;
+  border-bottom: 3px double var(--hw-tinta);
   background: var(--hw-luz);
   color: var(--hw-tinta);
   font-family: var(--hw-font-rotulo);
@@ -68,11 +56,28 @@
 .handleLabel {
   white-space: nowrap;
 }
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s linear 0.32s;
+}
+.open .body {
+  visibility: visible;
+  transition: visibility 0s;
+}
+.body > * {
+  pointer-events: auto;
+}
 
 /* Menos movimento também chega por data-motion="reduced" (styles/motion.css). */
 @media (prefers-reduced-motion: reduce) {
-  .body,
-  .open .body {
+  .drawer,
+  .body {
     transition: none;
   }
 }
