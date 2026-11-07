@@ -118,3 +118,17 @@
   align-content: start;
   column-gap: 28px;
 }
+
+/* Cascata ao abrir a gaveta: "Na sua mão" e cada grupo sobem 24 px e acendem, 50 ms depois do anterior (--i).
+   O estado apagado só vale dentro da gaveta fechada; fora dela o quadro aparece normal. */
+.held,
+.group {
+  transition:
+    opacity 0.3s ease-out calc(140ms + var(--i, 0) * 50ms),
+    translate 0.38s var(--m-drawer) calc(140ms + var(--i, 0) * 50ms);
+}
+:global([data-curtain]:not([data-open])) :is(.held, .group) {
+  opacity: 0;
+  translate: 0 24px;
+  transition-delay: 0s;
+}

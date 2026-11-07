@@ -10,12 +10,12 @@ type Props = {
   layoutSeats: SeatLayout;
   layout: Layout;
   onSeat?(id: string): void;
-  /** Fluxo de alvo: vivos recebem o anel, fora de cena ficam apagados. */
-  targeting?: boolean;
+  /** Fluxo de alvo: ids acesos recebem o anel e sobem acima do escuro; fora de cena ficam apagados. */
+  targets?: string[];
 };
 
 /** Ferradura de camarotes; posições de game/seats.ts (tabela mobile e parábola desktop). */
-export function SeatRing({ seats, layoutSeats, layout, onSeat, targeting }: Props) {
+export function SeatRing({ seats, layoutSeats, layout, onSeat, targets }: Props) {
   return (
     <section aria-label={copy.seatsRegion} className={s.seats}>
       {seats.map((seat, i) => {
@@ -28,8 +28,8 @@ export function SeatRing({ seats, layoutSeats, layout, onSeat, targeting }: Prop
             big={layoutSeats.big}
             layout={layout}
             onOpen={onSeat}
-            targetable={targeting && !seat.out}
-            dimmed={targeting && seat.out}
+            targetable={!!targets?.includes(seat.id)}
+            dimmed={!!targets && seat.out}
           />
         ) : null;
       })}

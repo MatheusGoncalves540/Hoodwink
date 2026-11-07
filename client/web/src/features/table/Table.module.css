@@ -49,54 +49,48 @@
   z-index: 4;
 }
 
-/* Gaveta de ações: sobe do pé até --curtain-top, por cima da faixa Você e sem cobrir o trilho.
-   Fechada, o handle descansa logo acima da faixa Você (--curtain-rest). O slot não recebe clique:
-   só o handle e o conteúdo aberto. */
+/* Gaveta de ações (Gaveta v2): aberta, ocupa a coluna do palco de alto a baixo, cabeçalho inclusive; o trilho
+   fica. Fechada, mora atrás da faixa Você e só a aba aparece acima dela (--curtain-rest). O slot não recebe
+   clique: só a aba e o conteúdo aberto. */
 .curtainSlot {
   position: absolute;
   left: 0;
   right: 0;
-  top: 52px;
+  top: 0;
   bottom: 0;
   z-index: 5;
   pointer-events: none;
   --curtain-rest: var(--hw-youbar-h);
-  /* aberta, a gaveta para abaixo da primeira fileira de camarotes: o palco de cima segue à vista */
-  --curtain-top: clamp(96px, 16svh, 150px);
 }
 .desk .curtainSlot {
-  top: 64px;
-  left: 24px;
-  right: 444px;
-  --curtain-top: clamp(150px, 25svh, 240px);
+  right: 420px;
+}
+/* a faixa Você cobre a gaveta guardada; com ela aberta, desce para dar lugar e volta depois que a gaveta afunda */
+.youOverDrawer {
+  z-index: 6;
+  transition: translate 0.36s var(--m-drawer) 0.2s;
+}
+.youAway {
+  translate: 0 110%;
+  transition: translate 0.26s cubic-bezier(0.4, 0, 1, 1) 0.04s;
 }
 
-/* Escolha de alvo (Clarividente, Assassino, Matar, Trapaceiro, Kamikaze):
-   a mesa escurece e cada camarote elegível ganha uma poça de luz. O recorte
-   mantém cabeçalho, faixa Você e trilho legíveis. */
-.targetLight {
+/* Cartaz da escolha de alvo: no pé, acima da mesa apagada (TargetSpotlight z 7) e dos camarotes acesos (z 8) */
+.prompt {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 52px;
-  bottom: calc(100% - var(--hw-footlights-top));
-  z-index: 3;
-  overflow: hidden;
-  pointer-events: none;
-  background: var(--hw-scrim);
-  animation: m-fade 0.24s ease-out both;
+  left: 14px;
+  right: 14px;
+  bottom: 20px;
+  z-index: 9;
 }
-.desk .targetLight {
-  top: 64px;
+.desk .prompt {
+  /* centro da coluna do palco (tela menos o trilho de 420 px) */
+  left: calc((100% - 420px - 580px) / 2);
+  right: auto;
+  width: 580px;
+  bottom: 40px;
 }
-.pool {
-  position: absolute;
-  background:
-    radial-gradient(closest-side, var(--hw-poca), transparent 74%),
-    radial-gradient(closest-side, var(--hw-poca), transparent 62%),
-    radial-gradient(closest-side, var(--hw-poca), transparent 52%);
-  animation: m-fade 0.3s ease-out both;
-}
+
 /* Holofote de pergunta global (GlobalQuestion): do cabeçalho até o pé, faixa Você inclusive. */
 .center {
   position: absolute;
@@ -133,9 +127,9 @@
   overflow-y: auto;
 }
 
-/* Camada de tela inteira (ações, aviso de morte súbita): cobre cabeçalho e trilho. */
+/* Camada de tela inteira (aviso de morte súbita): cobre cabeçalho, trilho, gaveta e alvo. */
 .screenOverlay {
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: 10;
 }
