@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main, production]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 
@@ -12,6 +13,20 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  version:
+    name: Versão — VERSION e tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confere VERSION (e a tag do release, quando houver)
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            make -C server version-check tag="${GITHUB_REF_NAME}"
+          else
+            make -C server version-check
+          fi
+
   replay-wasm:
     name: Replay — WASM por versão e manifest
     runs-on: ubuntu-latest
@@ -140,7 +155,7 @@ jobs:
   # direto o Secret hoodwink-secrets no cluster, sem arquivo na VM.
   deploy:
     name: Deploy na VM (Helm)
-    needs: [web, server, replay, engine-check]
+    needs: [version, web, server, replay, engine-check]
     if: github.ref == 'refs/heads/production' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: production
@@ -198,12 +213,21 @@ jobs:
             # Legado: o deploy antigo lia este arquivo. Hoje a fonte é o Secret do cluster.
             rm -f k8s/.env.production
 
-            echo "==> Build das imagens (nativo arm64) $SHORT"
+            GAME_VERSION="$(cat VERSION)"
 
-            sudo docker build -f server/backend/Dockerfile -t "$PREFIX/hoodwink-backend:$SHORT" server
-            sudo docker build -f server/gameServer/Dockerfile -t "$PREFIX/hoodwink-gameserver:$SHORT" server
+            echo "==> Build das imagens (nativo arm64) $SHORT — jogo v$GAME_VERSION"
+
+            sudo docker build \
+              --build-arg "GAME_VERSION=$GAME_VERSION" \
+              --build-arg "GAME_COMMIT=$SHORT" \
+              -f server/backend/Dockerfile -t "$PREFIX/hoodwink-backend:$SHORT" server
+            sudo docker build \
+              --build-arg "GAME_VERSION=$GAME_VERSION" \
+              --build-arg "GAME_COMMIT=$SHORT" \
+              -f server/gameServer/Dockerfile -t "$PREFIX/hoodwink-gameserver:$SHORT" server
             sudo docker build \
               --build-arg "VITE_REPLAY_PUBLIC_KEY=${REPLAY_PUBLIC_KEY_HEX:-}" \
+              --build-arg "VITE_GAME_VERSION=$GAME_VERSION" \
               -t "$PREFIX/hoodwink-web:$SHORT" client/web
 
             echo "==> Import no containerd do k3s"

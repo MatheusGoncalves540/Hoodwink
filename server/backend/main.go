@@ -16,6 +16,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink/routes"
 	"github.com/MatheusGoncalves540/Hoodwink/routes/handlers"
 	"github.com/MatheusGoncalves540/Hoodwink/services"
+	"github.com/MatheusGoncalves540/Hoodwink/version"
 	"github.com/joho/godotenv"
 )
 
@@ -24,6 +25,7 @@ func main() {
 	flag.Parse()
 
 	godotenv.Load(".env")
+	log.Printf("🎮 Hoodwink %s (%s)", version.Version, version.Commit)
 	log.Printf("🌐 Ambiente definido como %s", os.Getenv("ENVIRONMENT"))
 
 	if os.Getenv("ENVIRONMENT") == "local" {

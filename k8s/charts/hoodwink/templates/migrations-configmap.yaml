@@ -107,4 +107,6 @@ data:
     );
 
     CREATE INDEX IF NOT EXISTS match_replays_player_ids_gin ON match_replays USING GIN (player_ids);
+
+    ALTER TABLE match_replays ADD COLUMN IF NOT EXISTS game_version TEXT NOT NULL DEFAULT 'unknown';
 {{- end }}
