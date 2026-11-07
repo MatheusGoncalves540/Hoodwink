@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/contextKeys"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
@@ -21,16 +22,28 @@ func (h *HTTPHandler) GetTicket(rdb *redis.Client) http.HandlerFunc {
 			return
 		}
 
-		isValid, err := h.RoomService.ValidatePlayerEntry(r, rdb, h.BackendService, roomId, playerClaims.Id)
+		// Valida se o player pode entrar na sala (regra local; o backend só revalida o token).
+		isValid, err := h.RoomService.ValidatePlayerEntry(r, rdb, roomId, playerClaims.Id)
 		if !isValid {
 			utils.SendError(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		// Geração do ticket JWT
-		ticket, err := h.JWTService.GenerateToken(playerClaims, roomId)
-		if err != nil {
-			utils.SendError(w, "Erro ao gerar ticket", http.StatusInternalServerError)
+		// O ticket é assinado pelo backend; reenviamos o token de login recebido.
+		authHeader := r.Header.Get("Authorization")
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			utils.SendError(w, "Token não fornecido", http.StatusUnauthorized)
+			return
+		}
+		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+
+		ticket, status := h.BackendService.RequestTicket(r.Context(), tokenStr, roomId, utils.ClientIP(r), utils.UserAgent(r))
+		if status != http.StatusOK {
+			if status == http.StatusUnauthorized {
+				utils.SendError(w, "Token inválido", http.StatusUnauthorized)
+				return
+			}
+			utils.SendError(w, "Servidor de login indisponível", http.StatusServiceUnavailable)
 			return
 		}
 
