@@ -17,10 +17,11 @@ export const createInput = (username: string): NewRoomInput => ({
   maxPlayers: DEFAULT_MAX_PLAYERS,
 });
 
-/** Código do convite na URL (`?sala=K7Q2`), no formato que o servidor emite: hexa minúsculo de 4 a 12. */
+/** Código do convite na URL (`?sala=K7Q2MN`), no formato que o servidor emite:
+ * 6 caracteres sem ambíguos (fora 0/O e 1/I/L), em maiúsculas. */
 export function roomCodeFromSearch(search: string): string | null {
-  const code = new URLSearchParams(search).get("sala")?.trim().toLowerCase() ?? "";
-  return /^[0-9a-f]{4,12}$/.test(code) ? code : null;
+  const code = new URLSearchParams(search).get("sala")?.trim().toUpperCase() ?? "";
+  return /^[2-9A-HJ-NP-Z]{6}$/.test(code) ? code : null;
 }
 
 /** Payload do JWT sem validar a assinatura (quem valida é o servidor). */

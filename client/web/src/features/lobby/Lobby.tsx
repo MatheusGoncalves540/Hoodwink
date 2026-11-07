@@ -20,9 +20,8 @@ import { Ticket } from "../../ui/Ticket/Ticket";
 import { cx } from "../../ui/cx";
 import s from "./Lobby.module.css";
 
-/** O design desenha 4 letras (K7Q2); o servidor gera ids em hexa maiores. Entrar libera em 4. */
-const MIN_CODE = 4;
-const MAX_CODE = 12;
+/** Código de convite: 6 caracteres maiúsculos, sem os que se confundem (0/O, 1/I/L). */
+const CODE_LENGTH = 6;
 
 /** Canto superior direito do cartaz: inicial do ator logado ou "Entrar com Google". */
 export function Profile({
@@ -76,7 +75,7 @@ export function Lobby() {
   }, [userId]);
 
   const trimmed = code.trim();
-  const valid = trimmed.length >= MIN_CODE;
+  const valid = trimmed.length === CODE_LENGTH;
   const message =
     error === "Sala não encontrada"
       ? copy.roomNotFound(trimmed.toUpperCase())
@@ -103,7 +102,7 @@ export function Lobby() {
   const onEnter = async () => {
     if (!jwtToken) return openLogin();
     if (!valid) return;
-    const roomCode = await joinRoom(jwtToken, trimmed.toLowerCase());
+    const roomCode = await joinRoom(jwtToken, trimmed.toUpperCase());
     if (roomCode) goToRoom(roomCode);
   };
 
@@ -171,13 +170,13 @@ export function Lobby() {
           label={copy.roomCodePlaceholder}
           placeholder={copy.roomCodePlaceholder}
           value={code}
-          onChange={(v) => setCode(v.toLowerCase())}
+          onChange={(v) => setCode(v.toUpperCase())}
           action={copy.enter}
           actionDisabled={!valid || busy}
           onSubmit={onEnter}
           upper
-          maxLength={MAX_CODE}
-          autoCapitalize="none"
+          maxLength={CODE_LENGTH}
+          autoCapitalize="characters"
           spellCheck={false}
         />
 

@@ -50,11 +50,13 @@ describe("sessionStore", () => {
     });
   });
 
-  it("lê o código do convite na URL no formato hexa do servidor", () => {
-    expect(roomCodeFromSearch("?sala=1A2B3C")).toBe("1a2b3c");
-    expect(roomCodeFromSearch("?cena=table&sala=%20a1b2%20")).toBe("a1b2");
-    expect(roomCodeFromSearch("?sala=zzzz")).toBeNull();
-    expect(roomCodeFromSearch("?sala=abc")).toBeNull();
+  it("lê o código do convite na URL no formato do servidor", () => {
+    expect(roomCodeFromSearch("?sala=K7Q2MN")).toBe("K7Q2MN");
+    expect(roomCodeFromSearch("?cena=table&sala=%20k7q2mn%20")).toBe("K7Q2MN");
+    expect(roomCodeFromSearch("?sala=ABCDE1")).toBeNull(); // 1 não existe no alfabeto
+    expect(roomCodeFromSearch("?sala=ABCDEO")).toBeNull(); // O não existe no alfabeto
+    expect(roomCodeFromSearch("?sala=K7Q2M")).toBeNull(); // 5 caracteres
+    expect(roomCodeFromSearch("?sala=K7Q2MNX")).toBeNull(); // 7 caracteres
     expect(roomCodeFromSearch("")).toBeNull();
   });
 
