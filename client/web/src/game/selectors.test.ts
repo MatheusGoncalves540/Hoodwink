@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fixture, FIXTURE_NAMES, type FixtureName } from "./fixtures";
 import type { PublicRoom, RoleId } from "./protocol";
 import {
-  kamikazeAlly, selectChat, selectDecision, selectFinale, selectFootlights, selectLog, selectRolesUsed, selectScene,
+  describeEvent, kamikazeAlly, selectChat, selectDecision, selectFinale, selectFootlights, selectLog, selectRolesUsed, selectScene,
   selectSeatSheet, selectSeats, selectStage, selectWaitingRoom, selectYou, selectYouSheet, type GameView,
 } from "./selectors";
 
@@ -30,7 +30,7 @@ describe("Mesa6", () => {
   });
 
   it("palco, ribalta e faixa Você", () => {
-    expect(selectStage(v)).toEqual({ activeId: "carla", activeName: "Carla", fala: "", declared: null });
+    expect(selectStage(v)).toEqual({ activeId: "carla", activeName: "Carla", fala: "Vez de Carla. Escolha uma ação.", declared: null, revealed: null });
     expect(selectFootlights(v)).toEqual({
       deck: 12,
       tax: 1,
@@ -51,7 +51,7 @@ describe("Mesa6", () => {
       ],
       investments: [2],
       nextInvestment: 2,
-      timer: { expiresAt: NOW + 8000, total: 10, ownerName: "Carla" },
+      timer: { expiresAt: NOW + 8000, total: 10, ownerName: "Carla", caption: "Vez de Carla. Escolha uma ação." },
     });
   });
 
@@ -192,9 +192,16 @@ describe("outras telas", () => {
   });
 
   it("palco na contestação", () => {
-    expect(selectStage(view("ContestaBlefe")).declared).toEqual({ actorId: "ana", actorName: "Ana", role: "ASSASSIN", phase: "bluff", targetId: null });
+    expect(selectStage(view("ContestaBlefe")).declared).toEqual({
+      actorId: "ana", actorName: "Ana", role: "ASSASSIN", phase: "bluff",
+      targetId: null, targetName: null, contesterId: "me", contesterName: "Matheus", chooserName: "Matheus",
+    });
     expect(selectStage(view("ContestaVerdade")).declared?.phase).toBe("truth");
-    expect(selectStage(view("Main")).declared).toEqual({ actorId: "ana", actorName: "Ana", role: "ASSASSIN", phase: "declared", targetId: "me" });
+    expect(selectStage(view("ContestaVerdade")).declared?.chooserName).toBe("Ana");
+    expect(selectStage(view("Main")).declared).toEqual({
+      actorId: "ana", actorName: "Ana", role: "ASSASSIN", phase: "declared",
+      targetId: "me", targetName: "Matheus", contesterId: null, contesterName: null, chooserName: null,
+    });
   });
 
   it("morte súbita liga com baralho vazio e deixa de 5 s", () => {
@@ -248,6 +255,50 @@ describe("outras telas", () => {
       ["Guardiã", 2, "Protegeu uma carta."],
       ["Trilionário", 1, "Recebeu 4 moedas."],
     ]);
+  });
+});
+
+describe("narração: quem fez e quem sofreu", () => {
+  const base = view("Mesa6");
+
+  it("contestação sempre com os dois nomes", () => {
+    expect(describeEvent(withEvent(base, "CONTEST", "bruno", { contestedPlayer: "ana", contestedCard: "ASSASSIN" }))).toBe(
+      "Bruno duvidou de Ana.",
+    );
+    expect(
+      describeEvent(withEvent(base, "CONTEST_PENALTY", "me", { contestedPlayer: "ana", contestingPlayer: "me", contestedCard: "ASSASSIN", hasCard: false })),
+    ).toBe("Ana não tinha Assassino. Você escolhe qual carta de Ana cai.");
+    expect(
+      describeEvent(withEvent(base, "CONTEST_PENALTY", "ana", { contestedPlayer: "ana", contestingPlayer: "me", contestedCard: "ASSASSIN", hasCard: true })),
+    ).toBe("Ana tinha Assassino. Ana escolhe qual carta sua cai.");
+  });
+
+  it("morte e ataque dizem quem matou e quem perdeu a carta", () => {
+    expect(describeEvent(withEvent(base, "CARD_KILLED", "ana", { cause: "ASSASSIN", targetPlayer: "bruno", targetCardIndex: 0 }))).toBe(
+      "Ana matou uma carta de Bruno.",
+    );
+    expect(describeEvent(withEvent(base, "CARD_KILLED", "bruno", { cause: "KAMIKAZE", targetPlayer: "eva", targetCardIndex: 1 }))).toBe(
+      "Bruno levou uma carta de Eva junto com o Kamikaze.",
+    );
+  });
+
+  it("Clarividente para todos: a carta revelada aparece no palco", () => {
+    const v = withEvent(base, "REVEALED_CARD", "ana", { targetPlayer: "bruno", targetCardIndex: 0, showToAllPlayers: true, revealedCard: "KAMIKAZE" });
+    expect(selectStage(v).revealed).toEqual({
+      actorId: "ana", actorName: "Ana", targetId: "bruno", targetName: "Bruno", card: "KAMIKAZE", mine: false, toAll: true,
+    });
+    expect(describeEvent(v)).toBe("Kamikaze, carta de Bruno.");
+  });
+
+  it("Clarividente só para quem jogou: a carta aparece para você e fica escondida para os outros", () => {
+    const payload = { targetPlayer: "bruno", targetCardIndex: 0, showToAllPlayers: false, revealedCard: "KAMIKAZE" };
+    const mine = withEvent(base, "REVEALED_CARD", "me", payload);
+    expect(selectStage(mine).revealed?.card).toBe("KAMIKAZE");
+    expect(describeEvent(mine)).toBe("Só você viu: Kamikaze, carta de Bruno.");
+
+    const other = withEvent(base, "REVEALED_CARD", "ana", { targetPlayer: "bruno", targetCardIndex: 0, showToAllPlayers: false });
+    expect(selectStage(other).revealed?.card).toBeNull();
+    expect(describeEvent(other)).toBe("Ana revelou uma carta de Bruno.");
   });
 });
 

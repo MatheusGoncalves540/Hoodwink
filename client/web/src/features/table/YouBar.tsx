@@ -58,9 +58,13 @@ export function YouBar({ vm, suddenDeath, layout }: { vm: ReturnType<typeof sele
           tone={suddenDeath ? "alerta" : "tinta"}
           caption={
             <span>
-              {turn.before}
-              <b>{turn.name}</b>
-              {suddenDeath ? copy.suddenTurnAfter(seconds) : turn.after}
+              {timer.caption || (
+                <>
+                  {turn?.before}
+                  <b>{turn?.name}</b>
+                  {suddenDeath ? copy.suddenTurnAfter(seconds) : turn?.after}
+                </>
+              )}
             </span>
           }
         />

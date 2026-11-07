@@ -47,8 +47,8 @@ describe("appendLog", () => {
     expect(log.map(logText)).toEqual([
       "Carla se disse Guardiã. Ninguém duvidou.",
       "Ana puxou uma carta nova como Crupiê.",
-      "Bruno se disse Assassino, alguém duvidou e perdeu a carta.",
-      "Davi perdeu uma carta.",
+      "Bruno se disse Assassino, Carla duvidou. Bruno perdeu a carta e Carla escolhe qual cai.",
+      "Ana matou uma carta de Davi como Assassino.",
       "Davi saiu da partida.",
       "Bruno roubou 3 de Eva como Trapaceiro.",
     ]);
@@ -84,7 +84,7 @@ describe("appendLog", () => {
       room(5, "CONTEST", "a", { contestedPlayer: "c" }),
       room(5, "CONTEST_PENALTY", "a", { contestedPlayer: "c", hasCard: true }),
     ]);
-    expect(log.map(logText)).toEqual(["Carla se disse Guardiã, alguém duvidou e mostrou a carta."]);
+    expect(log.map(logText)).toEqual(["Carla se disse Guardiã, Ana duvidou. Carla mostrou a carta e escolhe uma carta de Ana."]);
   });
 
   it("contestação perdida na reconexão ainda fecha a declaração com o desfecho", () => {
@@ -92,7 +92,7 @@ describe("appendLog", () => {
       room(6, "CARD_PLAYED_REBEL", "b"),
       room(6, "CONTEST_PENALTY", "a", { contestedPlayer: "b", hasCard: false }),
     ]);
-    expect(log.map(logText)).toEqual(["Bruno se disse Rebelde, alguém duvidou e perdeu a carta."]);
+    expect(log.map(logText)).toEqual(["Bruno se disse Rebelde, Ana duvidou. Bruno perdeu a carta e Ana escolhe qual cai."]);
   });
 
   it("troca de carta por contestação não se disfarça de Crupiê", () => {

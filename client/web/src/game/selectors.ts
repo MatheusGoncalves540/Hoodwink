@@ -86,7 +86,24 @@ export function selectSeats(v: GameView): SeatVM[] {
   });
 }
 
-export type Declared = { actorId: string; actorName: string; role: RoleId; phase: "declared" | "contested" | "bluff" | "truth"; targetId: string | null };
+export type Declared = {
+  actorId: string;
+  actorName: string;
+  role: RoleId;
+  phase: "declared" | "contested" | "bluff" | "truth";
+  targetId: string | null;
+  targetName: string | null;
+  /** quem duvidou (CONTEST e CONTEST_PENALTY) */
+  contesterId: string | null;
+  contesterName: string | null;
+  /** quem escolhe a carta que cai (CONTEST_PENALTY; null enquanto ninguém escolheu) */
+  chooserName: string | null;
+};
+
+/** Carta revelada pelo Clarividente. `card` só existe para quem pode ver (todos, ou só quem jogou). */
+export type Revealed = { actorId: string; actorName: string; targetId: string; targetName: string; card: RoleId | null; mine: boolean; toAll: boolean };
+
+const roleOrNull = (raw: unknown): RoleId | null => (typeof raw === "string" && raw in ROLES ? (raw as RoleId) : null);
 
 export function selectStage(v: GameView) {
   const r = v.room;
@@ -94,23 +111,131 @@ export function selectStage(v: GameView) {
   const ev = r?.gameEvent;
   const p = payload(v);
   let declared: Declared | null = null;
+  let revealed: Revealed | null = null;
   const role = declaredRole(ev?.type);
   if (ev && role) {
-    declared = { actorId: ev.playerId, actorName: fname(v, ev.playerId), role, phase: "declared", targetId: typeof p.targetPlayer === "string" ? p.targetPlayer : null };
-  } else if (ev && (ev.type === "CONTEST" || ev.type === "CONTEST_PENALTY")) {
-    const actorId = String(p.contestedPlayer ?? "");
+    const targetId = typeof p.targetPlayer === "string" ? p.targetPlayer : null;
+    declared = {
+      actorId: ev.playerId,
+      actorName: fname(v, ev.playerId),
+      role,
+      phase: "declared",
+      targetId,
+      targetName: targetId ? fname(v, targetId) : null,
+      contesterId: null,
+      contesterName: null,
+      chooserName: null,
+    };
+  } else if (ev && ev.type === "CONTEST") {
+    const contestedId = String(p.contestedPlayer ?? "");
     const contested = declaredRole(`CARD_PLAYED_${String(p.contestedCard ?? "")}`);
     if (contested) {
       declared = {
-        actorId,
-        actorName: fname(v, actorId),
+        actorId: contestedId,
+        actorName: fname(v, contestedId),
         role: contested,
-        phase: ev.type === "CONTEST" ? "contested" : p.hasCard ? "truth" : "bluff",
+        phase: "contested",
         targetId: null,
+        targetName: null,
+        contesterId: ev.playerId,
+        contesterName: fname(v, ev.playerId),
+        chooserName: null,
       };
     }
+  } else if (ev && ev.type === "CONTEST_PENALTY") {
+    // contestPenaltyValidation.go: sem a carta, quem duvidou escolhe; com a carta, o contestado escolhe
+    const contestedId = String(p.contestedPlayer ?? "");
+    const contesterId = String(p.contestingPlayer ?? "") || ev.playerId;
+    const contested = declaredRole(`CARD_PLAYED_${String(p.contestedCard ?? "")}`);
+    if (contested) {
+      declared = {
+        actorId: contestedId,
+        actorName: fname(v, contestedId),
+        role: contested,
+        phase: p.hasCard ? "truth" : "bluff",
+        targetId: null,
+        targetName: null,
+        contesterId,
+        contesterName: fname(v, contesterId),
+        chooserName: fname(v, p.hasCard ? contestedId : contesterId),
+      };
+    }
+  } else if (ev && ev.type === "REVEALED_CARD") {
+    const targetId = String(p.targetPlayer ?? "");
+    revealed = {
+      actorId: ev.playerId,
+      actorName: fname(v, ev.playerId),
+      targetId,
+      targetName: fname(v, targetId),
+      card: roleOrNull(p.revealedCard),
+      mine: !!v.me && ev.playerId === v.me,
+      toAll: p.showToAllPlayers === true,
+    };
   }
-  return { activeId, activeName: fname(v, activeId), fala: "", declared };
+  return { activeId, activeName: fname(v, activeId), fala: declared || revealed ? "" : describeEvent(v), declared, revealed };
+}
+
+/**
+ * Uma frase para o acontecimento atual, com os dois lados (quem fez e quem sofreu).
+ * Alimenta a fala do palco e o texto do relógio: a cada evento o texto muda, mesmo quando a janela reinicia.
+ */
+export function describeEvent(v: GameView): string {
+  const ev = v.room?.gameEvent;
+  if (!ev || ev.type === "WAITING_START" || ev.type === "ACTION_TAKEN") return "";
+  const p = payload(v);
+  const id = (x: unknown) => String(x ?? "");
+  /** Nome para a frase: "Você" quando é o jogador desta tela. */
+  const name = (x: unknown) => (v.me && id(x) === v.me ? copy.you : fname(v, id(x)));
+  const cardPhrase = (x: unknown) => copy.targetText({ name: fname(v, id(x)), mine: !!v.me && id(x) === v.me });
+  const poss = (x: unknown) => copy.possessive(fname(v, id(x)), !!v.me && id(x) === v.me);
+  const role = declaredRole(ev.type);
+  if (role) return copy.stageLine.declared(name(ev.playerId), roleName(role));
+
+  const card = declaredRole(`CARD_PLAYED_${String(p.contestedCard ?? "")}`);
+  const contested = name(p.contestedPlayer);
+  const contester = name(id(p.contestingPlayer) || ev.playerId);
+  switch (ev.type) {
+    case "WAITING_FIRST_ACTION":
+      return v.me && id(ev.playerId) === v.me ? copy.stageLine.yourTurn : copy.stageLine.turn(name(ev.playerId));
+    case "CONTEST":
+      return copy.stageLine.doubted(name(ev.playerId), contested);
+    case "CONTEST_PENALTY": {
+      const shown = card ? roleName(card) : "a carta";
+      const chooser = p.hasCard ? contested : contester;
+      const victim = p.hasCard ? p.contestingPlayer : p.contestedPlayer;
+      return p.hasCard
+        ? `${copy.hadCard(contested, shown)} ${copy.stageLine.chooseCardOf(chooser, poss(victim))}`
+        : `${copy.bluffed(contested, shown)} ${copy.stageLine.chooseCardOf(chooser, poss(victim))}`;
+    }
+    case "CARD_KILLED": {
+      const target = cardPhrase(p.targetPlayer);
+      switch (String(p.cause ?? "")) {
+        case "KILL_CARD": return copy.stageLine.killed(name(ev.playerId), target);
+        case "ASSASSIN": return copy.stageLine.killed(name(ev.playerId), target);
+        case "KAMIKAZE": return copy.stageLine.kamikaze(name(ev.playerId), target);
+        case "GREED": return copy.stageLine.greed(name(p.targetPlayer) || name(ev.playerId));
+        default: return copy.stageLine.lostCard(name(p.targetPlayer) || name(ev.playerId));
+      }
+    }
+    case "REVEALED_CARD": {
+      const target = poss(p.targetPlayer);
+      const revealedCard = roleOrNull(p.revealedCard);
+      if (revealedCard && p.showToAllPlayers === true) return copy.stageLine.revealedCard(roleName(revealedCard), target);
+      if (revealedCard) return v.me === ev.playerId ? copy.stageLine.revealedPrivateMe(roleName(revealedCard), target) : copy.stageLine.revealed(name(ev.playerId), target);
+      return copy.stageLine.revealed(name(ev.playerId), target);
+    }
+    case "REVIVED_CARD": return copy.stageLine.revived(name(ev.playerId));
+    case "CHANGED_CARD": return copy.stageLine.changed(name(ev.playerId));
+    case "EARN_COINS":
+      return String(p.cause ?? "") === "TAKE_COINS" ? copy.stageLine.took(name(ev.playerId), Number(p.earnedCoins ?? 0)) : copy.stageLine.earned(name(ev.playerId), Number(p.earnedCoins ?? 0));
+    case "STEAL_COINS": return copy.stageLine.stole(name(ev.playerId), Number(p.lostCoins ?? 0), name(p.targetPlayer));
+    case "INVESTMENT": return copy.stageLine.invested(name(ev.playerId));
+    case "INCREMENT_TAXES": return copy.stageLine.taxUp(name(ev.playerId));
+    case "DECREMENT_TAXES": return copy.stageLine.taxDown(name(ev.playerId));
+    case "RICHNESS_DENIED": return copy.stageLine.denied(name(ev.playerId), name(p.targetPlayer));
+    case "SUDDEN_DEATH": return copy.stageLine.suddenDeath;
+    default: return "";
+  }
 }
 
 export function selectFootlights(v: GameView) {
@@ -149,7 +274,10 @@ export function selectYou(v: GameView) {
     cards: (me?.cards ?? []).map((c): YouCard => ({ role: c.name, protected: c.protected, dead: c.dead, index: c.index })),
     investments: me?.investments ?? [],
     nextInvestment: me?.investments.length ? Math.min(...me.investments) : null,
-    timer: ev && ev.type !== "WAITING_START" ? { expiresAt: ev.expiresAt, total, ownerName: fname(v, owner) } : null,
+    timer:
+      ev && ev.type !== "WAITING_START"
+        ? { expiresAt: ev.expiresAt, total, ownerName: fname(v, owner), caption: describeEvent(v) }
+        : null,
   };
 }
 
@@ -185,10 +313,11 @@ export function selectDecision(v: GameView): Decision {
   }
   if (ev.type === "CONTEST_PENALTY") {
     const contested = String(p.contestedPlayer ?? "");
+    const contester = String(p.contestingPlayer ?? "") || ev.playerId;
     const card = declaredRole(`CARD_PLAYED_${String(p.contestedCard ?? "")}`) ?? "ASSASSIN";
-    // contestPenaltyValidation.go: sem a carta, quem contestou escolhe; com a carta, o contestado escolhe
-    const chooser = p.hasCard ? contested : ev.playerId;
-    const victim = p.hasCard ? ev.playerId : contested;
+    // contestPenaltyValidation.go: sem a carta, quem duvidou escolhe; com a carta, o contestado escolhe
+    const chooser = p.hasCard ? contested : contester;
+    const victim = p.hasCard ? contester : contested;
     if (chooser === me.id) return { kind: "pickCardToKill", targetId: victim, role: card };
     if (victim === me.id) return { kind: "waitPick", chooserId: chooser, role: card };
     return { kind: "waitOther", actorId: chooser };

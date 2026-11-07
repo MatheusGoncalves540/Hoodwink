@@ -105,9 +105,12 @@
   padding: 18px 28px 14px;
 }
 .desk .list {
-  column-count: 3;
+  /* grade em vez de colunas CSS: a coluna extra transbordava para a direita e o `overflow: hidden` cortava cartas e ações */
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
   column-gap: 28px;
-  overflow: hidden;
+  overflow-y: auto;
   padding: 6px 28px 18px;
 }
 .desk .group {

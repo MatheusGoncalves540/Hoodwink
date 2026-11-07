@@ -55,7 +55,8 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
     };
 
     // a declaração anterior não foi contestada: fecha a linha dela
-    if (open?.open === "declared" && ev.type !== "CONTEST") amend(open.pred + copy.log.noContest);
+    // (ACTION_TAKEN é o trava da jogada, sem payload: não é desfecho)
+    if (open?.open === "declared" && ev.type !== "CONTEST" && ev.type !== "ACTION_TAKEN") amend(open.pred + copy.log.noContest);
 
     const role = declaredRole(ev.type);
     if (role) {
@@ -63,28 +64,37 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
     } else {
       switch (ev.type) {
         case "CONTEST":
-          if (open?.open === "declared" && open.role) amend(copy.log.contested(roleName(open.role)), "contested");
+          if (open?.open === "declared" && open.role) amend(copy.log.contested(roleName(open.role), fname(ev.playerId)), "contested");
           else push(ev.playerId, copy.log.contestedBy(fname(str(p.contestedPlayer))));
           break;
         case "CONTEST_PENALTY": {
-          const outcome = p.hasCard ? copy.log.showedCard : copy.log.lostCard;
+          const contested = fname(str(p.contestedPlayer));
+          const contester = fname(str(p.contestingPlayer)) || fname(ev.playerId);
+          const outcome = p.hasCard ? copy.log.penaltyHad(contested, contester) : copy.log.penaltyBluff(contested, contester);
           if (open?.open === "declared" && open.role) {
             // o CONTEST pode se perder na reconexão: fecha a declaração como contestada e já aplica o desfecho
-            out[last] = { ...open, pred: copy.log.contested(roleName(open.role)) + outcome, open: undefined, chat: true };
+            out[last] = { ...open, pred: copy.log.contested(roleName(open.role), contester) + outcome, open: undefined, chat: true };
           } else if (open?.open === "contested") {
             out[last] = { ...open, pred: open.pred + outcome, open: undefined, chat: true };
           }
           break;
         }
-        case "CARD_KILLED":
+        case "CARD_KILLED": {
+          const cause = str(p.cause);
+          const target = fname(str(p.targetPlayer));
           // morte por contestação já está na linha da declaração (effects.go: EffectContestPenalty)
-          if (str(p.cause) === "KILL_CARD") push(ev.playerId, copy.log.killed(fname(str(p.targetPlayer))));
-          else if (str(p.cause) === "GREED") push(str(p.targetPlayer) || ev.playerId, copy.log.greed);
-          else if (!["CONTEST", "CONTEST_PENALTY"].includes(str(p.cause))) push(str(p.targetPlayer) || ev.playerId, copy.log.lostACard);
+          if (cause === "KILL_CARD") push(ev.playerId, copy.log.killed(target));
+          else if (cause === "ASSASSIN") push(ev.playerId, copy.log.killedByRole(target, roleName("ASSASSIN")));
+          else if (cause === "KAMIKAZE") push(ev.playerId, copy.log.kamikaze(target));
+          else if (cause === "GREED") push(str(p.targetPlayer) || ev.playerId, copy.log.greed);
+          else if (!["CONTEST", "CONTEST_PENALTY"].includes(cause)) push(str(p.targetPlayer) || ev.playerId, copy.log.lostACard);
           break;
-        case "REVEALED_CARD":
-          push(ev.playerId, copy.log.revealed(fname(str(p.targetPlayer))));
+        }
+        case "REVEALED_CARD": {
+          const card = declaredRole(`CARD_PLAYED_${str(p.revealedCard)}`);
+          push(ev.playerId, copy.log.revealed(fname(str(p.targetPlayer)), card ? roleName(card) : undefined));
           break;
+        }
         case "REVIVED_CARD":
           push(ev.playerId, copy.log.revived);
           break;

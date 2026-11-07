@@ -11,6 +11,10 @@ import (
 	roomsv1 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/structs/rooms"
 	structsv1 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/structs"
 	rulesv1 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/rules"
+	enginev2 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v2/game/engine"
+	roomsv2 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v2/game/structs/rooms"
+	structsv2 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v2/game/structs"
+	rulesv2 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v2/game/rules"
 )
 
 // EngineV1 liga as funções do motor v1 aos tipos congelados dessa versão.
@@ -25,6 +29,18 @@ func (EngineV1) Version() int { return 1 }
 // V1 é o motor congelado da versão 1.
 var V1 = EngineV1{ApplyPlay: enginev1.ApplyPlay, Tick: enginev1.Tick}
 
+// EngineV2 liga as funções do motor v2 aos tipos congelados dessa versão.
+type EngineV2 struct {
+	ApplyPlay func(context.Context, roomsv2.Sink, *roomsv2.Room, *structsv2.PlayerPlay, *rulesv2.Registry) bool
+	Tick      func(context.Context, roomsv2.Sink, *rulesv2.Registry, *roomsv2.Room)
+}
+
+// Version identifica a versão deste motor.
+func (EngineV2) Version() int { return 2 }
+
+// V2 é o motor congelado da versão 2.
+var V2 = EngineV2{ApplyPlay: enginev2.ApplyPlay, Tick: enginev2.Tick}
+
 // Engine é a interface mínima comum a todas as versões congeladas.
 type Engine interface {
 	Version() int
@@ -33,4 +49,5 @@ type Engine interface {
 // Registry associa o número da versão ao motor congelado.
 var Registry = map[int]Engine{
 	1: V1,
+	2: V2,
 }
