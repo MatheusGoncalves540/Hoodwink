@@ -3,17 +3,16 @@ package effects
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func EarnCoinsAnnouncer(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, effect structs.Effect) error {
+func EarnCoinsAnnouncer(ctx context.Context, sink rooms.Sink, roomData *rooms.Room, effect structs.Effect) error {
 	// decodifica o payload
 	EarnCoinsPayload, ok := effect.Payload.(structs.EarnCoinsPayload)
 	if !ok {
-		utils.LogError("payload inválido para KillCardPayload")
+		pure.LogError("payload inválido para KillCardPayload")
 		return nil
 	}
 

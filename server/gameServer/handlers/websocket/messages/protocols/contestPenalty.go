@@ -2,15 +2,13 @@ package protocols
 
 import (
 	"context"
-	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/redis/go-redis/v9"
 )
 
-func ContestPenaltyProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, payload structs.ContestPenaltyPayload, chooserID string) error {
+func ContestPenaltyProtocol(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, payload structs.ContestPenaltyPayload, chooserID string) error {
 	// Remove o efeito de escolha aleatória criado na contestação.
 	roomData.PopLastPendingEffect()
 
@@ -24,7 +22,7 @@ func ContestPenaltyProtocol(ctx context.Context, rdb *redis.Client, registryRule
 	roomData.GameEvent = nil
 
 	// agenda processamento imediato para consumir a fila
-	roomData.RegistryTimeout(rdb, ctx, time.Now().UTC())
+	sink.RegistryTimeout(ctx, roomData, roomData.Now().UTC())
 
 	return nil
 }

@@ -4,23 +4,22 @@ import (
 	"context"
 	"slices"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func ClairvoyantEffect(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	clairvoyantPayload, ok := effect.Payload.(structs.ClairvoyantPayload)
 	if !ok {
-		utils.LogError("payload inválido para EffectClairvoyant")
+		pure.LogError("payload inválido para EffectClairvoyant")
 		return
 	}
 
 	targetPlayer, err := roomData.GetPlayer(clairvoyantPayload.TargetPlayer)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
@@ -28,7 +27,7 @@ func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 	if slices.Contains(targetPlayer.GetProtectedCardsIndexes(), clairvoyantPayload.TargetCardIndex) {
 		err = targetPlayer.UnprotectCard(clairvoyantPayload.TargetCardIndex)
 		if err != nil {
-			utils.LogError(err)
+			pure.LogError(err)
 		}
 		return
 	}
@@ -36,11 +35,11 @@ func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 	// pega a carta revelada alvo
 	revealedCard, err := targetPlayer.GetCardByIndex(clairvoyantPayload.TargetCardIndex)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 	if revealedCard.Dead {
-		utils.LogInvldPlyrReq("Clairvoyant tentou revelar uma carta morta", effect.SourcePlayer)
+		pure.LogInvldPlyrReq("Clairvoyant tentou revelar uma carta morta", effect.SourcePlayer)
 		return
 	}
 	revealedCardName := string(revealedCard.Name)
@@ -51,7 +50,7 @@ func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 
 	if clairvoyantPayload.ShowToAllPlayers {
 		if err := roomData.AppendPendingPresentationEvent(structs.NewPresentationEvent(effect.SourcePlayer, structs.EventRevealedCard, clairvoyantPayload)); err != nil {
-			utils.LogError(err)
+			pure.LogError(err)
 			return
 		}
 		return
@@ -71,7 +70,7 @@ func ClairvoyantEffect(ctx context.Context, rdb *redis.Client, registryRules *ru
 	presentationEvent.ConfidencialPlayerIds = []string{effect.SourcePlayer}
 
 	if err := roomData.AppendPendingPresentationEvent(presentationEvent); err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 }
