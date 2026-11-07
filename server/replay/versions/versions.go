@@ -14,6 +14,8 @@ type Version struct {
 var All = []Version{
 	{Number: 1, Hash: "1059f86c00fe1f0bdeeef8e2c966d6c0ea970ecebecdda8543b3df20038285b6"},
 	{Number: 2, Hash: "87ccce0ebe030d6cb0da7231577c658be4bb990faefcc7a1c89d476b6783e8ee"},
+	{Number: 3, Hash: "f2b889c29902770896bf87cf40c85f9eaf2b1910b19c8878b152311e9335f5cc"},
+	{Number: 4, Hash: "36b4d88f382d1fb44a0159845159fb0b66e78bed908a52f9fe8d736d283907a1"},
 }
 
 // Latest devolve o número da versão mais recente.

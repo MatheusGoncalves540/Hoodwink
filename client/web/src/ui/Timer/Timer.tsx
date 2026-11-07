@@ -1,7 +1,8 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { copy } from "../../game/copy";
 import { cx } from "../cx";
 import s from "./Timer.module.css";
+import { useCountdown } from "./countdown";
 
 type Props = {
   /** Fim da janela, em ms (gameEvent.expiresAt). */
@@ -17,17 +18,9 @@ type Props = {
   caption?: ReactNode;
 };
 
-const secondsLeft = (expiresAt: number, total: number) => Math.max(0, Math.min(total, Math.ceil((expiresAt - Date.now()) / 1000)));
-
-/** Número (atualiza a cada segundo, um intervalo por timer) e barra que encolhe só por CSS (.m-timer). */
+/** Número e barra saem do mesmo relógio (useCountdown): os dois zeram juntos, no prazo. */
 export function Timer({ expiresAt, total, label, tone = "tinta", decision, caption }: Props) {
-  const [left, setLeft] = useState(() => secondsLeft(expiresAt, total));
-
-  useEffect(() => {
-    setLeft(secondsLeft(expiresAt, total));
-    const id = setInterval(() => setLeft(secondsLeft(expiresAt, total)), 1000);
-    return () => clearInterval(id);
-  }, [expiresAt, total]);
+  const { left, progress } = useCountdown(expiresAt, total);
 
   return (
     <div className={cx("m-deixa", s.timer)}>
@@ -54,19 +47,16 @@ export function Timer({ expiresAt, total, label, tone = "tinta", decision, capti
           </span>
         )}
       </div>
-      <div role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={total} aria-valuenow={left} className={s.track}>
-        <Fill key={expiresAt} expiresAt={expiresAt} total={total} tone={tone} />
+      <div
+        role="progressbar"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={Math.max(total, left)}
+        aria-valuenow={left}
+        className={s.track}
+      >
+        <div className={cx(s.fill, s[tone])} style={{ transform: `scaleX(${progress})` }} />
       </div>
     </div>
   );
-}
-
-/** Recalcula ponto de partida e duração só quando a janela muda (key = expiresAt); depois é só CSS. */
-function Fill({ expiresAt, total, tone }: { expiresAt: number; total: number; tone: "tinta" | "alerta" }) {
-  const [style] = useState(() => {
-    const ms = Math.max(0, Math.min(total * 1000, expiresAt - Date.now()));
-    // ponytail: valores dinâmicos da animação vão inline (CSS var + duração); o resto está no módulo.
-    return { "--de": ms / (total * 1000), animationDuration: `${ms}ms` } as CSSProperties;
-  });
-  return <div className={cx("m-timer", s.fill, s[tone])} style={style} />;
 }

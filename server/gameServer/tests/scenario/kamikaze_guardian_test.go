@@ -77,8 +77,8 @@ func TestKamikazeReactionRules(t *testing.T) {
 		tb.wantDead("bia", 0, true)
 	})
 
-	// rules.html: "Caso a carta já estivesse protegida antes, o ataque pode ser parado."
-	t.Run("proteção feita antes para o Kamikaze", func(t *testing.T) {
+	// O Kamikaze passa por cima da Guardiã: a proteção guardada antes também não segura o golpe.
+	t.Run("proteção feita antes não segura o Kamikaze", func(t *testing.T) {
 		tb := newTable(t,
 			seat("bia", 9, structs.CardGuardian, structs.CardRebel),
 			seat("ana", 0, structs.CardKamikaze, structs.CardRebel),
@@ -88,10 +88,7 @@ func TestKamikazeReactionRules(t *testing.T) {
 		tb.mustPlay("ana", `{"type":"KAMIKAZE","payload":{"targetPlayer":"bia","targetCardIndex":0,"targetAllyCardIndex":0}}`)
 		tb.settle()
 		tb.wantDead("ana", 0, true)
-		tb.wantDead("bia", 0, false)
-		if tb.p("bia").Cards[0].Protected {
-			t.Fatal("a proteção deveria ter sido gasta")
-		}
+		tb.wantDead("bia", 0, true)
 	})
 }
 

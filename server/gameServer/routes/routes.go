@@ -39,6 +39,9 @@ func SetupRoutes(routesContext *ctx.RoutesContext) http.Handler {
 
 		r.Post("/newRoom", routesContext.Handler.CreateCustomRoom)
 
+		// Revanche: a primeira pessoa cria, as outras entram na mesma sala.
+		r.Post("/rematch/{RoomId}", routesContext.Handler.RematchRoom(routesContext.Rdb))
+
 		r.Post("/getTicket/{RoomId}", routesContext.Handler.GetTicket(routesContext.Rdb))
 	})
 

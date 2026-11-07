@@ -1,6 +1,6 @@
 /**
  * Endpoints HTTP do gameServer usados antes do WebSocket (05-protocolo.md → "Conexão"):
- * POST /newRoom e POST /getTicket/{RoomId}, ambos com o JWT do backend no Authorization.
+ * POST /newRoom, POST /rematch/{RoomId} e POST /getTicket/{RoomId}, todos com o JWT do backend no Authorization.
  * O host vem de config/envs.ts; a resposta é validada com Zod como a do WebSocket.
  */
 import { z } from "zod";
@@ -62,6 +62,15 @@ export async function newRoom(token: string, input: NewRoomInput): Promise<strin
 export async function getTicket(token: string, roomId: string): Promise<string> {
   const raw = await postJson(`/getTicket/${encodeURIComponent(roomId)}`, token);
   return ticketSchema.parse(raw).data.ticket;
+}
+
+/**
+ * Revanche de uma partida encerrada. A primeira pessoa cria a sala; as outras
+ * recebem a mesma, mesmo clicando ao mesmo tempo.
+ */
+export async function rematch(token: string, roomId: string): Promise<string> {
+  const raw = await postJson(`/rematch/${encodeURIComponent(roomId)}`, token);
+  return createRoomSchema.parse(raw).RoomId;
 }
 
 /** Resultado do refresh: ok (token novo) | unauthorized (401) | failed (rede/outro). */

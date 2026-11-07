@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import type { Layout } from "../../app/useLayout";
 import { copy, firstName } from "../../game/copy";
 import type { RoleId } from "../../game/protocol";
@@ -6,13 +5,12 @@ import { roleName } from "../../game/roles";
 import type { Decision, GameView, MiniCard } from "../../game/selectors";
 import { selectSeatSheet, selectYou, selectYouSheet } from "../../game/selectors";
 import { CountdownDots } from "../../ui/CountdownDots/CountdownDots";
+import { useCountdown } from "../../ui/Timer/countdown";
 import { cx } from "../../ui/cx";
 import s from "./ContestPick.module.css";
 
 type PickDecision = Extract<Decision, { kind: "pickCardToKill" } | { kind: "waitPick" }>;
 type PickCard = { index: number; state: MiniCard["state"]; role?: RoleId };
-
-const seconds = (expiresAt: number, total: number) => Math.max(0, Math.min(total, Math.ceil((expiresAt - Date.now()) / 1000)));
 
 type Props = {
   view: GameView;
@@ -25,14 +23,8 @@ type Props = {
 export function ContestPick({ view, decision, layout, onPick }: Props) {
   const ev = view.room?.gameEvent;
   const total = selectYou(view).timer?.total ?? 6;
-  const [left, setLeft] = useState(() => (ev ? seconds(ev.expiresAt, total) : total));
-
-  useEffect(() => {
-    setLeft(ev ? seconds(ev.expiresAt, total) : total);
-    if (!ev) return;
-    const id = setInterval(() => setLeft(seconds(ev.expiresAt, total)), 1000);
-    return () => clearInterval(id);
-  }, [ev?.expiresAt, total]);
+  // mesma contagem do Timer: os pontos e o texto mudam no segundo cheio e zeram no prazo
+  const { left } = useCountdown(ev?.expiresAt, total);
 
   const picking = decision.kind === "pickCardToKill";
   const target = picking && decision.targetId ? selectSeatSheet(view, decision.targetId) : null;
