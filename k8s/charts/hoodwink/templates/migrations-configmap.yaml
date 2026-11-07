@@ -24,4 +24,87 @@ data:
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN NOT NULL DEFAULT false;
+
+    CREATE TABLE IF NOT EXISTS request_logs (
+        id BIGSERIAL PRIMARY KEY,
+        at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        service TEXT NOT NULL CHECK (service IN ('backend', 'gameServer')),
+        method TEXT,
+        path TEXT,
+        route TEXT,
+        status INT,
+        duration_ms INT,
+        ip TEXT,
+        user_agent TEXT,
+        user_id UUID,
+        username TEXT,
+        request_id UUID,
+        body TEXT,
+        error TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS request_logs_at_idx ON request_logs (at DESC);
+    CREATE INDEX IF NOT EXISTS request_logs_route_idx ON request_logs (route);
+    CREATE INDEX IF NOT EXISTS request_logs_user_id_idx ON request_logs (user_id);
+
+    CREATE TABLE IF NOT EXISTS request_logs_archive (
+        id BIGINT PRIMARY KEY,
+        at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        service TEXT NOT NULL CHECK (service IN ('backend', 'gameServer')),
+        method TEXT,
+        path TEXT,
+        route TEXT,
+        status INT,
+        duration_ms INT,
+        ip TEXT,
+        user_agent TEXT,
+        user_id UUID,
+        username TEXT,
+        request_id UUID,
+        body TEXT,
+        error TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS request_logs_archive_at_idx ON request_logs_archive (at DESC);
+
+    CREATE TABLE IF NOT EXISTS bug_reports (
+        id BIGSERIAL PRIMARY KEY,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        username TEXT,
+        source TEXT NOT NULL CHECK (source IN ('partida', 'lobby')),
+        match_id UUID,
+        turns INT[] NOT NULL DEFAULT '{}',
+        category TEXT CHECK (category IN ('moedas', 'carta', 'travou', 'regra', 'tela', 'outro')),
+        description TEXT CHECK (description IS NULL OR char_length(description) <= 2000),
+        context JSONB CHECK (context IS NULL OR octet_length(context::text) <= 8192),
+        ip TEXT,
+        user_agent TEXT,
+        status TEXT NOT NULL DEFAULT 'novo' CHECK (status IN ('novo', 'visto', 'resolvido')),
+        CONSTRAINT bug_reports_turns_max CHECK (array_length(turns, 1) <= 10)
+    );
+
+    CREATE INDEX IF NOT EXISTS bug_reports_created_at_idx ON bug_reports (created_at DESC);
+    CREATE INDEX IF NOT EXISTS bug_reports_status_idx ON bug_reports (status);
+    CREATE INDEX IF NOT EXISTS bug_reports_match_id_idx ON bug_reports (match_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS bug_reports_user_match_uniq ON bug_reports (user_id, match_id)
+        WHERE user_id IS NOT NULL AND match_id IS NOT NULL;
+
+    CREATE INDEX IF NOT EXISTS users_email_provider_idx ON users(email, provider);
+
+    CREATE TABLE IF NOT EXISTS match_replays (
+        match_id UUID PRIMARY KEY,
+        room_id TEXT,
+        engine_version INT NOT NULL,
+        started_at TIMESTAMPTZ NOT NULL,
+        ended_at TIMESTAMPTZ NOT NULL,
+        winner_id UUID,
+        player_ids UUID[] NOT NULL,
+        data BYTEA NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS match_replays_player_ids_gin ON match_replays USING GIN (player_ids);
 {{- end }}
