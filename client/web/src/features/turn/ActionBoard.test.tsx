@@ -8,9 +8,7 @@ const f = fixture("Acoes", NOW);
 const out = renderToStaticMarkup(<ActionBoard view={{ me: f.me, room: f.room, log: f.log }} layout="mobile" onPick={() => {}} />);
 
 describe("ActionBoard", () => {
-  it("mostra a rodada, a taxa e suas moedas", () => {
-    expect(out).toContain("Sua vez");
-    expect(out).toContain("Rodada 4 · Taxa +1");
+  it("mostra o título, suas moedas e o tempo da jogada", () => {
     expect(out).toContain("Escolha uma ação");
     expect(out).toContain('aria-label="Você tem 5 moedas"');
     expect(out).toContain('role="progressbar" aria-label="Tempo da jogada"');
@@ -32,6 +30,14 @@ describe("ActionBoard", () => {
     expect(out).toContain('aria-label="Pegar moeda, recebe 2 moedas"'); // taxa +1
     expect(out).toContain('aria-label="Matar, custa 6, faltam 1 moeda"');
     expect(out).toContain('aria-label="Trocar cartas, Precisa de 6 moedas"');
+  });
+
+  it("mostra a fileira só de leitura com suas cartas", () => {
+    expect(out).toContain('aria-label="Suas cartas"');
+    expect(out).toContain('data-slot="hand"');
+    // a protegida aparece com o estado do servidor, e nada aqui é seletor: quem escolhe é a gaveta Você
+    expect(out).toContain(">protegida<");
+    expect(out).not.toContain("aria-label=\"Escolher Guardiã\"");
   });
 
   it("Egoísta fica fora do turno, desabilitado, com 1+", () => {

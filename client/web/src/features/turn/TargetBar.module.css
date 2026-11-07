@@ -1,5 +1,9 @@
+/* Barra de alvo na cortina: painel no pé do miolo, sob um holofote só de tokens
+   (gradiente CSS; o <Spotlight> da mesa e as travas do desenho não mudam). */
 .bar {
-  background: var(--hw-luz);
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 120%, var(--hw-poca), transparent 70%),
+    var(--hw-luz);
   color: var(--hw-tinta);
   border-top: 3px double var(--hw-tinta);
   padding: 14px 18px 18px;
@@ -17,6 +21,11 @@
   margin: 0;
   font-size: 15px;
   font-style: italic;
+}
+.note {
+  margin: 6px 0 0;
+  font-size: 15px;
+  font-weight: 700;
 }
 .back {
   align-self: flex-start;

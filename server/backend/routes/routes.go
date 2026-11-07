@@ -19,6 +19,7 @@ func SetupRoutes(handler *handlers.Handler) http.Handler {
 	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
+	routes.Get("/version", handler.VersionHandler)
 
 	// Rota universal de autenticação externa
 	routes.Post("/auth/external/{provider}", handler.ExternalAuthHandler)

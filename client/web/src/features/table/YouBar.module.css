@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  min-height: clamp(180px, 28svh, 236px);
+  min-height: var(--hw-youbar-h, clamp(180px, 28svh, 236px));
   box-sizing: border-box;
   background: var(--hw-luz);
   color: var(--hw-tinta);
@@ -47,7 +47,7 @@
 /* Desktop: linha de 196 px ao lado do trilho, cartas 104×144 */
 .desk.bar {
   right: 420px;
-  min-height: clamp(160px, 21.8svh, 196px);
+  min-height: var(--hw-youbar-h, clamp(160px, 21.8svh, 196px));
   flex-direction: row;
   align-items: center;
   gap: 44px;

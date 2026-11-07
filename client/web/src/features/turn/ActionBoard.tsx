@@ -6,6 +6,7 @@ import { BASIC_GROUP, ROLE_GROUPS, type ActionId } from "../../game/roles";
 import { CLASSIC_RULES } from "../../game/rules.classic";
 import { kamikazeAlly, selectFootlights, selectYou, type GameView } from "../../game/selectors";
 import { Coin } from "../../ui/Coin/Coin";
+import { CardBack, CardDead, CardFace } from "../../ui/Card/Card";
 import { Timer } from "../../ui/Timer/Timer";
 import { cx } from "../../ui/cx";
 import { ActionButton } from "./ActionButton";
@@ -39,16 +40,31 @@ export function ActionBoard({ view, layout, onPick }: Props) {
 
   return (
     <div className={cx(s.screen, layout === "desktop" && s.desk)}>
-      <div className={s.top}>
-        <span className={s.round}>{copy.roundTax(room?.turn ?? 0, footlights.tax)}</span>
-        <span className={s.title}>{copy.yourTurnInScene}</span>
-      </div>
-
       <section aria-label={copy.chooseAction} className={s.board}>
         <div className={s.head}>
           <h1 className={s.h1}>{copy.declareRole}</h1>
           <Coin size={50} value={you.coins} label={copy.youHave(you.coins)} />
         </div>
+
+        {/* fileira só de leitura: escolher a carta própria continua na gaveta Você */}
+        <section aria-label={copy.panelCards} className={s.hand} data-slot="hand">
+          {you.cards.map((c) =>
+            c.dead ? (
+              <CardDead key={c.index} size="s" role={c.role} className={s.handCard} />
+            ) : c.role ? (
+              <CardFace
+                key={c.index}
+                size="s"
+                role={c.role}
+                protected={c.protected}
+                bottom={c.protected ? copy.cardState.protected : undefined}
+                className={s.handCard}
+              />
+            ) : (
+              <CardBack key={c.index} size="s" className={s.handCard} />
+            ),
+          )}
+        </section>
 
         <div className={s.list}>
           <div className={s.group}>

@@ -18,6 +18,7 @@ import { Moldura } from "../../ui/Moldura/Moldura";
 import { TextField } from "../../ui/TextField/TextField";
 import { Ticket } from "../../ui/Ticket/Ticket";
 import { cx } from "../../ui/cx";
+import { GAME_VERSION } from "../../version";
 import s from "./Lobby.module.css";
 
 /** Código de convite: 6 caracteres maiúsculos, sem os que se confundem (0/O, 1/I/L). */
@@ -193,6 +194,7 @@ export function Lobby() {
         <details className={s.prefs}>
           <summary>{copy.prefsTitle}</summary>
           <MotionToggles motion={motion} onMotion={motion.setAll} onIdle={motion.setIdle} />
+          <p className={s.version}>{copy.versionLabel(GAME_VERSION)}</p>
         </details>
 
         <Button variant="link" onClick={() => setBugCard({})}>

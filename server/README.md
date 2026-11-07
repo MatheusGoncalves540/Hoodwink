@@ -101,6 +101,7 @@ Outros alvos úteis:
 - `make migrate` — aplica as migrations pendentes (goose)
 - `make build` / `make test` — compila ou testa os dois módulos
 - `make engine-check` — verifica a versão/fecho do motor de replay; `make engine-bump` — congela o motor em `replay/engines/vN` (toda mudança no motor exige o bump)
+- `make version` / `make version-check` / `make game-bump` — versão do **jogo** (semver em `VERSION`), independente do motor; ver `VERSIONING.md`
 - `make help` — lista todos os alvos
 
 ---
