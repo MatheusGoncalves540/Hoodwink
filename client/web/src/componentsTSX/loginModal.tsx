@@ -13,14 +13,25 @@ import loginLocal from "../Auth/loginLocal";
 function LocalLogin() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const clean = name.trim();
+
+  const submit = async () => {
+    if (!clean || busy) return;
+    setError("");
+    setBusy(true);
+    const outcome = await loginLocal(clean, setAuth);
+    setBusy(false);
+    if (outcome.status === "error") setError(outcome.message);
+  };
 
   return (
     <form
       className="hw-login-local"
       onSubmit={(e) => {
         e.preventDefault();
-        if (clean) loginLocal(clean, setAuth);
+        void submit();
       }}
     >
       <input
@@ -28,14 +39,22 @@ function LocalLogin() {
         aria-label={copy.loginModal.localName}
         placeholder={copy.loginModal.localName}
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => {
+          setName(e.target.value);
+          setError("");
+        }}
         maxLength={20}
         autoComplete="off"
         spellCheck={false}
       />
-      <Button type="submit" variant="outline" disabled={!clean}>
+      <Button type="submit" variant="outline" disabled={!clean || busy}>
         {copy.loginModal.localEnter}
       </Button>
+      {error && (
+        <p role="alert" className="hw-login-erro">
+          {error}
+        </p>
+      )}
     </form>
   );
 }

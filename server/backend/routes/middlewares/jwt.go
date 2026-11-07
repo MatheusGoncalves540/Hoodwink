@@ -9,10 +9,6 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink/utils"
 )
 
-type contextKey string
-
-const UserContextKey contextKey = "user"
-
 // JWTMiddleware verifica o header Authorization, valida, e injeta o struct UserClaims no contexto
 func JWTMiddleware(next http.Handler, h *handlers.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +23,11 @@ func JWTMiddleware(next http.Handler, h *handlers.Handler) http.Handler {
 			utils.SendError(w, "Token inválido", http.StatusUnauthorized)
 			return
 		}
-		ctx := context.WithValue(r.Context(), UserContextKey, user)
+		if info, ok := r.Context().Value(reqInfoContextKey).(*ReqInfo); ok {
+			info.UserID = user.Id
+			info.Username = user.Username
+		}
+		ctx := context.WithValue(r.Context(), handlers.UserContextKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

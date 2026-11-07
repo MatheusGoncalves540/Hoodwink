@@ -50,9 +50,12 @@
   color: var(--hw-tinta-suave);
 }
 .hw-login-google {
+  width: 100%;
   min-height: 44px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 .hw-login-espera {
   margin: 0;
@@ -63,6 +66,13 @@
   text-transform: uppercase;
   color: var(--hw-ouro-texto);
   align-self: center;
+}
+.hw-login-erro {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--hw-alerta);
 }
 .hw-login-voltar {
   margin-top: 4px;
