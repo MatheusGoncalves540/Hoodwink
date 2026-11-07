@@ -42,10 +42,10 @@ func (e Effect) ToDTO() (EffectDTO, error) {
 }
 
 // ProtectionBlocks diz se uma proteção da Guardiã já colocada segura a morte por essa causa.
-// Contestação e perda por ganância nunca são seguradas. O Kamikaze é: rules.html, "caso a carta
-// já estivesse protegida antes, o ataque pode ser parado" (só não dá para reagir com a Guardiã na hora).
+// Contestação, perda por ganância e Kamikaze nunca são segurados: a Guardiã não bloqueia o
+// Kamikaze, nem na hora (reação) nem antes (proteção guardada para o próximo ataque).
 func ProtectionBlocks(cause EffectCause) bool {
-	return cause != EffectContestPenalty && cause != EffectGreed
+	return cause != EffectContestPenalty && cause != EffectGreed && cause != EffectKamikaze
 }
 
 // Tipos de efeitos

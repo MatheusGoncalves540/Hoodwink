@@ -26,7 +26,7 @@ import (
 // EngineVersion acompanha game/ENGINE_VERSION (a v1 está congelada em
 // server/replay/engines/v1). O make engine-bump atualiza este valor e o
 // make engine-check falha se ele divergir do arquivo.
-const EngineVersion = 3
+const EngineVersion = 4
 
 // InitReplayRecorder liga o finalizador de replay ao WithRoom. O envio HTTP fica no
 // services (não no redisFuncs) para não criar ciclo de import com o backend.
