@@ -27,17 +27,17 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 
 /* ── Moldura padrão (skin Holofote). Peças de molduras/ redefinem estas regras escopadas por data-sk-molduras. ── */
 .hw-moldura>.hw-moldura-f{pointer-events:none}
-/* Lobby: letreiro. Lâmpadas apagadas paradas na borda (::before) + 3 camadas que acendem um terço das lâmpadas cada, em sequência. */
-.hw-moldura[data-lugar="lobby"]{--contorno-ciclo:.9s}
-.hw-moldura[data-lugar="lobby"]::before,.hw-moldura[data-lugar="lobby"]>.hw-moldura-f{content:"";position:absolute;inset:-14px;width:auto;height:auto;box-sizing:border-box;padding:14px;border-radius:inherit;pointer-events:none;-webkit-mask:linear-gradient(black 0 0) content-box,linear-gradient(black 0 0);-webkit-mask-composite:xor;mask:linear-gradient(black 0 0) content-box exclude,linear-gradient(black 0 0)}
-.hw-moldura[data-lugar="lobby"]::before{background:radial-gradient(circle,color-mix(in srgb,var(--hw-ouro) 60%,transparent) 0 2.5px,transparent 3.5px) 1px 1px/16px 16px,var(--hw-veludo)}
-.hw-moldura[data-lugar="lobby"]>.hw-moldura-f{background:radial-gradient(circle at var(--p0),var(--hw-lampada) 0 2.5px,transparent 3.5px),radial-gradient(circle at var(--p1),var(--hw-lampada) 0 2.5px,transparent 3.5px),radial-gradient(circle at var(--p2),var(--hw-lampada) 0 2.5px,transparent 3.5px);background-size:48px 48px;background-position:1px 1px}
-.hw-moldura[data-lugar="lobby"]>.hw-moldura-f:nth-of-type(1){--p0:8px 8px;--p1:40px 24px;--p2:24px 40px}
-.hw-moldura[data-lugar="lobby"]>.hw-moldura-f:nth-of-type(2){--p0:24px 8px;--p1:8px 24px;--p2:40px 40px}
-.hw-moldura[data-lugar="lobby"]>.hw-moldura-f:nth-of-type(3){--p0:40px 8px;--p1:24px 24px;--p2:8px 40px}
+/* Lobby e pergunta global: letreiro. Lâmpadas apagadas paradas na borda (::before) + 3 camadas que acendem um terço das lâmpadas cada, em sequência. */
+.hw-moldura:is([data-lugar="lobby"],[data-lugar="pergunta"]){--contorno-ciclo:.9s}
+.hw-moldura:is([data-lugar="lobby"],[data-lugar="pergunta"])::before,.hw-moldura:is([data-lugar="lobby"],[data-lugar="pergunta"])>.hw-moldura-f{content:"";position:absolute;inset:-14px;width:auto;height:auto;box-sizing:border-box;padding:14px;border-radius:inherit;pointer-events:none;-webkit-mask:linear-gradient(black 0 0) content-box,linear-gradient(black 0 0);-webkit-mask-composite:xor;mask:linear-gradient(black 0 0) content-box exclude,linear-gradient(black 0 0)}
+.hw-moldura:is([data-lugar="lobby"],[data-lugar="pergunta"])::before{background:radial-gradient(circle,color-mix(in srgb,var(--hw-ouro) 60%,transparent) 0 2.5px,transparent 3.5px) 1px 1px/16px 16px,var(--hw-veludo)}
+.hw-moldura:is([data-lugar="lobby"],[data-lugar="pergunta"])>.hw-moldura-f{background:radial-gradient(circle at var(--p0),var(--hw-lampada) 0 2.5px,transparent 3.5px),radial-gradient(circle at var(--p1),var(--hw-lampada) 0 2.5px,transparent 3.5px),radial-gradient(circle at var(--p2),var(--hw-lampada) 0 2.5px,transparent 3.5px);background-size:48px 48px;background-position:1px 1px}
+.hw-moldura:is([data-lugar="lobby"],[data-lugar="pergunta"])>.hw-moldura-f:nth-of-type(1){--p0:8px 8px;--p1:40px 24px;--p2:24px 40px}
+.hw-moldura:is([data-lugar="lobby"],[data-lugar="pergunta"])>.hw-moldura-f:nth-of-type(2){--p0:24px 8px;--p1:8px 24px;--p2:40px 40px}
+.hw-moldura:is([data-lugar="lobby"],[data-lugar="pergunta"])>.hw-moldura-f:nth-of-type(3){--p0:40px 8px;--p1:24px 24px;--p2:8px 40px}
 /* Elenco, fim, aviso: filete fervendo (opção B, provisória até o design escolher entre B e E). */
-.hw-moldura:not([data-lugar="lobby"])>.hw-moldura-f{inset:5px;width:auto;height:auto;border:1.5px solid var(--hw-ouro);border-radius:7px 5px 8px 6px;outline:1px solid var(--hw-ouro);outline-offset:-7px}
-.hw-moldura:not([data-lugar="lobby"])>.hw-moldura-f:nth-of-type(2){border-radius:5px 8px 6px 7px;translate:.6px -.4px;rotate:.2deg}
-.hw-moldura:not([data-lugar="lobby"])>.hw-moldura-f:nth-of-type(3){border-radius:8px 6px 5px 8px;translate:-.5px .5px;rotate:-.18deg}
+.hw-moldura:not([data-lugar="lobby"],[data-lugar="pergunta"])>.hw-moldura-f{inset:5px;width:auto;height:auto;border:1.5px solid var(--hw-ouro);border-radius:7px 5px 8px 6px;outline:1px solid var(--hw-ouro);outline-offset:-7px}
+.hw-moldura:not([data-lugar="lobby"],[data-lugar="pergunta"])>.hw-moldura-f:nth-of-type(2){border-radius:5px 8px 6px 7px;translate:.6px -.4px;rotate:.2deg}
+.hw-moldura:not([data-lugar="lobby"],[data-lugar="pergunta"])>.hw-moldura-f:nth-of-type(3){border-radius:8px 6px 5px 8px;translate:-.5px .5px;rotate:-.18deg}
 /* Botão secundário (slot de skin "botoes"): outline padrão do Holofote. */
 .hw-botao2{border:1.5px solid var(--hw-tinta);border-radius:0}

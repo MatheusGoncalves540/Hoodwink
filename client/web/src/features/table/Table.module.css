@@ -49,17 +49,22 @@
   z-index: 4;
 }
 
-/* Cortina do miolo: abaixo do cabeçalho e acima da ribalta, sem cobrir trilho. */
+/* Cortina do miolo: do cabeçalho até o pé, por cima da faixa Você e sem cobrir o trilho.
+   Fechada, o handle descansa logo acima da faixa Você (--curtain-rest). O slot não recebe clique:
+   só o handle e o conteúdo aberto. */
 .curtainSlot {
   position: absolute;
   left: 0;
   right: 0;
   top: 52px;
-  bottom: calc(100% - var(--hw-footlights-top));
+  bottom: 0;
   z-index: 5;
+  pointer-events: none;
+  --curtain-rest: var(--hw-youbar-h);
 }
 .desk .curtainSlot {
   top: 64px;
+  right: 420px;
 }
 
 /* Escolha de alvo (Clarividente, Assassino, Matar, Trapaceiro, Kamikaze):
@@ -88,45 +93,18 @@
     radial-gradient(closest-side, var(--hw-poca), transparent 52%);
   animation: m-fade 0.3s ease-out both;
 }
-/* Primeira etapa da escolha: um cone de luz do palco até o pé da mesa.
-   Mesmo desenho do <Spotlight> (cone em --hw-cone, poça em --hw-poca), sem tocar nele. */
-.cone {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 4%, var(--hw-cone) 94%);
-  clip-path: polygon(50% 0%, 94% 100%, 6% 100%);
-  animation: m-fade 0.4s ease-out both;
-}
-.coneBase {
-  position: absolute;
-  left: 6%;
-  right: 6%;
-  bottom: 1%;
-  height: 18%;
-  border-radius: 50%;
-  background:
-    radial-gradient(ellipse at 50% 50%, var(--hw-poca), transparent 72%),
-    radial-gradient(ellipse at 50% 50%, var(--hw-poca), transparent 60%);
-  animation: m-fade 0.5s ease-out both;
-}
-
-/* Cartão centrado sobre o holofote (escolha do Clarividente). */
+/* Holofote de pergunta global (GlobalQuestion): do cabeçalho até o pé, faixa Você inclusive. */
 .center {
   position: absolute;
   left: 0;
   right: 0;
   top: 52px;
-  bottom: calc(100% - var(--hw-footlights-top));
-  z-index: 4;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-}
-.center > * {
-  pointer-events: auto;
+  bottom: 0;
+  z-index: 5;
 }
 .desk .center {
   top: 64px;
+  right: 420px;
 }
 
 /* Desktop (Mesa6Desk.dc.html): palco de 1020 px + trilho de 420 px */
