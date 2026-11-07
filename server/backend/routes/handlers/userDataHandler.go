@@ -95,6 +95,8 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 			utils.SendSuccess(w, map[string]string{"token": tempToken}, "need_additional_data")
 			return
 		}
+		// o cliente recebe uma mensagem genérica; o log guarda a causa (schema, conexão, constraint…)
+		utils.LogError("ExternalAuthHandler: falha ao salvar usuário: " + err.Error())
 		utils.SendError(w, "Erro ao salvar usuário", http.StatusInternalServerError)
 		return
 	}

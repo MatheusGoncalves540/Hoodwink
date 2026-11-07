@@ -23,9 +23,10 @@ export const REPLAY_WASM_BASE = "/replay/";
 export const REPLAY_WASM_EXEC_FILE = "wasm_exec.js";
 
 export const replayEngines: readonly ReplayEngineAsset[] = [
-  { version: 1, file: "replay-v1-708e003a.wasm.br", sha256: "708e003ae3a7619f3aba73836d9ac5ae61a056f4bb6f4039f59c91e51f36ff52", sha256Br: "0aa37cb328fba746b8fb8c12b0c84297831eaaeb5d1cdc2bb7ec06cac4530132", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
-  { version: 2, file: "replay-v2-042a928c.wasm.br", sha256: "042a928ccc9e2a8c660745e63d496d93ba9d69f82915693d7db88e83101cc987", sha256Br: "12d37b334b2d2458ce9b1849b74f0b8b2fd87f03be3fa120f3846980344b3003", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
-  { version: 3, file: "replay-v3-541036a0.wasm.br", sha256: "541036a044d3f575ead811da8b277d2c716b65bc5f8801b78a77e4f5251792c5", sha256Br: "5ec97a9a9bdb9bca78330cea7e288df04321c9a9520a168dd5dd851f3d3486ac", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
+  { version: 1, file: "replay-v1-3c51613d.wasm.br", sha256: "3c51613dd74abf55ccb161d027de375233a3eca3327b9a436a27bddee2192240", sha256Br: "169d8d4cd37cffecd81f0077f90d43d3d63106de3a8fe847337925bcf18c2295", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
+  { version: 2, file: "replay-v2-21b26e6e.wasm.br", sha256: "21b26e6ee679fbfd9e9e7743e8c80755f5c6f4bb5906ae2f70a41d945e969d50", sha256Br: "f366643705cae6a95543edb64759aad85546f75df3dcb345cfb5ffe8b824f059", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
+  { version: 3, file: "replay-v3-ec6a46a4.wasm.br", sha256: "ec6a46a4e07679581c9b21f5c999e6099be4c50e0ea54d5fc49c203833f8e28d", sha256Br: "ef9482113444fe4fde7025599b45d56c9287888cdc5eb8c327c84a2e0cc3a1fd", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
+  { version: 4, file: "replay-v4-2bf5eec4.wasm.br", sha256: "2bf5eec4e2f7bc6d72b7a56c93d0a1fde5b3c10fa18598ec2dd46376fe5178ac", sha256Br: "370e66838f31a5631e0c7fac0cdba8b1919b2d68aed7d5f65d8f8aee9cc35309", wasmExecSha256: "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14", brotli: true },
 ];
 
 export const replayEngineByVersion = (version: number): ReplayEngineAsset | undefined =>

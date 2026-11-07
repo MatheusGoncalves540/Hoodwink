@@ -5,7 +5,7 @@ import { roleName } from "../../game/roles";
 import type { Decision, GameView, MiniCard } from "../../game/selectors";
 import { selectSeatSheet, selectYou, selectYouSheet } from "../../game/selectors";
 import { CountdownDots } from "../../ui/CountdownDots/CountdownDots";
-import { useCountdown } from "../../ui/Timer/useCountdown";
+import { useCountdown } from "../../ui/Timer/timer";
 import { cx } from "../../ui/cx";
 import s from "./ContestPick.module.css";
 
