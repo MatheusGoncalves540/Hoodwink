@@ -163,7 +163,7 @@ replay-wasm:
 	cp "$$wasm_exec" $(REPLAY_PUBLIC)/wasm_exec.js
 	exec_sha="$$(sha256sum $(REPLAY_PUBLIC)/wasm_exec.js | cut -d' ' -f1)"
 	echo ">> wasm_exec.js ($$(cd $(REPLAY_DIR) && go env GOVERSION)) sha256 $$exec_sha"
-	printf '%b' '// Code generated por `make replay-wasm` (server/makefile). NAO edite a mao.\n//\n// Um .wasm por versao do motor congelado. O `sha256` e dos bytes DESCOMPRIMIDOS\n// do .wasm - e o que o loader confere antes de WebAssembly.instantiate. Em\n// producao o nginx serve o .wasm.br com Content-Encoding: br, entao o fetch ja\n// entrega os bytes descomprimidos. O `sha256Br` e do arquivo .wasm.br em si\n// (integridade do artefato publicado; nao e o hash usado no instantiate).\n\nexport type ReplayEngineAsset = {\n  version: number;\n  /** Nome do arquivo em public/replay/, comprimido com brotli. */\n  file: string;\n  /** sha256 (hex) dos bytes descomprimidos do .wasm. */\n  sha256: string;\n  /** sha256 (hex) do arquivo .wasm.br servido pelo nginx. */\n  sha256Br: string;\n  /** sha256 (hex) do wasm_exec.js da toolchain Go usada no build. */\n  wasmExecSha256: string;\n  brotli: true;\n};\n\nexport const REPLAY_WASM_BASE = "/replay/";\nexport const REPLAY_WASM_EXEC_FILE = "wasm_exec.js";\n\nexport const replayEngines: readonly ReplayEngineAsset[] = [\n' > $(REPLAY_MANIFEST)
+	printf '%b' '// Code generated por `make replay-wasm` (server/makefile). NAO edite a mao.\n//\n// Um .wasm por versao do motor congelado. O `sha256` e dos bytes DESCOMPRIMIDOS\n// do .wasm - e o que o loader confere antes de WebAssembly.instantiate. Em\n// producao o nginx serve o .wasm.br com Content-Encoding: br, entao o fetch ja\n// entrega os bytes descomprimidos. O `sha256Br` e do arquivo .wasm.br em si\n// (integridade do artefato publicado; nao e o hash usado no instantiate).\n\nexport type ReplayEngineAsset = {\n  version: number;\n  /** Nome do arquivo em public/replay/, comprimido com brotli. */\n  file: string;\n  /** sha256 (hex) dos bytes descomprimidos do .wasm. */\n  sha256: string;\n  /** sha256 (hex) do arquivo .wasm.br servido pelo nginx. */\n  sha256Br: string;\n  /** sha256 (hex) do wasm_exec.js da toolchain Go usada no build. */\n  wasmExecSha256: string;\n  brotli: true;\n};\n\nexport const REPLAY_WASM_BASE = "/replay/";\nexport const REPLAY_WASM_EXEC_FILE = "wasm_exec.js";\n\nexport const replayEngines: readonly ReplayEngineAsset[] = [\n' > "$$tmp/manifest.gen.ts"
 	for v in $$versions; do
 		wasm="$$tmp/replay-v$$v.wasm"
 		( cd $(REPLAY_DIR) && GOOS=js GOARCH=wasm go build -trimpath -ldflags="-s -w -X main.buildEngineVersion=$$v" -o "$$wasm" ./cmd/wasm )
@@ -177,9 +177,11 @@ replay-wasm:
 		bytes="$$(wc -c < "$$wasm" | tr -d ' ')"
 		brbytes="$$(wc -c < "$(REPLAY_PUBLIC)/$$file" | tr -d ' ')"
 		printf '>> v%s: %s + %s (%s B brotli, %s B wasm, sha256 %s)\n' "$$v" "$$raw" "$$file" "$$brbytes" "$$bytes" "$$short"
-		printf '  { version: %s, file: "%s", sha256: "%s", sha256Br: "%s", wasmExecSha256: "%s", brotli: true },\n' "$$v" "$$file" "$$sha" "$$brsha" "$$exec_sha" >> $(REPLAY_MANIFEST)
+		printf '  { version: %s, file: "%s", sha256: "%s", sha256Br: "%s", wasmExecSha256: "%s", brotli: true },\n' "$$v" "$$file" "$$sha" "$$brsha" "$$exec_sha" >> "$$tmp/manifest.gen.ts"
 	done
-	printf '%b' '];\n\nexport const replayEngineByVersion = (version: number): ReplayEngineAsset | undefined =>\n  replayEngines.find((engine) => engine.version === version);\n\nexport const replayAssetUrl = (file: string): string => REPLAY_WASM_BASE + file;\n' >> $(REPLAY_MANIFEST)
+	printf '%b' '];\n\nexport const replayEngineByVersion = (version: number): ReplayEngineAsset | undefined =>\n  replayEngines.find((engine) => engine.version === version);\n\nexport const replayAssetUrl = (file: string): string => REPLAY_WASM_BASE + file;\n' >> "$$tmp/manifest.gen.ts"
+	# Só publica o manifest no fim: uma geração interrompida não deixa o arquivo pela metade.
+	cp "$$tmp/manifest.gen.ts" $(REPLAY_MANIFEST)
 	echo ">> manifest: $(REPLAY_MANIFEST)"
 
 ## Confere os assets do replay: arquivos existem, sha256 bate com o manifest e tamanho no teto

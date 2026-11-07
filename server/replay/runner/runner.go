@@ -1,24 +1,19 @@
 // Package runner reproduz uma partida a partir de um replay .hwr (formato),
 // usando o motor congelado da versão gravada no arquivo (engines). Não depende
 // de Redis nem de websocket: o Sink é injetado e, por padrão, é um no-op.
+//
+// A sala circula como `any`: o runner não conhece os tipos congelados de cada
+// versão, só a interface engines.Engine, então uma versão nova não exige mexer
+// aqui (só regenerar engines/registry.go com `make engine-bump`).
 package runner
 
 import (
-	"context"
 	"crypto/sha256"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
-	"strconv"
 	"time"
 
 	"github.com/MatheusGoncalves540/Hoodwink-replay/engines"
-	effectsv1 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/engine/effects"
-	rulesv1 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/rules"
-	structsv1 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/structs"
-	playersv1 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/structs/players"
-	roomsv1 "github.com/MatheusGoncalves540/Hoodwink-replay/engines/v1/game/structs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-replay/format"
 )
 
@@ -38,10 +33,9 @@ var (
 
 // Options controla a execução do Runner.
 type Options struct {
-	// Sink é o ponto de saída do motor. Quando nil, usa um no-op (sem Redis/websocket).
-	Sink roomsv1.Sink
-	// Registry de regras. Quando nil, carrega o registry embutido (modos YAML).
-	Registry *rulesv1.Registry
+	// Sink é o ponto de saída do motor (o Sink congelado da versão da partida).
+	// Quando nil, o motor usa o no-op da própria versão.
+	Sink any
 	// MaxSteps é o teto de passos (padrão 5000).
 	MaxSteps int
 }
@@ -50,14 +44,13 @@ type Options struct {
 // retorno a cada 20 passos para a barra de tempo.
 type Runner struct {
 	replay   *format.Replay
-	engine   engines.EngineV1
-	registry *rulesv1.Registry
-	sink     roomsv1.Sink
+	engine   engines.Engine
+	sink     any
 	maxSteps int
 
 	start time.Time
 
-	room      *roomsv1.Room
+	room      any
 	pos       int
 	elapsedMs int64
 
@@ -71,7 +64,7 @@ type Runner struct {
 
 type restorePoint struct {
 	pos       int
-	room      *roomsv1.Room
+	room      any
 	elapsedMs int64
 }
 
@@ -85,21 +78,8 @@ func New(replay *format.Replay, opts Options) (*Runner, error) {
 	if !ok {
 		return nil, fmt.Errorf("versão do motor desconhecida: %d", replay.EngineVersion)
 	}
-	v1, ok := eng.(engines.EngineV1)
-	if !ok {
-		return nil, fmt.Errorf("versão %d não suportada pelo runner", replay.EngineVersion)
-	}
-
-	registry := opts.Registry
-	if registry == nil {
-		reg, err := rulesv1.LoadEmbeddedRegistry()
-		if err != nil {
-			return nil, fmt.Errorf("carregar regras embutidas: %w", err)
-		}
-		registry = reg
-	}
-	if _, err := registry.Get(replay.Mode); err != nil {
-		return nil, fmt.Errorf("modo desconhecido %q: %w", replay.Mode, err)
+	if err := eng.CheckMode(replay.Mode); err != nil {
+		return nil, err
 	}
 
 	if len(replay.Entries) == 0 {
@@ -109,10 +89,6 @@ func New(replay *format.Replay, opts Options) (*Runner, error) {
 		return nil, errors.New("primeira entrada não é o início")
 	}
 
-	sink := opts.Sink
-	if sink == nil {
-		sink = roomsv1.NoopSink()
-	}
 	maxSteps := opts.MaxSteps
 	if maxSteps <= 0 {
 		maxSteps = defaultMaxSteps
@@ -120,9 +96,8 @@ func New(replay *format.Replay, opts Options) (*Runner, error) {
 
 	return &Runner{
 		replay:              replay,
-		engine:              v1,
-		registry:            registry,
-		sink:                sink,
+		engine:              eng,
+		sink:                opts.Sink,
 		maxSteps:            maxSteps,
 		start:               time.UnixMilli(replay.StartedAtMs).UTC(),
 		checkpointPositions: checkpointPositions(len(replay.Entries)),
@@ -150,7 +125,7 @@ func (r *Runner) Step() error {
 	if r.nextCheckpointIdx < len(r.checkpointPositions) &&
 		r.pos == r.checkpointPositions[r.nextCheckpointIdx] {
 		want := r.replay.Checkpoints[r.nextCheckpointIdx]
-		got, err := checkpointOf(r.room)
+		got, err := r.checkpointOf(r.room)
 		if err != nil {
 			return err
 		}
@@ -170,7 +145,7 @@ func (r *Runner) Step() error {
 func (r *Runner) storeRestore() {
 	room := r.room
 	if room != nil {
-		room = room.Clone()
+		room = r.engine.Clone(room)
 	}
 	r.restorePoints = append(r.restorePoints, restorePoint{pos: r.pos, room: room, elapsedMs: r.elapsedMs})
 }
@@ -189,7 +164,7 @@ func (r *Runner) Seek(n int) error {
 	}
 
 	from := 0
-	var room *roomsv1.Room
+	var room any
 	var elapsed int64
 	for _, rp := range r.restorePoints {
 		if rp.pos <= n {
@@ -218,8 +193,19 @@ func (r *Runner) Seek(n int) error {
 	return nil
 }
 
-// State devolve a sala atual (nil antes do início).
-func (r *Runner) State() *roomsv1.Room { return r.room }
+// State devolve a sala atual (nil antes do início), no tipo congelado da versão.
+func (r *Runner) State() any { return r.room }
+
+// GameOver diz se a partida terminou.
+func (r *Runner) GameOver() bool { return r.room != nil && r.engine.GameOver(r.room) }
+
+// WinnerID devolve o id do vencedor no estado atual ("" antes do fim).
+func (r *Runner) WinnerID() string {
+	if r.room == nil {
+		return ""
+	}
+	return r.engine.WinnerID(r.room)
+}
 
 // Position devolve quantas entradas já foram aplicadas.
 func (r *Runner) Position() int { return r.pos }
@@ -230,7 +216,7 @@ func (r *Runner) Total() int { return len(r.replay.Entries) }
 // Hash devolve o hash canônico do estado atual (sha256 do JSON da sala), em hex.
 // Vazio antes do início.
 func (r *Runner) Hash() string {
-	h, err := canonicalHash(r.room)
+	h, err := r.canonicalHash(r.room)
 	if err != nil {
 		return ""
 	}
@@ -262,19 +248,19 @@ func (r *Runner) applyEntry(e format.Entry) (applied bool, err error) {
 	r.elapsedMs += e.DeltaMs
 
 	if e.Type == format.EntryStart {
-		room, err := newRoom(r.replay, r.registry)
+		room, err := r.engine.NewRoom(r.replay)
 		if err != nil {
 			return false, err
 		}
-		room.SetNow(now)
+		r.engine.SetNow(room, now)
 		if e.Connected != nil {
-			room.SetConnected(connectedIDs(r.replay, e.Connected))
+			r.engine.SetConnected(room, connectedIDs(r.replay, e.Connected))
 		}
-		if err := effectsv1.StartGameEffect(context.Background(), r.sink, room); err != nil {
-			room.ClearNow()
+		if err := r.engine.StartGame(room, r.sink); err != nil {
+			r.engine.ClearNow(room)
 			return false, err
 		}
-		room.ClearNow()
+		r.engine.ClearNow(room)
 		r.room = room
 		return true, nil
 	}
@@ -283,134 +269,61 @@ func (r *Runner) applyEntry(e format.Entry) (applied bool, err error) {
 		return false, fmt.Errorf("entrada antes do início no passo %d", r.pos)
 	}
 
-	work := r.room.Clone()
-	work.SetNow(now)
+	work := r.engine.Clone(r.room)
+	r.engine.SetNow(work, now)
 
 	if e.Connected != nil {
-		work.SetConnected(connectedIDs(r.replay, e.Connected))
+		r.engine.SetConnected(work, connectedIDs(r.replay, e.Connected))
 	}
 
 	switch e.Type {
 	case format.EntryPlay:
-		play, err := structsv1.ParsePlayerPlay(e.Payload, playerID(e.Player))
+		accepted, err := r.engine.ApplyPlay(work, r.sink, engines.PlayerID(e.Player), e.Payload)
 		if err != nil {
-			work.ClearNow()
+			r.engine.ClearNow(work)
 			return false, err
 		}
-		accepted := r.engine.ApplyPlay(context.Background(), r.sink, work, play, r.registry)
 		if accepted {
 			r.room = work
 		}
-		work.ClearNow()
+		r.engine.ClearNow(work)
 		return accepted, nil
 
 	case format.EntryTick:
-		r.engine.Tick(context.Background(), r.sink, r.registry, work)
+		if err := r.engine.Tick(work, r.sink); err != nil {
+			r.engine.ClearNow(work)
+			return false, err
+		}
 		r.room = work
-		work.ClearNow()
+		r.engine.ClearNow(work)
 		return true, nil
 
 	case format.EntryConnect, format.EntryDisconnect, format.EntryJoin, format.EntryLeave:
 		r.room = work
-		work.ClearNow()
+		r.engine.ClearNow(work)
 		return true, nil
 
 	case format.EntryEnd:
-		if !work.GameOver {
-			work.ClearNow()
+		if !r.engine.GameOver(work) {
+			r.engine.ClearNow(work)
 			return false, fmt.Errorf("fim sem GameOver no passo %d", r.pos)
 		}
 		wantWinner := ""
 		if e.Player != format.NoPlayer {
-			wantWinner = playerID(e.Player)
+			wantWinner = engines.PlayerID(e.Player)
 		}
-		if work.WinnerID != wantWinner {
-			work.ClearNow()
-			return false, fmt.Errorf("vencedor divergente no passo %d: %q != %q", r.pos, work.WinnerID, wantWinner)
+		if got := r.engine.WinnerID(work); got != wantWinner {
+			r.engine.ClearNow(work)
+			return false, fmt.Errorf("vencedor divergente no passo %d: %q != %q", r.pos, got, wantWinner)
 		}
 		r.room = work
-		work.ClearNow()
+		r.engine.ClearNow(work)
 		return true, nil
 
 	default:
-		work.ClearNow()
+		r.engine.ClearNow(work)
 		return false, fmt.Errorf("tipo de entrada desconhecido no passo %d: %d", r.pos, e.Type)
 	}
-}
-
-// newRoom monta a sala inicial a partir do cabeçalho do replay. O baralho é
-// embaralhado com o RNG da sala (semeado), então o estado inicial é determinístico.
-func newRoom(replay *format.Replay, registry *rulesv1.Registry) (*roomsv1.Room, error) {
-	seed := roomsv1.Seed(replay.Seed)
-	matchID := matchIDString(replay.MatchID)
-
-	room := &roomsv1.Room{
-		ID:          matchID,
-		Rules:       structsv1.Rules(replay.Mode),
-		TimeoutType: string(rulesv1.TimeoutsTypeDefault),
-		Name:        "",
-		Password:    "",
-		MaxPlayers:  0,
-		CustomMatch: false,
-		Turn:        1,
-		Tax:         0,
-		DoubledCardValues: map[structsv1.TypePlayerPlays]structsv1.DoubledCardValues{
-			structsv1.PlayPoliticalCard: {},
-			structsv1.PlayRebelCard:     {},
-		},
-		Players:                   map[string]*playersv1.Player{},
-		Deck:                      nil,
-		CurrentPlayer:             "",
-		GameEvent:                 structsv1.NewGameEvent("", structsv1.EventWaitingStart, time.Time{}, nil),
-		PendingEffects:            []structsv1.EffectDTO{},
-		PendingPresentationEvents: []structsv1.PresentationEventDTO{},
-		GameOver:                  false,
-		StartTime:                 time.Time{},
-		Created:                   time.UnixMilli(replay.StartedAtMs).UTC(),
-		MatchID:                   matchID,
-		Seed:                      seed,
-		Rng:                       roomsv1.NewRngState(seed),
-	}
-
-	general, err := room.GetGeneralRules(registry)
-	if err != nil {
-		return nil, err
-	}
-	if general.MaxPlayers != nil {
-		room.MaxPlayers = *general.MaxPlayers
-	}
-	if general.InitialCoins == nil {
-		return nil, errors.New("regras sem initialCoins")
-	}
-	if general.CopysOfEachCard == nil {
-		return nil, errors.New("regras sem copysOfEachCard")
-	}
-
-	deck := make([]structsv1.CardName, 0, *general.CopysOfEachCard*len(structsv1.AllCards))
-	for i := 0; i < *general.CopysOfEachCard; i++ {
-		deck = append(deck, structsv1.AllCards...)
-	}
-	room.Rand().Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
-	room.Deck = deck
-
-	for i, p := range replay.Players {
-		id := playerID(p.Index)
-		room.Players[id] = &playersv1.Player{
-			Id:       id,
-			Name:     p.Name,
-			MoveTime: i,
-			Cards: []structsv1.Card{
-				{Name: structsv1.CardKamikaze, Index: 0},
-				{Name: structsv1.CardKamikaze, Index: 1},
-			},
-			Coins: *general.InitialCoins,
-			Alive: true,
-		}
-		room.NextMoveTime++
-		room.AddConnected(id)
-	}
-
-	return room, nil
 }
 
 // checkpointPositions devolve as posições (1-based) em que um checkpoint é
@@ -424,70 +337,12 @@ func checkpointPositions(n int) []int {
 	return pos
 }
 
-// normalizedForHash devolve a mesma canonicalização do gravador: campos de
-// exibição zerados, IDs de jogador na ordem lexicográfica (aqui já são os
-// índices), MoveTime denso, tempos truncados em ms.
-func normalizedForHash(room *roomsv1.Room) *roomsv1.Room {
-	clone := room.Clone()
-	clone.ID = clone.MatchID
-	clone.Name = ""
-	clone.Password = ""
-	clone.MaxPlayers = 0
-	clone.CustomMatch = false
-	clone.Chat = nil
-	clone.NonReplayable = false
-
-	ids := make([]string, 0, len(clone.Players))
-	for id := range clone.Players {
-		ids = append(ids, id)
-	}
-	sort.Strings(ids)
-
-	moveOrder := append([]string(nil), ids...)
-	sort.Slice(moveOrder, func(i, j int) bool {
-		a, b := clone.Players[moveOrder[i]], clone.Players[moveOrder[j]]
-		if a.MoveTime != b.MoveTime {
-			return a.MoveTime < b.MoveTime
-		}
-		return moveOrder[i] < moveOrder[j]
-	})
-	moveRank := make(map[string]int, len(ids))
-	for i, id := range moveOrder {
-		moveRank[id] = i
-	}
-
-	players := make(map[string]*playersv1.Player, len(ids))
-	for id, p := range clone.Players {
-		p.Name = ""
-		p.Id = id
-		p.MoveTime = moveRank[id]
-		players[id] = p
-	}
-	clone.Players = players
-	clone.NextMoveTime = len(ids)
-
-	clone.StartTime = truncateForHash(clone.StartTime)
-	clone.Created = clone.StartTime
-	if clone.GameEvent != nil {
-		clone.GameEvent.ExpiresAt = truncateForHash(clone.GameEvent.ExpiresAt)
-	}
-
-	return clone
-}
-
-func truncateForHash(t time.Time) time.Time {
-	if t.IsZero() {
-		return t
-	}
-	return t.Truncate(time.Millisecond)
-}
-
 // checkpointOf devolve os primeiros 8 bytes do sha256 do estado canônico da sala.
-func checkpointOf(room *roomsv1.Room) (format.Checkpoint, error) {
+func (r *Runner) checkpointOf(room any) (format.Checkpoint, error) {
 	if room == nil {
 		return format.Checkpoint{}, errors.New("sala não iniciada")
 	}
-	b, err := canonicalJSON(room)
+	b, err := r.engine.CanonicalJSON(room)
 	if err != nil {
 		return format.Checkpoint{}, err
 	}
@@ -498,47 +353,25 @@ func checkpointOf(room *roomsv1.Room) (format.Checkpoint, error) {
 }
 
 // canonicalHash devolve o sha256 completo do estado canônico da sala, em hex.
-func canonicalHash(room *roomsv1.Room) (string, error) {
+func (r *Runner) canonicalHash(room any) (string, error) {
 	if room == nil {
 		return "", nil
 	}
-	b, err := canonicalJSON(room)
+	b, err := r.engine.CanonicalJSON(room)
 	if err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("%x", sha256.Sum256(b)), nil
 }
 
-// canonicalJSON serializa a sala canônica passando por map[string]any, para os
-// mapas saírem com chaves ordenadas exatamente como no gravador (ReplayCheckpoint).
-func canonicalJSON(room *roomsv1.Room) ([]byte, error) {
-	data, err := json.Marshal(normalizedForHash(room))
-	if err != nil {
-		return nil, err
-	}
-	var v any
-	if err := json.Unmarshal(data, &v); err != nil {
-		return nil, err
-	}
-	return json.Marshal(v)
-}
-
 func connectedIDs(replay *format.Replay, bitmap []byte) []string {
 	ids := make([]string, 0, len(replay.Players))
 	for _, p := range replay.Players {
 		if len(bitmap) > int(p.Index)/8 && bitmap[int(p.Index)/8]&(1<<(p.Index%8)) != 0 {
-			ids = append(ids, playerID(p.Index))
+			ids = append(ids, engines.PlayerID(p.Index))
 		}
 	}
 	return ids
-}
-
-// playerID mapeia o índice de jogador do replay para o id usado na sala.
-func playerID(index uint8) string { return strconv.Itoa(int(index)) }
-
-// matchIDString formata os 16 bytes do MatchID como UUID canônico.
-func matchIDString(b [16]byte) string {
-	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }
 
 // Divergence indica que o estado calculado divergiu do checkpoint do arquivo.
