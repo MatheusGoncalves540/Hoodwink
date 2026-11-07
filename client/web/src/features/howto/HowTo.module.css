@@ -486,14 +486,15 @@
 .taxa input {
   width: 100%;
   min-height: 44px;
-  accent-color: var(--hw-veludo);
+  /* segue o tema: vinho na Matinê, creme na Estreia */
+  accent-color: var(--titulo);
 }
 .hint {
   font-size: 15px;
   color: var(--suave);
 }
 
-/* elenco: etiquetas à esquerda, ficha à direita (no celular, etiquetas roláveis em cima) */
+/* elenco: etiquetas à esquerda, ficha à direita (no celular, etiquetas quebram em linhas para aparecerem todas) */
 .elenco {
   display: flex;
   flex-direction: column;
@@ -507,17 +508,16 @@
 .lista {
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
   margin: 0 -16px;
   padding: 4px 16px 8px;
-  scroll-snap-type: x proximity;
 }
 .desk .lista {
   flex: 0 0 240px;
   flex-direction: column;
+  flex-wrap: nowrap;
   gap: 22px;
-  overflow: visible;
   margin: 0;
   padding: 0;
 }
@@ -550,7 +550,6 @@
   border: 0;
   cursor: pointer;
   text-align: left;
-  scroll-snap-align: start;
   background: var(--folha);
   color: var(--tinta);
   font-family: var(--hw-font-texto);

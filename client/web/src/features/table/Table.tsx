@@ -7,6 +7,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type
 import { useLayout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
 import { actionDef, type ActionId } from "../../game/roles";
+import type { PublicCard } from "../../game/protocol";
 import { eventKey } from "../../game/log";
 import { CLASSIC_RULES } from "../../game/rules.classic";
 import { desktopSeats, mobileSeats } from "../../game/seats";
@@ -115,6 +116,15 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hid
   );
 }
 
+/** Fluxo de alvo: a carta sua pode ser escolhida por este papel? (regras v2, 02 §3) */
+export function ownCardDisabled(role: ActionId | undefined, card: PublicCard): boolean {
+  if (role === "GRAVEDIGGER") return !card.dead;
+  if (role === "GUARDIAN") return card.dead || card.protected;
+  // O Crupiê descarta uma carta viva ou morta e puxa uma nova do baralho.
+  if (role === "CROUPIER") return false;
+  return card.dead;
+}
+
 /** Liga a mesa ao estado real: gavetas, trilho, ações, reação e contestação. */
 export function TableScene() {
   const me = useGameStore((st) => st.me);
@@ -214,12 +224,9 @@ export function TableScene() {
     close();
   };
 
-  const ownCardDisabled = (index: number) => {
+  const ownCardDisabledFor = (index: number) => {
     const card = me ? room?.players[me]?.cards.find((c) => c.index === index) : undefined;
-    if (!card) return true;
-    if (targeting?.role === "GRAVEDIGGER") return !card.dead;
-    if (targeting?.role === "GUARDIAN") return card.dead || card.protected;
-    return card.dead;
+    return !card || ownCardDisabled(targeting?.role, card);
   };
 
   const sheet =
@@ -230,7 +237,7 @@ export function TableScene() {
         onClose={closeSheet}
         backLabel={targeting ? copy.backToActions : undefined}
         onPickCard={targeting && actionDef(targeting.role).target === "own" ? pickOwnCard : undefined}
-        cardDisabled={targeting ? ownCardDisabled : undefined}
+        cardDisabled={targeting ? ownCardDisabledFor : undefined}
       />
     ) : openSheet === "menu" ? (
       <RoomMenu view={view} mode={layout} onClose={closeSheet} />

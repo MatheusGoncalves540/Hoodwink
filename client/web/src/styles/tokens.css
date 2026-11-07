@@ -17,7 +17,11 @@
 /* Cores fixas da arte (iguais nos dois temas): faixa dos botões de ação, moeda, feixe e sombra. Skins de cores podem redefinir. */
 :root{--hw-tom-vinho:linear-gradient(90deg,#2A080B,#5A1820);--hw-tom-vinho-faixa:#A3201A;--hw-tom-ouro:linear-gradient(90deg,#1F1606,#5C4214);--hw-tom-ouro-faixa:#8A6A2A;--hw-tom-cedula:linear-gradient(90deg,#0F1F17,#2C4A33);--hw-tom-cedula-faixa:#5E8A5A;
 --hw-faixa-fundo:#1E1512;--hw-faixa-tinta:#F4E6C4;--hw-faixa-tinta-off:#C9B48C;--hw-faixa-ouro:#B98A2E;--hw-moeda-tinta:#1E1512;--hw-feixe:#FFF6DC;--hw-sombra:rgba(0,0,0,.25)}
-:root,[data-sk-letras="cartaz"]{--hw-font-display:"Limelight","Bodoni Moda",Georgia,serif;--hw-font-texto:"Literata",Georgia,serif;--hw-font-cartao:"Patrick Hand","Comic Sans MS",cursive;--hw-font-rabisco:"Permanent Marker",cursive;--hw-font-rotulo:"Josefin Sans",system-ui,sans-serif;--hw-radius-s:6px;--hw-radius-m:10px;--hw-radius-pill:999px}
+:root,[data-sk-letras="cartaz"]{--hw-font-display:"Limelight","Bodoni Moda",Georgia,serif;--hw-font-texto:"Literata",Georgia,serif;--hw-font-cartao:"Patrick Hand","Comic Sans MS","Comic Sans","Chalkboard SE","Bradley Hand","Segoe Print",sans-serif;--hw-font-rabisco:"Permanent Marker","Marker Felt","Segoe Print","Chalkboard SE","Comic Sans MS",sans-serif;--hw-font-rotulo:"Josefin Sans",system-ui,sans-serif;--hw-radius-s:6px;--hw-radius-m:10px;--hw-radius-pill:999px}
+/* Controles nativos (range, scrollbar, autofill) seguem o tema. Sem isto o Safari/Chrome
+   desenha barra de rolagem e slider claros por dentro da Estreia (dark). */
+:root,[data-theme="light"]{color-scheme:light}
+[data-theme="dark"]{color-scheme:dark}
 :root{
   --hw-space-1: 4px;
   --hw-space-2: 8px;
