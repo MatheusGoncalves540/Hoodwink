@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 # Build a partir da raiz do monorepo server/ (o gameServer depende do módulo local replay):
 #   sudo docker build -f server/gameServer/Dockerfile -t hoodwink-gameserver server
 #   podman run -d --name hoodwink-gameserver --restart=always -p 4444:4444 --env-file .env hoodwink-gameserver
@@ -18,15 +19,19 @@ WORKDIR /app
 COPY replay/go.mod replay/go.sum ./replay/
 COPY gameServer/go.mod gameServer/go.sum ./gameServer/
 
-# Download dependencies
-RUN cd gameServer && go mod download
+# Download dependencies (cache de módulos entre builds)
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    cd gameServer && go mod download
 
 # Copy source code
 COPY replay ./replay
 COPY gameServer ./gameServer
 
-# Build the application with optimizations
-RUN cd gameServer && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-w -s" -o /app/main .
+# Build the application with optimizations (cache de compilação entre builds)
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    cd gameServer && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-w -s" -o /app/main .
 
 # Runtime stage
 FROM docker.io/library/alpine:latest
