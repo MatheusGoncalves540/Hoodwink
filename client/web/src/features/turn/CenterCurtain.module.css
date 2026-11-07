@@ -9,7 +9,7 @@
 }
 .drawer {
   position: absolute;
-  inset: 0;
+  inset: var(--curtain-top, 0px) 0 0;
   display: flex;
   flex-direction: column;
   /* fechada: a gaveta desce até sobrar só o handle no pé do slot */
@@ -84,4 +84,33 @@
 /* sem handle (barra de alvo) a gaveta para acima da faixa Você: seus dados seguem à vista */
 .curtain:not(.hasHandle) .body {
   padding-bottom: var(--curtain-rest, 0px);
+}
+
+/* Com peek o handle é o cabeçalho da gaveta (título, moedas, tempo): borda de cima arredondada,
+   sombra sobre o palco e arraste vertical (touch-action: none). */
+.hasPeek {
+  --curtain-handle-h: 124px;
+}
+.hasPeek .handle {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 20px 12px;
+  border-top: 3px double var(--hw-tinta);
+  border-bottom: 1px solid var(--hw-filete);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -18px 44px var(--hw-sombra);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: var(--hw-font-texto);
+  text-align: left;
+  touch-action: none;
+}
+.hasPeek .grip {
+  align-self: center;
+  width: 48px;
+  height: 5px;
 }

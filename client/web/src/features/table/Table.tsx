@@ -25,7 +25,7 @@ import { RoomMenu } from "../sheets/RoomMenu";
 import { SeatSheet } from "../sheets/SeatSheet";
 import { YouSheet } from "../sheets/YouSheet";
 import { OutOfScene } from "../endgame/OutOfScene";
-import { ActionBoard } from "../turn/ActionBoard";
+import { ActionBoard, ActionPeek } from "../turn/ActionBoard";
 import { CenterCurtain } from "../turn/CenterCurtain";
 import { RevealChoice } from "../turn/RevealChoice";
 import { ContestPick } from "../turn/ContestPick";
@@ -366,7 +366,7 @@ export function TableScene() {
   const curtain = targetBar ? (
     <CenterCurtain open>{targetBar}</CenterCurtain>
   ) : board && !revealChoice ? (
-    <CenterCurtain open={curtainOpen} onToggle={setCurtainOpen}>
+    <CenterCurtain open={curtainOpen} onToggle={setCurtainOpen} peek={<ActionPeek view={view} open={curtainOpen} />}>
       {board}
     </CenterCurtain>
   ) : undefined;

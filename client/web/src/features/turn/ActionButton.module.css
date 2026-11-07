@@ -70,9 +70,21 @@
   font-size: 22px;
   line-height: 1;
 }
-.held {
-  font-size: 14px;
-  font-style: italic;
+/* Na sua mão: contorno de ouro reforçado e a carta, inclinada, à esquerda. */
+.inHand {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hw-ouro) 40%, transparent);
+}
+.thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 43px;
+  height: 60px;
+  margin-left: 10px;
+  rotate: -4deg;
+}
+.thumb > * {
+  transform: scale(0.55);
+  transform-origin: top left;
 }
 .desc {
   font-size: 14px;

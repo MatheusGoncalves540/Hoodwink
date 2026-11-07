@@ -49,7 +49,7 @@
   z-index: 4;
 }
 
-/* Cortina do miolo: do cabeçalho até o pé, por cima da faixa Você e sem cobrir o trilho.
+/* Gaveta de ações: sobe do pé até --curtain-top, por cima da faixa Você e sem cobrir o trilho.
    Fechada, o handle descansa logo acima da faixa Você (--curtain-rest). O slot não recebe clique:
    só o handle e o conteúdo aberto. */
 .curtainSlot {
@@ -61,10 +61,14 @@
   z-index: 5;
   pointer-events: none;
   --curtain-rest: var(--hw-youbar-h);
+  /* aberta, a gaveta para abaixo da primeira fileira de camarotes: o palco de cima segue à vista */
+  --curtain-top: clamp(96px, 16svh, 150px);
 }
 .desk .curtainSlot {
   top: 64px;
-  right: 420px;
+  left: 24px;
+  right: 444px;
+  --curtain-top: clamp(150px, 25svh, 240px);
 }
 
 /* Escolha de alvo (Clarividente, Assassino, Matar, Trapaceiro, Kamikaze):

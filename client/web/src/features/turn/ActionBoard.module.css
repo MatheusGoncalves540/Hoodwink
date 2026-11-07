@@ -1,52 +1,94 @@
-/* Ações na gaveta do miolo: sem cabeçalho próprio (o da mesa já mostra rodada e taxa). */
+/* Corpo da gaveta de ações (o cabeçalho é o handle da CenterCurtain, em .peek*). */
 .screen {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--hw-plateia);
+  background: var(--hw-luz);
   color: var(--hw-tinta);
   font-family: var(--hw-font-texto);
 }
 .board {
   flex: 1;
   min-height: 0;
-  background: var(--hw-luz);
-  color: var(--hw-tinta);
-  border-top: 3px double var(--hw-tinta);
+  overflow-y: auto;
+  padding: 14px 18px 24px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
-.head {
-  padding: 12px 18px 8px;
+
+/* cabeçalho no handle */
+.peekRow {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   gap: 12px;
-  border-bottom: 1px solid color-mix(in srgb, var(--hw-tinta) 20%, transparent);
+}
+.peekTitle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kicker {
+  font-size: 11px;
+  color: var(--hw-ouro-texto);
 }
 .h1 {
-  margin: 0;
   font-style: italic;
   font-weight: 700;
-  font-size: 28px;
-  line-height: 1;
+  font-size: 24px;
+  line-height: 1.05;
+  color: var(--hw-titulo);
 }
-.hand {
-  flex-shrink: 0;
+.peekHint {
   display: flex;
+  align-items: center;
   gap: 6px;
-  padding: 6px 18px 8px;
-  overflow-x: auto;
-  border-bottom: 1px solid color-mix(in srgb, var(--hw-tinta) 20%, transparent);
+  font-size: 11px;
+  color: var(--hw-tinta-suave);
 }
-.handCard {
+@media (max-width: 480px) {
+  .hintText {
+    display: none;
+  }
+}
+.chevron {
+  transition: rotate 0.32s var(--m-drawer);
+}
+.chevronDown {
+  rotate: 180deg;
+}
+
+/* Na sua mão: papéis que você tem, sem blefe */
+.held {
   flex-shrink: 0;
+  padding: 4px 12px 12px;
+  border: 1.5px solid var(--hw-ouro);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--hw-ouro) 14%, transparent);
 }
+.heldHead {
+  padding-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 10px;
+}
+.heldTitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--hw-ouro-texto);
+}
+.heldHint {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--hw-tinta-suave);
+}
+
 .list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 4px 18px 8px;
+  flex-shrink: 0;
 }
 .group {
   padding-top: 12px;
@@ -60,48 +102,19 @@
   font-size: 13px;
   color: var(--hw-tinta-suave);
 }
-.foot {
-  flex-shrink: 0;
-  padding: 8px 18px 14px;
-  border-top: 3px double var(--hw-tinta);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.footLabel {
-  font-family: var(--hw-font-rotulo);
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-size: 12px;
-}
 
-/* Desktop (AcoesDesk): quadro em 3 colunas dentro de borda dupla. */
+/* Desktop: a mão em 2 colunas e os grupos em 3 */
 .desk .board {
-  margin: 0 40px;
-  border: 3px double var(--hw-tinta);
-  border-radius: var(--hw-radius-m);
-  overflow: hidden;
+  padding: 18px 28px 28px;
 }
-.desk .head {
-  padding: 18px 28px 14px;
-}
-.desk .hand {
-  padding: 10px 28px 12px;
+.desk .heldList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
 }
 .desk .list {
-  /* grade em vez de colunas CSS: a coluna extra transbordava para a direita e o `overflow: hidden` cortava cartas e ações */
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-content: start;
   column-gap: 28px;
-  overflow-y: auto;
-  padding: 6px 28px 18px;
-}
-.desk .group {
-  break-inside: avoid;
-  padding-top: 14px;
-}
-.desk .foot {
-  padding: 14px 28px 20px;
 }
