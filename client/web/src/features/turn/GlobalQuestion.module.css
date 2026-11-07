@@ -1,0 +1,262 @@
+/* Holofote de pergunta global: casa apagada, refletor no teto, feixe até a poça e o cartaz pisando nela.
+   Só tokens de cor; o contorno do cartaz é da peça de molduras e as respostas, da peça de botões. */
+.stage {
+  --gq-floor: clamp(28px, 7svh, 72px);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 72px 16px var(--gq-floor);
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--hw-scrim);
+}
+.halo,
+.beam {
+  position: absolute;
+  inset: 40px 0 0;
+  pointer-events: none;
+}
+.halo {
+  clip-path: polygon(45.5% 0, 54.5% 0, 94% 93%, 6% 93%);
+  background: linear-gradient(to bottom, var(--hw-cone), transparent 85%);
+}
+.beam {
+  clip-path: polygon(47.6% 0, 52.4% 0, 86% 92%, 14% 92%);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--hw-lampada) 38%, transparent),
+    var(--hw-cone) 72%,
+    color-mix(in srgb, var(--hw-lampada) 18%, transparent)
+  );
+}
+.pool {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--gq-floor) - 56px);
+  width: min(800px, 112%);
+  height: 124px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--hw-lampada) 62%, transparent), var(--hw-poca) 58%, transparent);
+}
+/* poeira parada no feixe: um ponto e seus reflexos em box-shadow */
+.motes {
+  position: absolute;
+  left: 50%;
+  top: 92px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--hw-lampada);
+  opacity: 0.55;
+  box-shadow:
+    -22px 40px 0 -0.5px var(--hw-lampada),
+    20px 84px 0 0 var(--hw-lampada),
+    -40px 110px 0 -0.5px var(--hw-lampada),
+    46px 124px 0 -0.5px var(--hw-lampada),
+    -6px 150px 0 0 var(--hw-lampada),
+    -84px 120px 0 -0.5px var(--hw-lampada);
+}
+.lamp {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 96px;
+  height: 64px;
+  translate: -50% 0;
+}
+.truss {
+  stroke: var(--hw-filete);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.yoke {
+  stroke: var(--hw-ouro);
+  stroke-width: 3;
+}
+.can {
+  fill: var(--hw-veludo);
+  stroke: var(--hw-ouro);
+  stroke-width: 2;
+}
+.lens {
+  fill: var(--hw-lampada);
+}
+
+.card {
+  position: relative;
+  width: min(580px, calc(100% - 28px));
+  border-radius: var(--hw-radius-m);
+  box-shadow: 0 30px 80px var(--hw-sombra);
+}
+.inner {
+  container-type: inline-size;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 30px 12px;
+  background: var(--hw-luz);
+  color: var(--hw-tinta);
+  border: 3px double var(--hw-tinta);
+  border-radius: var(--hw-radius-m);
+  text-align: center;
+}
+.step {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--hw-ouro-texto);
+  white-space: nowrap;
+}
+.step::before,
+.step::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hw-filete);
+}
+.question {
+  margin: 0;
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: clamp(32px, 8cqi, 46px);
+  line-height: 1;
+  color: var(--hw-titulo);
+}
+.mark {
+  color: var(--hw-ouro-texto);
+}
+.context {
+  margin: 0;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--hw-tinta-suave);
+}
+.options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+/* borda, fundo e raio vêm de .hw-botao2 (peça de botões); aqui só o miolo */
+.option {
+  box-sizing: border-box;
+  min-height: 156px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  background: var(--hw-plateia);
+  color: var(--hw-tinta);
+  font: inherit;
+  cursor: pointer;
+  transition: translate 0.16s var(--m-out), box-shadow 0.16s var(--m-out);
+}
+.option:hover {
+  translate: 0 -2px;
+  box-shadow: 0 0 0 3px var(--hw-poca), 0 10px 24px var(--hw-sombra);
+}
+.optionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.tag {
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.title {
+  font-family: var(--hw-font-display);
+  font-size: 32px;
+  line-height: 1;
+}
+.hint {
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.35;
+}
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding-top: 4px;
+  border-top: 1px solid var(--hw-filete);
+}
+.back {
+  min-height: 44px;
+}
+.timer {
+  flex: 0 1 220px;
+  min-width: 0;
+}
+
+/* celular: respostas empilhadas, ícone ao lado do texto */
+@container (max-width: 440px) {
+  .options {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .option {
+    min-height: 76px;
+    padding: 12px 16px;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+  }
+  .optionHead {
+    width: auto;
+    flex-shrink: 0;
+  }
+  .tag {
+    display: none;
+  }
+  .title {
+    font-size: 26px;
+  }
+  .hint {
+    font-size: 14px;
+  }
+  .foot {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 480px) {
+  .lamp {
+    width: 72px;
+    height: 48px;
+  }
+  .stage {
+    padding-top: 56px;
+  }
+}

@@ -39,6 +39,7 @@ import { Spotlight } from "./Spotlight";
 import { Stage } from "./Stage";
 import { YouBar } from "./YouBar";
 import { useStageWidth } from "./useStageWidth";
+import { Timer } from "../../ui/Timer/Timer";
 import s from "./Table.module.css";
 
 const SuddenDeathStage = lazy(() => import("../endgame/SuddenDeathStage").then((m) => ({ default: m.SuddenDeathStage })));
@@ -59,7 +60,7 @@ export type TableSlots = {
   rail?: ReactNode;
   /** Ações/alvo no miolo da mesa, em cortina sobre os camarotes (T1/T2). */
   curtain?: ReactNode;
-  /** Conteúdo centrado sobre o holofote (escolha do Clarividente). */
+  /** Holofote de pergunta global (GlobalQuestion): cobre a mesa do cabeçalho ao pé, faixa Você inclusive. */
   center?: ReactNode;
   /** Cobre a tela inteira, inclusive cabeçalho e trilho (ações, aviso de morte súbita). */
   screenOverlay?: ReactNode;
@@ -72,8 +73,6 @@ type Props = {
   onMenu?(): void;
   onChat?(): void;
   targeting?: boolean;
-  /** Holofote em cone no lugar das poças: primeira etapa da escolha (Clarividente). */
-  cone?: boolean;
   /** Reação/contestação no trilho: a faixa Você some no desktop (MainDesk). */
   hideYou?: boolean;
   /** Morte súbita: a mesa inteira fica escura. */
@@ -83,7 +82,7 @@ type Props = {
   slots?: TableSlots;
 };
 
-export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, cone, hideYou, dark, stageLive, slots = {} }: Props) {
+export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hideYou, dark, stageLive, slots = {} }: Props) {
   const layout = useLayout();
   const desktop = layout === "desktop";
   const [ref, width] = useStageWidth(desktop ? 1020 : 390);
@@ -114,40 +113,34 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, con
         <Footlights vm={footlights} layout={layout} />
         {targeting && (
           <div className={s.targetLight} aria-hidden="true" data-slot="target-light">
-            {cone ? (
-              <>
-                <div className={s.cone} />
-                <div className={s.coneBase} />
-              </>
-            ) : (
-              seats.map((seat, i) => {
-                const box = layoutSeats.boxes[i];
-                if (!box || seat.out) return null;
-                return (
-                  <span
-                    key={seat.id}
-                    className={s.pool}
-                    style={{ left: box.x - 18, top: box.y - 18, width: box.w + 36, height: box.h + 36, animationDelay: `${i * 45}ms` }}
-                  />
-                );
-              })
-            )}
-          </div>
-        )}
-        {slots.center && (
-          <div className={s.center} data-slot="center">
-            {slots.center}
-          </div>
-        )}
-        {slots.curtain && (
-          <div className={s.curtainSlot} data-slot="curtain">
-            {slots.curtain}
+            {seats.map((seat, i) => {
+              const box = layoutSeats.boxes[i];
+              if (!box || seat.out) return null;
+              return (
+                <span
+                  key={seat.id}
+                  className={s.pool}
+                  style={{ left: box.x - 18, top: box.y - 18, width: box.w + 36, height: box.h + 36, animationDelay: `${i * 45}ms` }}
+                />
+              );
+            })}
           </div>
         )}
         {slots.bottomPanel && <div className={s.bottomPanel}>{slots.bottomPanel}</div>}
       </div>
 
       {!slots.bottomPanel && !hideYou && <YouBar vm={you} suddenDeath={footlights.suddenDeath} layout={layout} />}
+      {/* cortina e holofote global descem até o pé, por cima da faixa Você (as cartas aparecem no quadro de ações) */}
+      {slots.curtain && (
+        <div className={s.curtainSlot} data-slot="curtain">
+          {slots.curtain}
+        </div>
+      )}
+      {slots.center && (
+        <div className={s.center} data-slot="center">
+          {slots.center}
+        </div>
+      )}
       {desktop && <aside className={s.rail} data-slot="rail">{slots.rail}</aside>}
       {slots.stageOverlay && <div className={s.stageOverlay}>{slots.stageOverlay}</div>}
       {slots.sheet}
@@ -377,15 +370,25 @@ export function TableScene() {
       {board}
     </CenterCurtain>
   ) : undefined;
-  // Clarividente: primeiro "revelar para", no holofote; a mesa dos alvos vem depois
-  const center = revealChoice ? <RevealChoice onPick={(all) => setTargeting({ ...targeting, showToAll: all })} onBack={() => setTargeting(null)} /> : undefined;
+  const ev = room?.gameEvent;
+  const moveTimer = ev ? (
+    <Timer
+      expiresAt={ev.expiresAt}
+      total={footlights.suddenDeath ? CLASSIC_RULES.waitingAction.suddenDeath : CLASSIC_RULES.waitingAction.default}
+      label={copy.moveTime}
+      decision
+    />
+  ) : undefined;
+  // Clarividente: primeiro "revelar para", no holofote global; a mesa dos alvos vem depois
+  const center = revealChoice ? (
+    <RevealChoice onPick={(all) => setTargeting({ ...targeting, showToAll: all })} onBack={() => setTargeting(null)} timer={moveTimer} />
+  ) : undefined;
 
   return (
     <Table
       view={view}
       unread={unread}
-      targeting={!!targeting && actionDef(targeting.role).target === "other"}
-      cone={revealChoice}
+      targeting={!!targeting && !revealChoice && actionDef(targeting.role).target === "other"}
       hideYou={layout === "desktop" && !!panel}
       dark={footlights.suddenDeath}
       onMenu={() => open("menu")}

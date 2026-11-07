@@ -139,7 +139,8 @@ describe("barra de alvo (regras v2)", () => {
 describe("escolha do Clarividente", () => {
   it("oferece revelar para todos ou só para você, sem escolha pronta", () => {
     const out = html(<RevealChoice onPick={() => {}} onBack={() => {}} />);
-    expect(out).toContain('aria-label="Revelar para"');
+    expect(out).toContain('role="dialog"');
+    expect(out).toContain("Revelar para quem");
     expect(out).toContain(">Todos<");
     expect(out).toContain(">Apenas você<");
     expect(out).toContain("A mesa toda vê a carta.");
@@ -167,20 +168,20 @@ describe("escolha do Clarividente", () => {
     );
     expect(out).toContain("Escolha o alvo");
     expect(out).toContain("A carta vai aparecer para todos.");
-    // HUD continua: a faixa Você aparece depois da cortina
-    expect(out.indexOf('aria-label="Você"')).toBeGreaterThan(out.indexOf('data-slot="curtain"'));
+    // HUD continua: a faixa Você está na tela (a barra de alvo para acima dela)
+    expect(out).toContain('aria-label="Você"');
     // durante o alvo a cortina não recolhe: sem handle
     expect(out).not.toContain("Fechar ações");
   });
 
-  it("o holofote em cone traz a pergunta no centro, por cima da mesa escura", () => {
-    const out = html(
-      <Table view={view("Mesa6")} targeting cone slots={{ center: <RevealChoice onPick={() => {}} onBack={() => {}} /> }} />,
-    );
-    expect(out).toContain('data-slot="target-light"');
-    expect(out).toContain('data-slot="center"');
-    expect(out).toContain("Revelar para");
-    // o cartão fica depois do holofote (por cima dele)
-    expect(out.indexOf('data-slot="center"')).toBeGreaterThan(out.indexOf('data-slot="target-light"'));
+  it("o holofote global traz a pergunta por cima da mesa e da faixa Você, sem as poças de alvo", () => {
+    const out = html(<Table view={view("Mesa6")} slots={{ center: <RevealChoice onPick={() => {}} onBack={() => {}} /> }} />);
+    expect(out).not.toContain('data-slot="target-light"');
+    expect(out).toContain('data-slot="global-question"');
+    expect(out).toContain('data-lugar="pergunta"');
+    expect(out).toContain("Revelar para quem");
+    expect(out).toContain("Voltar às ações");
+    // o holofote cobre a faixa Você: vem depois dela
+    expect(out.indexOf('data-slot="center"')).toBeGreaterThan(out.indexOf('aria-label="Você"'));
   });
 });

@@ -1,5 +1,4 @@
-/* Gaveta do miolo da mesa: cobre só a área dos jogadores (o slot em Table.module.css
-   já recorta cabeçalho, trilho e faixa Você). O handle é a borda de cima da gaveta e
+/* Gaveta da mesa: cobre do cabeçalho ao pé (o slot em Table.module.css recorta cabeçalho e trilho). O handle é a borda de cima da gaveta e
    sobe junto com o painel; fechada, só ele fica à vista no pé do slot. */
 .curtain {
   --curtain-handle-h: 44px;
@@ -14,7 +13,7 @@
   display: flex;
   flex-direction: column;
   /* fechada: a gaveta desce até sobrar só o handle no pé do slot */
-  transform: translateY(calc(100% - var(--curtain-handle-h)));
+  transform: translateY(calc(100% - var(--curtain-handle-h) - var(--curtain-rest, 0px)));
   transition: transform 0.32s var(--m-drawer);
 }
 .open .drawer {
@@ -80,4 +79,9 @@
   .body {
     transition: none;
   }
+}
+
+/* sem handle (barra de alvo) a gaveta para acima da faixa Você: seus dados seguem à vista */
+.curtain:not(.hasHandle) .body {
+  padding-bottom: var(--curtain-rest, 0px);
 }
