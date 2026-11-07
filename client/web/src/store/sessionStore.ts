@@ -4,7 +4,9 @@
  * O ticket abre o GameSocket (T25); a cena em si continua saindo do gameStore.
  */
 import { create } from "zustand";
-import { getTicket, newRoom, type NewRoomInput } from "../net/api";
+import shouldRefresh from "../Auth/shouldRefresh";
+import { getTicket, newRoom, refreshToken, type NewRoomInput } from "../net/api";
+import { useAuthStore } from "./authStore";
 
 /** ClassicRules.yaml → General.maxPlayers e CreateRoomRequest (2..10). */
 export const DEFAULT_MAX_PLAYERS = 10;
@@ -61,6 +63,26 @@ type SessionState = {
 
 const reason = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
+/**
+ * Garante um token não vencido antes de /newRoom e /getTicket: renova se já
+ * passou da metade da vida. Erro de rede mantém o token; 401 limpa a sessão e
+ * devolve null (o login já foi aberto pelo clearSession).
+ */
+async function ensureFreshToken(token: string): Promise<string | null> {
+  if (!shouldRefresh(token, Math.floor(Date.now() / 1000))) return token;
+
+  const outcome = await refreshToken(token);
+  if (outcome.status === "ok") {
+    useAuthStore.getState().setAuth(outcome.token, playerIdFromToken(outcome.token));
+    return outcome.token;
+  }
+  if (outcome.status === "unauthorized") {
+    useAuthStore.getState().clearSession();
+    return null;
+  }
+  return token;
+}
+
 export const useSessionStore = create<SessionState>((set, get) => ({
   roomCode: null,
   ticket: null,
@@ -70,8 +92,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     if (get().busy) return null;
     set({ busy: true, error: null });
     try {
-      const roomCode = await newRoom(token, input);
-      const ticket = await getTicket(token, roomCode);
+      const fresh = await ensureFreshToken(token);
+      if (!fresh) {
+        set({ busy: false });
+        return null;
+      }
+      const roomCode = await newRoom(fresh, input);
+      const ticket = await getTicket(fresh, roomCode);
       set({ roomCode, ticket, busy: false });
       return roomCode;
     } catch (e) {
@@ -83,7 +110,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     if (get().busy) return null;
     set({ busy: true, error: null });
     try {
-      const ticket = await getTicket(token, roomCode);
+      const fresh = await ensureFreshToken(token);
+      if (!fresh) {
+        set({ busy: false });
+        return null;
+      }
+      const ticket = await getTicket(fresh, roomCode);
       set({ roomCode, ticket, busy: false });
       return roomCode;
     } catch (e) {

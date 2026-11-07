@@ -7,6 +7,9 @@ import {
   useSessionStore,
   usernameFromToken,
 } from "./sessionStore";
+import { useAuthStore } from "./authStore";
+
+const mkToken = (payload: object) => `h.${btoa(JSON.stringify(payload))}.s`;
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 const s = () => useSessionStore.getState();
@@ -71,5 +74,27 @@ describe("sessionStore", () => {
     expect(playerIdFromToken(ticket)).toBe("eu");
     expect(playerIdFromToken(login)).toBe("eu");
     expect(playerIdFromToken("nada")).toBe("");
+  });
+
+  it("renova o token antes de criar a sala e atualiza o authStore", async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const oldToken = mkToken({ id: "p1", iat: now - 7200, exp: now + 3600 });
+    const newToken = mkToken({ id: "p1", iat: now, exp: now + 3600 });
+    useAuthStore.setState({ jwtToken: oldToken, playerId: "p1", isLoginOpen: false });
+
+    const fetch = vi.fn(async (url: string) => {
+      if (String(url).includes("/auth/refresh")) return json({ data: { token: newToken } });
+      if (String(url).endsWith("/newRoom")) return json({ RoomId: "k7q2" }, 201);
+      return json({ data: { ticket: "ticket.jwt" } });
+    });
+    vi.stubGlobal("fetch", fetch);
+
+    await expect(s().create(oldToken, createInput("Matheus"))).resolves.toBe("k7q2");
+
+    const urls = fetch.mock.calls.map(([url]) => String(url));
+    expect(urls[0]).toContain("/auth/refresh");
+    expect(urls.some((u) => u.endsWith("/newRoom"))).toBe(true);
+    expect(urls.some((u) => u.includes("/getTicket/k7q2"))).toBe(true);
+    expect(useAuthStore.getState().jwtToken).toBe(newToken);
   });
 });
