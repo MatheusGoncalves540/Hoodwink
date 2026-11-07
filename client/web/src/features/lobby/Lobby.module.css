@@ -197,6 +197,13 @@
   font-size: 13px;
   color: var(--hw-ouro-texto);
 }
+.version {
+  margin: 4px 0 0;
+  font-family: var(--hw-font-rotulo);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--hw-tinta-suave);
+}
 .camarim {
   box-sizing: border-box;
   min-height: 44px;

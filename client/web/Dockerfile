@@ -8,6 +8,11 @@ ARG VITE_REPLAY_KID="replay-v1"
 ENV VITE_REPLAY_PUBLIC_KEY=$VITE_REPLAY_PUBLIC_KEY
 ENV VITE_REPLAY_KID=$VITE_REPLAY_KID
 
+# Versão do jogo (VERSION na raiz). O contexto do Docker é client/web, então a
+# raiz não entra; sem este ARG o Vite usa "dev".
+ARG VITE_GAME_VERSION=""
+ENV VITE_GAME_VERSION=$VITE_GAME_VERSION
+
 # Copia package lock e package para instalar dependências
 COPY package.json package-lock.json ./
 RUN npm ci

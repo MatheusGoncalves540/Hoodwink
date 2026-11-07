@@ -4,6 +4,8 @@
  * O backend não confia neste contexto: ele ainda passa pela máscara do plano 04.
  */
 
+import { GAME_VERSION } from "../version";
+
 export type BugContext = {
   scene: string;
   buildVersion: string;
@@ -92,10 +94,6 @@ const currentScene = (): string => {
   return params.has("sala") ? "sala" : "lobby";
 };
 
-const currentBuildVersion = (): string => {
-  const version = import.meta.env.VITE_BUILD_VERSION || import.meta.env.VITE_APP_VERSION;
-  return typeof version === "string" && version.trim() ? version.trim() : "dev";
-};
 
 const currentScreen = () =>
   typeof window === "undefined" ? "0x0" : `${window.innerWidth}x${window.innerHeight}`;
@@ -108,7 +106,7 @@ export function collectBugContext(sendDevice = true): BugContext | null {
   if (!sendDevice) return null;
   return {
     scene: currentScene(),
-    buildVersion: currentBuildVersion(),
+    buildVersion: GAME_VERSION,
     screen: currentScreen(),
     errors: [...errors],
   };

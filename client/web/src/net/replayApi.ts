@@ -20,6 +20,7 @@ const matchSchema = z.object({
   match_id: z.string().min(1),
   room_id: z.string().nullish(),
   engine_version: z.number().int(),
+  game_version: z.string().nullish(),
   started_at: z.string().min(1),
   ended_at: z.string().min(1),
   winner_id: z.string().nullish(),

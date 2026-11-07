@@ -15,10 +15,12 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/runtime"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/version"
 )
 
 func main() {
 	config.SetupEnvs()
+	log.Printf("🎮 Hoodwink %s (%s)", version.Version, version.Commit)
 
 	routesContext := ctx.SetupContext()
 	router := routes.SetupRoutes(routesContext)
