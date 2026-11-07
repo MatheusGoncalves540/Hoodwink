@@ -15,6 +15,7 @@ import { cx } from "../../ui/cx";
 import { Cast } from "./Cast";
 import { Invite } from "./Invite";
 import s from "./WaitingRoom.module.css";
+import { SupportDev } from "../support/SupportDev";
 
 type Props = {
   view: GameView;
@@ -62,6 +63,7 @@ export function WaitingRoom({ view, onLeave, onStart }: Props) {
           {copy.openCurtains}
         </Ticket>
         <span className={s.hint}>{copy.startHint}</span>
+        <SupportDev layout={layout} />
       </section>
     </main>
   );

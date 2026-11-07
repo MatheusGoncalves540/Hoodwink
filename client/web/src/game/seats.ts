@@ -2,8 +2,8 @@
  * Posição dos camarotes na mesa (04-arquitetura.md → "Posições dos camarotes").
  * A ordem é a de jogo a partir de quem vem depois de você.
  *
- * mobileSeats(k, S): tabela de Mesa6.dc.html para palco de 390 px, escalada por S/390.
- *   até 5 adversários: 96×104; de 6 a 10: 70×88.
+ * mobileSeats(k, S): até 5 adversários, a ferradura de Mesa6.dc.html (96×104) para palco de 390 px, escalada
+ *   por S/390. De 6 a 10: grade de 3 colunas (Camarotes.dc.html), camarotes largos de 120×62 com o nome inteiro.
  * desktopSeats(k, S): parábola de 04-arquitetura.md, camarotes 132×140 (até 5) ou 108×120.
  *   passo = min(210, (S − 30 − W)/(k − 1)), x0 = S/2 − (passo·(k−1) + W)/2, u = i/(k−1),
  *   y = 92 + (k > 5 ? 150 : 128)·(2u − 1)².
@@ -11,7 +11,8 @@
  *   aí o tamanho encolhe por igual (`scale`) até sobrar 2 px entre eles.
  */
 export type SeatBox = { x: number; y: number; w: number; h: number };
-export type SeatLayout = { boxes: SeatBox[]; big: boolean; scale: number };
+/** wide: camarote largo da grade (nome em cima, cartas e moeda embaixo). */
+export type SeatLayout = { boxes: SeatBox[]; big: boolean; scale: number; wide?: boolean };
 
 const MOBILE_SEATS: Record<number, [number, number][]> = {
   1: [[147, 84]],
@@ -19,22 +20,19 @@ const MOBILE_SEATS: Record<number, [number, number][]> = {
   3: [[30, 120], [147, 70], [264, 120]],
   4: [[8, 168], [92, 76], [202, 76], [286, 168]],
   5: [[8, 182], [52, 76], [147, 56], [242, 76], [286, 182]],
-  6: [[8, 196], [8, 82], [107, 60], [213, 60], [312, 82], [312, 196]],
-  7: [[8, 196], [8, 84], [84, 64], [160, 56], [236, 64], [312, 84], [312, 196]],
-  8: [[8, 206], [84, 182], [8, 84], [107, 60], [213, 60], [312, 84], [234, 182], [312, 206]],
-  9: [[8, 206], [84, 182], [8, 84], [84, 64], [160, 56], [236, 64], [312, 84], [234, 182], [312, 206]],
-  // 10 jogadores só existe no replay (na partida, você ocupa um dos lugares).
-  10: [[8, 206], [84, 182], [8, 84], [84, 64], [160, 56], [236, 64], [312, 84], [234, 182], [312, 206], [160, 182]],
 };
 
 export const MAX_OPPONENTS = 9;
 
 export function mobileSeats(k: number, stageWidth = 390): SeatLayout {
-  const big = k <= 5;
-  const [w, h] = big ? [96, 104] : [70, 88];
   const f = stageWidth / 390;
-  const boxes = (MOBILE_SEATS[k] ?? []).map(([x, y]) => ({ x: x * f, y, w, h }));
-  return { boxes, big, scale: 1 };
+  if (k > 5) {
+    // grade 3×N na ordem de jogo: colunas a 127 px, fileiras a 70 px, primeira logo abaixo do cabeçalho
+    const boxes = Array.from({ length: k }, (_, i) => ({ x: (8 + (i % 3) * 127) * f, y: 64 + Math.floor(i / 3) * 70, w: 120 * f, h: 62 }));
+    return { boxes, big: false, scale: 1, wide: true };
+  }
+  const boxes = (MOBILE_SEATS[k] ?? []).map(([x, y]) => ({ x: x * f, y, w: 96, h: 104 }));
+  return { boxes, big: true, scale: 1 };
 }
 
 const GAP = 2;

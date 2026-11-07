@@ -20,6 +20,7 @@ import { Ticket } from "../../ui/Ticket/Ticket";
 import { cx } from "../../ui/cx";
 import { GAME_VERSION } from "../../version";
 import s from "./Lobby.module.css";
+import { SupportDev } from "../support/SupportDev";
 
 /** Código de convite: 6 caracteres maiúsculos, sem os que se confundem (0/O, 1/I/L). */
 const CODE_LENGTH = 6;
@@ -200,6 +201,7 @@ export function Lobby() {
         <Button variant="link" onClick={() => setBugCard({})}>
           {copy.bugReportLobby}
         </Button>
+        <SupportDev layout={layout} />
       </section>
 
       <LoginModal />
