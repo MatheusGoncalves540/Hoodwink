@@ -52,21 +52,24 @@ func (h *Handler) ExternalAuthHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		email, _, err = ValidateGoogleIDToken(body.IdToken)
-	case "local":
-		// Login de teste para jogar em rede local (Radmin): o Google recusa origens
-		// http://<ip>, então os amigos entram só com um nome. Nunca fora de local/development.
-		if env := os.Getenv("ENVIRONMENT"); env != "local" && env != "development" {
-			utils.SendError(w, "Provedor não suportado", http.StatusBadRequest)
-			return
+	case "guest", "local":
+		// Visitante: entra só com um nome, sem conta. Entra em uma sala pelo código,
+		// mas não cria sala (o gameServer confere o provedor). "local" é o nome antigo
+		// do mesmo login, aceito só em local/development.
+		if provider == "local" {
+			if env := os.Getenv("ENVIRONMENT"); env != "local" && env != "development" {
+				utils.SendError(w, "Provedor não suportado", http.StatusBadRequest)
+				return
+			}
 		}
 		body.Username = strings.TrimSpace(body.Username)
 		if body.Username == "" {
 			utils.SendError(w, "username obrigatório", http.StatusBadRequest)
 			return
 		}
-		// Identidade única por login: dois amigos podem escolher o mesmo nome sem
+		// Identidade única por login: duas pessoas podem escolher o mesmo nome sem
 		// virarem o mesmo jogador (o id do usuário vem do email).
-		email = fmt.Sprintf("%s+%s@local.hoodwink", strings.ToLower(body.Username), uuid.NewString())
+		email = fmt.Sprintf("%s+%s@%s.hoodwink", strings.ToLower(body.Username), uuid.NewString(), provider)
 	// Futuro: case "discord": ...
 	default:
 		utils.SendError(w, "Provedor não suportado", http.StatusBadRequest)

@@ -157,13 +157,14 @@ func TestInternalValidateToken(t *testing.T) {
 			Data struct {
 				Id       string `json:"id"`
 				Username string `json:"username"`
+				Provider string `json:"provider"`
 			} `json:"data"`
 		}
 		if err := json.Unmarshal(rr.Body.Bytes(), &out); err != nil {
 			t.Fatalf("decode: %v", err)
 		}
-		if out.Data.Id != "p1" || out.Data.Username != "ana" {
-			t.Fatalf("id/username inesperados: %+v", out.Data)
+		if out.Data.Id != "p1" || out.Data.Username != "ana" || out.Data.Provider != "p" {
+			t.Fatalf("id/username/provider inesperados: %+v", out.Data)
 		}
 	})
 }

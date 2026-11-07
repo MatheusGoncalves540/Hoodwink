@@ -16,6 +16,12 @@ describe("authStore", () => {
     expect(useAuthStore.getState()).toMatchObject({ jwtToken: "token", playerId: "p1", isLoginOpen: false });
   });
 
+  it("sair da conta apaga a sessão sem abrir o login", () => {
+    useAuthStore.setState({ jwtToken: "token", playerId: "p1", isLoginOpen: false });
+    useAuthStore.getState().logout();
+    expect(useAuthStore.getState()).toMatchObject({ jwtToken: "", playerId: "", isLoginOpen: false });
+  });
+
   it("401 do refresh limpa a sessão e abre o login", async () => {
     const now = Math.floor(Date.now() / 1000);
     const token = mkToken({ id: "p1", iat: now - 7200, exp: now + 3600 });

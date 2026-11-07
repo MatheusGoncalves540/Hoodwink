@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import { ENV } from "../config/envs";
+import { copy } from "../game/copy";
 
 const serverUrl = () => ENV.VITE_GAMESERVER_URL.replace(/\/$/, "");
 
@@ -24,11 +25,17 @@ const errorMessage = (raw: unknown, status: number) => {
 };
 
 async function postJson(path: string, token: string, body?: unknown): Promise<unknown> {
-  const res = await fetch(`${serverUrl()}${path}`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${serverUrl()}${path}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    // servidor fora do ar ou porta bloqueada: o cartaz mostra um aviso claro
+    throw new Error(copy.serverOffline);
+  }
   const raw: unknown = await res.json().catch(() => null);
   if (!res.ok) throw new Error(errorMessage(raw, res.status));
   return raw;

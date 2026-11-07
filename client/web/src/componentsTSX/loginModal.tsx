@@ -7,10 +7,10 @@ import { Label } from "../ui/Label/Label";
 import { Moldura } from "../ui/Moldura/Moldura";
 import "./styles/loginModal.css";
 import GoogleAuth from "./googleAuth";
-import loginLocal from "../Auth/loginLocal";
+import loginGuest from "../Auth/loginGuest";
 
-/** Entrar sem Google, para quem está na mesma rede (Radmin). O backend só aceita em ambiente local. */
-function LocalLogin() {
+/** Entrar sem conta, como visitante: entra em uma sala pelo código, mas não cria sala. */
+function GuestLogin() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const [name, setName] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ function LocalLogin() {
     if (!clean || busy) return;
     setError("");
     setBusy(true);
-    const outcome = await loginLocal(clean, setAuth);
+    const outcome = await loginGuest(clean, setAuth);
     setBusy(false);
     if (outcome.status === "error") setError(outcome.message);
   };
@@ -36,8 +36,8 @@ function LocalLogin() {
     >
       <input
         className="hw-login-local-nome"
-        aria-label={copy.loginModal.localName}
-        placeholder={copy.loginModal.localName}
+        aria-label={copy.loginModal.guestName}
+        placeholder={copy.loginModal.guestName}
         value={name}
         onChange={(e) => {
           setName(e.target.value);
@@ -48,7 +48,7 @@ function LocalLogin() {
         spellCheck={false}
       />
       <Button type="submit" variant="outline" disabled={!clean || busy}>
-        {copy.loginModal.localEnter}
+        {copy.loginModal.guestEnter}
       </Button>
       {error && (
         <p role="alert" className="hw-login-erro">
@@ -76,8 +76,8 @@ function LoginModal() {
               {copy.loginModal.text}
             </Dialog.Description>
             <GoogleAuth />
-            <p className="hw-login-ou">{copy.loginModal.localOr}</p>
-            <LocalLogin />
+            <p className="hw-login-ou">{copy.loginModal.guestOr}</p>
+            <GuestLogin />
             <Dialog.Close asChild>
               <Button variant="link" className="hw-login-voltar">
                 {copy.loginModal.back}

@@ -6,11 +6,29 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/contextKeys"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
+// canCreateRoom: visitante (login só com nome) entra pelo código de uma sala já
+// criada, mas não cria a própria. "local" é o nome antigo do mesmo login.
+func canCreateRoom(provider string) bool {
+	return provider != "guest" && provider != "local"
+}
+
 func (h *HTTPHandler) CreateCustomRoom(w http.ResponseWriter, r *http.Request) {
+	playerCtx := r.Context().Value(contextKeys.PlayerContextKey)
+	playerClaims, ok := playerCtx.(*endpointStructures.ClaimsBackend)
+	if !ok || playerClaims == nil {
+		utils.SendError(w, "dados de player inválidos no token", http.StatusUnauthorized)
+		return
+	}
+	if !canCreateRoom(playerClaims.Provider) {
+		utils.SendError(w, "Entre com sua conta para criar uma sala.", http.StatusForbidden)
+		return
+	}
+
 	var reqBody endpointStructures.CreateRoomRequest
 
 	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)

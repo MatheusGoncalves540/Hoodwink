@@ -19,7 +19,8 @@ type internalTicketsPayload struct {
 }
 
 // InternalValidateTokenHandler revalida um token de login com o JWTService atual
-// (HS256) e devolve id/username, sem consultar o banco. Token temporário é 401.
+// (HS256) e devolve id/username/provider, sem consultar o banco. Token temporário é 401.
+// O provider permite o gameServer recusar criação de sala para visitante.
 func (h *Handler) InternalValidateTokenHandler(w http.ResponseWriter, r *http.Request) {
 	var body internalValidateTokenPayload
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Token == "" {
@@ -33,7 +34,7 @@ func (h *Handler) InternalValidateTokenHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	utils.SendSuccess(w, map[string]string{"id": user.Id, "username": user.Username}, "")
+	utils.SendSuccess(w, map[string]string{"id": user.Id, "username": user.Username, "provider": user.Provider}, "")
 }
 
 // InternalTicketsHandler revalida o token e assina um ticket de sala Ed25519.

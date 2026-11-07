@@ -49,6 +49,21 @@ export function playerIdFromToken(token: string): string {
   return typeof value === "string" ? value : "";
 }
 
+/** Provedor do login no JWT do backend ({ provider }); vazio sem token ou em token antigo. */
+export function providerFromToken(token: string): string {
+  const provider = tokenClaims(token).provider;
+  return typeof provider === "string" ? provider : "";
+}
+
+/**
+ * Visitante: login temporário só com um nome ("guest", ou "local" em tokens
+ * antigos). Entra pelo código de uma sala já criada e não cria sala.
+ */
+export function isGuestToken(token: string): boolean {
+  const provider = providerFromToken(token);
+  return provider === "guest" || provider === "local";
+}
+
 type SessionState = {
   roomCode: string | null;
   ticket: string | null;

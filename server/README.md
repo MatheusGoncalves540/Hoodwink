@@ -226,10 +226,10 @@ cd server/backend && go run . -run-retention-once
 
 ### Dado pessoal no corpo
 
-O login local não manda `email` no corpo. Ele manda `username`, e o backend monta
-o email `<username>+<uuid>@local.hoodwink`. Como o corpo fica até 6 meses no
-banco, esse username (que compõe o email) também fica. Qualquer email que
-apareça em outro corpo segue a mesma retenção. Trate o histórico como dado
+O login de visitante não manda `email` no corpo. Ele manda `username`, e o
+backend monta o email `<username>+<uuid>@guest.hoodwink`. Como o corpo fica até
+6 meses no banco, esse username (que compõe o email) também fica. Qualquer email
+que apareça em outro corpo segue a mesma retenção. Trate o histórico como dado
 pessoal: a máscara cobre segredos, não emails.
 
 ---

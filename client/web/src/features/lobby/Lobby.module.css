@@ -152,6 +152,13 @@
   line-height: 1.35;
   text-align: left;
 }
+.note {
+  margin: 0;
+  color: var(--hw-tinta-suave);
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: left;
+}
 .how {
   box-sizing: border-box;
   min-height: 44px;
