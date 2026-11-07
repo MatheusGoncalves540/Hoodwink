@@ -4,6 +4,10 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 480px;
+  /* altura da faixa Você: a cortina do miolo usa a mesma clamp para não encostar */
+  --hw-youbar-h: clamp(180px, 28svh, 236px);
+  /* ribalta: a gaveta e o holofote do alvo param aqui, para não cobrir baralho e taxa */
+  --hw-footlights-top: min(540px, 64svh);
   /* a composição tem 700 px de base: em landscape/teclado aberto a tela rola em vez de cortar */
   min-height: max(100svh, 700px);
   margin: 0 auto;
@@ -15,6 +19,8 @@
 }
 .desk {
   max-width: none;
+  --hw-youbar-h: clamp(160px, 21.8svh, 196px);
+  --hw-footlights-top: min(596px, 66.3svh);
 }
 .tableArea {
   position: absolute;
@@ -43,6 +49,62 @@
   z-index: 4;
 }
 
+/* Gaveta de ações (Gaveta v2): aberta, ocupa a coluna do palco de alto a baixo, cabeçalho inclusive; o trilho
+   fica. Fechada, mora atrás da faixa Você e só a aba aparece acima dela (--curtain-rest). O slot não recebe
+   clique: só a aba e o conteúdo aberto. */
+.curtainSlot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  pointer-events: none;
+  --curtain-rest: var(--hw-youbar-h);
+}
+.desk .curtainSlot {
+  right: 420px;
+}
+/* a faixa Você cobre a gaveta guardada; com ela aberta, desce para dar lugar e volta depois que a gaveta afunda */
+.youOverDrawer {
+  z-index: 6;
+  transition: translate 0.36s var(--m-drawer) 0.2s;
+}
+.youAway {
+  translate: 0 110%;
+  transition: translate 0.26s cubic-bezier(0.4, 0, 1, 1) 0.04s;
+}
+
+/* Cartaz da escolha de alvo: no pé, acima da mesa apagada (TargetSpotlight z 7) e dos camarotes acesos (z 8) */
+.prompt {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 20px;
+  z-index: 9;
+}
+.desk .prompt {
+  /* centro da coluna do palco (tela menos o trilho de 420 px) */
+  left: calc((100% - 420px - 580px) / 2);
+  right: auto;
+  width: 580px;
+  bottom: 40px;
+}
+
+/* Holofote de pergunta global (GlobalQuestion): do cabeçalho até o pé, faixa Você inclusive. */
+.center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52px;
+  bottom: 0;
+  z-index: 5;
+}
+.desk .center {
+  top: 64px;
+  right: 420px;
+}
+
 /* Desktop (Mesa6Desk.dc.html): palco de 1020 px + trilho de 420 px */
 .desk .tableArea {
   right: 420px;
@@ -65,9 +127,9 @@
   overflow-y: auto;
 }
 
-/* Camada de tela inteira (ações, aviso de morte súbita): cobre cabeçalho e trilho. */
+/* Camada de tela inteira (aviso de morte súbita): cobre cabeçalho, trilho, gaveta e alvo. */
 .screenOverlay {
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: 10;
 }

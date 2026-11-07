@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appendLog, exitsOf, logSelfText, logText, type LogEntry } from "./log";
+import { appendLog, exitsOf, logSelfText, logText, revealedCards, type LogEntry } from "./log";
 import type { PublicRoom } from "./protocol";
 
 const NAMES = { a: "Ana", b: "Bruno", c: "Carla", d: "Davi", e: "Eva" } as const;
@@ -106,6 +106,19 @@ describe("appendLog", () => {
     ]);
   });
 
+  it("guarda a carta revelada, o alvo, o índice e se a mesa toda viu", () => {
+    const log = run([
+      room(4, "CARD_PLAYED_CLAIRVOYANT", "a", { targetPlayer: "b", targetCardIndex: 1 }),
+      room(4, "REVEALED_CARD", "a", { targetPlayer: "b", targetCardIndex: 1, revealedCard: "KAMIKAZE", showToAllPlayers: true }),
+      room(6, "REVEALED_CARD", "a", { targetPlayer: "c", targetCardIndex: 0, revealedCard: "REBEL", showToAllPlayers: false }),
+    ]);
+    expect(log.map((e) => e.reveal)).toEqual([
+      undefined,
+      { targetId: "b", cardIndex: 1, card: "KAMIKAZE", showToAll: true },
+      { targetId: "c", cardIndex: 0, card: "REBEL", showToAll: false },
+    ]);
+  });
+
   it("a mesma sala reaplicada (reconexão) não duplica linhas", () => {
     const r = room(1, "CARD_PLAYED_REBEL", "a");
     const once = appendLog([], null, r, 0);
@@ -123,5 +136,32 @@ describe("appendLog", () => {
       { playerId: "d", name: "Davi", turn: 5 },
       { playerId: "b", name: "Bruno", turn: 9 },
     ]);
+  });
+
+  it("Clarividente grava a carta revelada e o camarote lembra dela", () => {
+    const log = run([
+      room(4, "REVEALED_CARD", "a", { targetPlayer: "b", targetCardIndex: 1, showToAllPlayers: true, revealedCard: "KAMIKAZE" }),
+    ]);
+    expect(logText(log[0])).toBe("Ana revelou uma carta de Bruno: Kamikaze como Clarividente.");
+    expect(revealedCards(log).get("b")?.get(1)).toBe("KAMIKAZE");
+  });
+
+  it("a revelação privada chega depois da pública e completa a mesma linha", () => {
+    const payload = { targetPlayer: "b", targetCardIndex: 0, showToAllPlayers: false };
+    const log = run([
+      room(4, "REVEALED_CARD", "a", payload),
+      room(4, "REVEALED_CARD", "a", { ...payload, revealedCard: "ASSASSIN" }),
+    ]);
+    expect(log).toHaveLength(1);
+    expect(logText(log[0])).toBe("Ana revelou uma carta de Bruno: Assassino como Clarividente.");
+    expect(revealedCards(log).get("b")?.get(0)).toBe("ASSASSIN");
+  });
+
+  it("troca de carta esquece o que a mesa já tinha visto", () => {
+    const log = run([
+      room(4, "REVEALED_CARD", "a", { targetPlayer: "b", targetCardIndex: 0, showToAllPlayers: true, revealedCard: "KAMIKAZE" }),
+      room(5, "CHANGED_CARD", "b", { cause: "CROUPIER" }),
+    ]);
+    expect(revealedCards(log).get("b")).toBeUndefined();
   });
 });

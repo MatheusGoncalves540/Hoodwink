@@ -1,0 +1,29 @@
+/* Cartaz do alvo: largura vem do slot (Table .prompt); as cartas são as da gaveta do camarote (SheetCard). */
+.card {
+  width: 100%;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 132px));
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+.pick {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  border-radius: var(--hw-radius-m);
+  transition: translate 0.16s var(--m-out);
+}
+.pick > * {
+  width: 100%;
+}
+.pick:hover {
+  translate: 0 -3px;
+}

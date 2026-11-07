@@ -5,6 +5,8 @@ import (
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/config/ctx"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/middlewares"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/version"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -17,6 +19,14 @@ func SetupRoutes(routesContext *ctx.RoutesContext) http.Handler {
 
 	routes.Get("/alive", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK")) })
 
+	// Versão do jogo embutida no binário (fonte: VERSION na raiz do repo).
+	routes.Get("/version", func(w http.ResponseWriter, r *http.Request) {
+		utils.SendSuccess(w, map[string]string{
+			"version": version.Version,
+			"commit":  version.Commit,
+		}, "")
+	})
+
 	routes.Route("/game", func(r chi.Router) {
 		r.Get("/", routesContext.Handler.WebSocketHandler(routesContext.Rdb, routesContext.RulesRegistry))
 	})
@@ -28,6 +38,9 @@ func SetupRoutes(routesContext *ctx.RoutesContext) http.Handler {
 		})
 
 		r.Post("/newRoom", routesContext.Handler.CreateCustomRoom)
+
+		// Revanche: a primeira pessoa cria, as outras entram na mesma sala.
+		r.Post("/rematch/{RoomId}", routesContext.Handler.RematchRoom(routesContext.Rdb))
 
 		r.Post("/getTicket/{RoomId}", routesContext.Handler.GetTicket(routesContext.Rdb))
 	})

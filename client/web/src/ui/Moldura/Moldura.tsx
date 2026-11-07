@@ -1,7 +1,7 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cx } from "../cx";
 
-export type Lugar = "lobby" | "elenco" | "fim" | "aviso";
+export type Lugar = "lobby" | "elenco" | "fim" | "aviso" | "pergunta";
 
 type Props = HTMLAttributes<HTMLElement> & { lugar: Lugar; as?: "div" | "section"; children: ReactNode };
 

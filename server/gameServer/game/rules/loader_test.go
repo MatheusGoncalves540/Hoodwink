@@ -33,7 +33,7 @@ func TestClassicRulesMatchPDF(t *testing.T) {
 		t.Fatalf("basicSwapMinCoins = %v, quer 6", gameRules.Generals.BasicSwapMinCoins)
 	}
 
-	assertCardValue(t, gameRules, "ASSASSIN", 3, 2, nil)
+	assertCardValue(t, gameRules, "ASSASSIN", 4, 3, nil)
 	assertCardValue(t, gameRules, "GRAVEDIGGER", 5, 3, nil)
 	assertCardValue(t, gameRules, "CROUPIER", 6, 4, nil)
 	assertCardValue(t, gameRules, "CLAIRVOYANT", 4, 2, nil)
@@ -43,8 +43,8 @@ func TestClassicRulesMatchPDF(t *testing.T) {
 	assertCardValue(t, gameRules, "SELFISH", 5, 3, intPtr(8))
 
 	guardian := gameRules.Cards["GUARDIAN"]
-	if guardian.TaxMinimum == nil || *guardian.TaxMinimum != 4 {
-		t.Fatalf("Guardiã: taxMinimum = %v, quer 4", guardian.TaxMinimum)
+	if guardian.TaxMinimum == nil || *guardian.TaxMinimum != 3 {
+		t.Fatalf("Guardiã: taxMinimum = %v, quer 3", guardian.TaxMinimum)
 	}
 	if guardian.FutureProtectionTaxMinimum == nil || *guardian.FutureProtectionTaxMinimum != 5 {
 		t.Fatalf("Guardiã: futureProtectionTaxMinimum = %v, quer 5", guardian.FutureProtectionTaxMinimum)

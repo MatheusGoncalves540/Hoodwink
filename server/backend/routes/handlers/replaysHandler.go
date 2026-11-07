@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -51,25 +52,25 @@ type gormReplayStore struct {
 }
 
 const insertReplaySQL = `
-INSERT INTO match_replays (match_id, room_id, engine_version, started_at, ended_at, winner_id, player_ids, data)
-VALUES (?, ?, ?, ?, ?, ?, ?::uuid[], ?)
+INSERT INTO match_replays (match_id, room_id, engine_version, game_version, started_at, ended_at, winner_id, player_ids, data)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?::uuid[], ?)
 ON CONFLICT (match_id) DO NOTHING`
 
 const listReplaysSQL = `
-SELECT match_id, room_id, engine_version, started_at, ended_at, winner_id, player_ids
+SELECT match_id, room_id, engine_version, game_version, started_at, ended_at, winner_id, player_ids
 FROM match_replays
 WHERE player_ids @> ARRAY[?]::uuid[] AND ended_at >= ?
 ORDER BY ended_at DESC
 LIMIT ?`
 
 const findReplaySQL = `
-SELECT match_id, room_id, engine_version, started_at, ended_at, winner_id, player_ids, data
+SELECT match_id, room_id, engine_version, game_version, started_at, ended_at, winner_id, player_ids, data
 FROM match_replays
 WHERE match_id = ? AND player_ids @> ARRAY[?]::uuid[]`
 
 func (s gormReplayStore) Insert(ctx context.Context, r *models.MatchReplay) error {
 	return s.db.WithContext(ctx).Exec(insertReplaySQL,
-		r.MatchID, r.RoomID, r.EngineVersion, r.StartedAt, r.EndedAt, r.WinnerID,
+		r.MatchID, r.RoomID, r.EngineVersion, r.GameVersion, r.StartedAt, r.EndedAt, r.WinnerID,
 		uuidArrayLiteral(r.PlayerIDs), r.Data,
 	).Error
 }
@@ -99,15 +100,29 @@ func uuidArrayLiteral(ids []string) string {
 	return "{" + strings.Join(ids, ",") + "}"
 }
 
+// gameVersionRE aceita semver e o identificador "dev" (build sem ldflags).
+var gameVersionRE = regexp.MustCompile(`^[0-9A-Za-z][0-9A-Za-z.+-]{0,31}$`)
+
+// sanitizeGameVersion normaliza a versão do jogo enviada pelo gameServer.
+// Valor vazio, grande demais ou fora do formato vira "unknown".
+func sanitizeGameVersion(v string) string {
+	v = strings.TrimSpace(v)
+	if !gameVersionRE.MatchString(v) {
+		return "unknown"
+	}
+	return v
+}
+
 // replayUpload é o corpo do POST /internal/replays. data é o .hwr (base64).
 // room_id e player_ids vêm do gameServer: o cabeçalho .hwr só tem matchId,
 // versão, início/fim e jogadores (índice+nome); os UUIDs dos jogadores chegam
 // aqui e são conferidos contra a contagem do cabeçalho. winner/vencedor no corpo
 // é ignorado (o vencedor é derivado da última entrada EntryEnd do cabeçalho).
 type replayUpload struct {
-	Data      string   `json:"data"`
-	RoomID    string   `json:"room_id"`
-	PlayerIDs []string `json:"player_ids"`
+	Data        string   `json:"data"`
+	RoomID      string   `json:"room_id"`
+	PlayerIDs   []string `json:"player_ids"`
+	GameVersion string   `json:"game_version"`
 }
 
 // matchDTO é o item do histórico devolvido pelo GET /me/matches (sem o blob).
@@ -115,6 +130,7 @@ type matchDTO struct {
 	MatchID       string    `json:"match_id"`
 	RoomID        string    `json:"room_id,omitempty"`
 	EngineVersion int       `json:"engine_version"`
+	GameVersion   string    `json:"game_version"`
 	StartedAt     time.Time `json:"started_at"`
 	EndedAt       time.Time `json:"ended_at"`
 	WinnerID      *string   `json:"winner_id,omitempty"`
@@ -126,10 +142,11 @@ func toMatchDTO(m models.MatchReplay) matchDTO {
 		MatchID:       m.MatchID,
 		RoomID:        m.RoomID,
 		EngineVersion: m.EngineVersion,
+		GameVersion:   m.GameVersion,
 		StartedAt:     m.StartedAt,
 		EndedAt:       m.EndedAt,
 		WinnerID:      m.WinnerID,
-		PlayerIDs:     m.PlayerIDs,
+		PlayerIDs:     []string(m.PlayerIDs),
 	}
 }
 
@@ -201,6 +218,7 @@ func writeReplayUpload(w http.ResponseWriter, r *http.Request, store replayStore
 		MatchID:       matchID.String(),
 		RoomID:        body.RoomID,
 		EngineVersion: replay.EngineVersion,
+		GameVersion:   sanitizeGameVersion(body.GameVersion),
 		StartedAt:     started,
 		EndedAt:       ended,
 		WinnerID:      &winner,

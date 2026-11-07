@@ -1,7 +1,6 @@
 import { copy } from "../../game/copy";
 import { roleName, type ActionId } from "../../game/roles";
 import { Button } from "../../ui/Button/Button";
-import { Toggle } from "../../ui/Toggle/Toggle";
 import s from "./TargetBar.module.css";
 
 type Props = {
@@ -9,18 +8,19 @@ type Props = {
   onBack(): void;
   /** Trocar cartas: troca as duas de uma vez (custa todas as moedas). */
   onSwapBoth?: () => void;
-  /** Clarividente: mostrar a carta para todos ou só para você. Ausente nos outros. */
-  showToAll?: boolean;
-  onShowToAll?: (v: boolean) => void;
+  /** Linha do que já foi escolhido (Clarividente: revelar para todos ou só para você). */
+  note?: string;
 };
 
 /** Fluxo de alvo inferido (05-protocolo.md): escolhida a ação, a mesa espera o lugar ou a carta. */
-export function TargetBar({ role, onBack, onSwapBoth, showToAll, onShowToAll }: Props) {
+export function TargetBar({ role, onBack, onSwapBoth, note }: Props) {
   return (
     <section aria-label={copy.pickTarget} className={s.bar}>
       <p className={s.title}>{copy.pickTarget}</p>
-      <p className={s.hint}>{role === "KILL_CARD" ? copy.killHint : role === "SWAP_CARDS" ? copy.swapHint : copy.pickTargetHint(roleName(role))}</p>
-      {showToAll != null && onShowToAll && <Toggle label={copy.showToAll} hint={copy.showToMe} value={showToAll} onChange={onShowToAll} />}
+      <p className={s.hint}>
+        {role === "KILL_CARD" ? copy.killHint : role === "SWAP_CARDS" ? copy.swapHint : copy.pickTargetHint(roleName(role))}
+      </p>
+      {note && <p className={s.note}>{note}</p>}
       {onSwapBoth && (
         <>
           <Button variant="outline" className={s.back} onClick={onSwapBoth}>

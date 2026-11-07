@@ -1,5 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { collectBugContext, installBugContext, resetBugContext, sanitizeBugText } from "./bugContext";
+import { GAME_VERSION } from "../version";
 
 const handlers = new Map<string, (event: unknown) => void>();
 
@@ -95,7 +96,7 @@ describe("contexto do relato de bug", () => {
 
     expect(collectBugContext()).toEqual({
       scene: "admin",
-      buildVersion: "dev",
+      buildVersion: GAME_VERSION,
       screen: "390x844",
       errors: [],
     });

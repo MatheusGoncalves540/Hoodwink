@@ -40,6 +40,13 @@ WEB_DIR         := ../client/web
 REPLAY_PUBLIC   := $(WEB_DIR)/public/replay
 REPLAY_MANIFEST := $(WEB_DIR)/src/replay/manifest.gen.ts
 
+# Versão do JOGO (VERSION na raiz), independente da versão do motor de replay.
+# O build injeta por ldflags; `make version` mostra e `make game-bump` sobe.
+GAME_VERSION := $(shell tr -d '\r\n' < ../VERSION 2>/dev/null)
+GAME_COMMIT  := $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
+BACKEND_LDFLAGS    = -X github.com/MatheusGoncalves540/Hoodwink/version.Version=$(GAME_VERSION) -X github.com/MatheusGoncalves540/Hoodwink/version.Commit=$(GAME_COMMIT)
+GAMESERVER_LDFLAGS = -X github.com/MatheusGoncalves540/Hoodwink-gameServer/version.Version=$(GAME_VERSION) -X github.com/MatheusGoncalves540/Hoodwink-gameServer/version.Commit=$(GAME_COMMIT)
+
 # Runner: air (live reload) quando instalado, senão go run
 AIR := $(shell command -v air 2>/dev/null)
 ifeq ($(AIR),)
@@ -51,7 +58,7 @@ endif
 .PHONY: all dev backend game check-env infra-up infra-down infra-clean \
         deps setup build test goose-check migrate migrate-down migrate-redo \
         migrate-status migrate-create clean engine-check engine-bump \
-        replay-wasm replay-wasm-check help
+        version version-check game-bump replay-wasm replay-wasm-check help
 
 ## Alias para o alvo padrão
 all: dev
@@ -120,8 +127,8 @@ setup: deps infra-up
 build:
 	@set -e
 	mkdir -p $(BIN_DIR)
-	( cd $(BACKEND_DIR) && go build -o ../$(BIN_DIR)/backend . )
-	( cd $(GAMESERVER_DIR) && go build -o ../$(BIN_DIR)/gameserver . )
+	( cd $(BACKEND_DIR) && go build -ldflags "$(BACKEND_LDFLAGS)" -o ../$(BIN_DIR)/backend . )
+	( cd $(GAMESERVER_DIR) && go build -ldflags "$(GAMESERVER_LDFLAGS)" -o ../$(BIN_DIR)/gameserver . )
 
 ## Roda os testes dos dois módulos
 test:
@@ -138,6 +145,19 @@ engine-check:
 engine-bump:
 	@set -e
 	( cd tools && go run ./enginebump )
+
+## Mostra a versão do jogo (VERSION na raiz)
+version:
+	@sh scripts/game-version.sh show
+
+## Confere a versão do jogo (formato semver e espelho no package.json)
+## Opcional: make version-check tag=v1.2.3 confere também a tag do release.
+version-check:
+	@sh scripts/game-version.sh check $(if $(tag),--tag $(tag),)
+
+## Sobe a versão do jogo: make game-bump level=patch|minor|major (padrão patch)
+game-bump:
+	@sh scripts/game-version.sh bump $(or $(level),patch)
 
 ## Compila um WASM do motor por versão (Go padrão, brotli) e gera o manifest do bundle
 ##
@@ -240,6 +260,9 @@ help:
 	@echo ''
 	@echo '  make build                     -> Compila os dois servicos em ./bin'
 	@echo '  make test                      -> Roda os testes dos dois modulos'
+	@echo '  make version                   -> Mostra a versao do jogo (VERSION)'
+	@echo '  make version-check             -> Valida a versao do jogo (e a tag com tag=vX.Y.Z)'
+	@echo '  make game-bump level=patch     -> Sobe a versao do jogo (major|minor|patch)'
 	@echo '  make engine-check              -> Verifica a versao/fecho do motor (replay)'
 	@echo '  make engine-bump               -> Congela o motor em replay/engines/vN'
 	@echo '  make replay-wasm               -> Compila o WASM por versao + manifest do bundle'

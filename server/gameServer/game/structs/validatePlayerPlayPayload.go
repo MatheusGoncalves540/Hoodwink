@@ -25,6 +25,16 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 
 		return payload, nil
 
+	case PlayPass:
+		if len(p.Payload) == 0 {
+			return struct{}{}, nil
+		}
+		var empty struct{}
+		if err := pure.DecodeStrictJSON(p.Payload, &empty); err != nil {
+			return nil, fmt.Errorf("payload inválido para pass: %w", err)
+		}
+		return empty, nil
+
 	case PlayContest:
 		if len(p.Payload) == 0 {
 			return struct{}{}, nil

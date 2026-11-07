@@ -154,7 +154,9 @@ formato é ≤ 4 KB.
 
 ## 3. Versões e CI: por que um replay antigo nunca muda
 
-O motor é versionado por um número inteiro simples. Existem dois arquivos no
+O motor é versionado por um número inteiro simples. A versão do **jogo**
+(semver em `VERSION`, raiz do repo) é outra coisa e não entra neste controle:
+ver [`../../VERSIONING.md`](../../VERSIONING.md). Existem dois arquivos no
 gameServer:
 
 - [`../gameServer/game/ENGINE_VERSION`](../gameServer/game/ENGINE_VERSION):

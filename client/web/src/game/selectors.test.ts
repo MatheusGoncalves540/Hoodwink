@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fixture, FIXTURE_NAMES, type FixtureName } from "./fixtures";
+import type { LogEntry } from "./log";
 import type { PublicRoom, RoleId } from "./protocol";
 import {
   describeEvent, kamikazeAlly, selectChat, selectDecision, selectFinale, selectFootlights, selectLog, selectRolesUsed, selectScene,
@@ -303,6 +304,48 @@ describe("narração: quem fez e quem sofreu", () => {
 });
 
 describe("gavetas", () => {
+  const reveal = (targetId: string, cardIndex: number, turn: number, showToAll = true, card: RoleId = "KAMIKAZE"): LogEntry => ({
+    key: `REVEALED_CARD|ana|${targetId}|${cardIndex}|${turn}`,
+    turn,
+    at: NOW,
+    actorId: "ana",
+    actorName: "Ana",
+    pred: `revelou uma carta de ${targetId}: Kamikaze como Clarividente.`,
+    reveal: { targetId, cardIndex, card, showToAll },
+  });
+
+  it("a revelação pública entra no alvo com selo e linha no o que a mesa já viu", () => {
+    const base = view("Mesa6");
+    const seat = selectSeatSheet({ ...base, log: [...base.log, reveal("bruno", 1, 5)] }, "bruno")!;
+    expect(seat.revealed).toEqual([{ key: "REVEALED_CARD|ana|bruno|1|5", turn: 5, cardIndex: 1, card: "KAMIKAZE" }]);
+    expect(seat.log.map((l) => [l.turn, l.text])).toEqual([
+      [5, "Teve a carta Kamikaze revelada para todos."],
+      [3, "Se disse Assassino, alguém duvidou e perdeu a carta."],
+      [2, "Roubou 3 de Eva como Trapaceiro."],
+      [1, "Recebeu 4 como Trilionário."],
+    ]);
+    // a carta em si continua no estado que a mesa vê
+    expect(seat.cards[1]).toEqual({ state: "back", index: 1 });
+  });
+
+  it("a revelação privada não aparece na gaveta do alvo", () => {
+    const base = view("Mesa6");
+    const seat = selectSeatSheet({ ...base, log: [...base.log, reveal("bruno", 1, 5, false)] }, "bruno")!;
+    expect(seat.revealed).toEqual([]);
+    expect(seat.log.some((l) => l.text.includes("revelada"))).toBe(false);
+  });
+
+  it("duas revelações da mesma carta ficam com o turno mais recente", () => {
+    const base = view("Mesa6");
+    const log = [...base.log, reveal("bruno", 1, 5), reveal("bruno", 0, 4), reveal("bruno", 1, 7)];
+    const seat = selectSeatSheet({ ...base, log }, "bruno")!;
+    expect(seat.revealed.map((r) => [r.cardIndex, r.turn])).toEqual([
+      [1, 7],
+      [0, 4],
+    ]);
+    expect(seat.log.filter((l) => l.key.startsWith("REVEAL|"))).toHaveLength(2);
+  });
+
   it("camarote: cartas, diário do ator e investimentos", () => {
     const seat = selectSeatSheet(view("Camarote"), "bruno")!;
     expect(seat).toMatchObject({ id: "bruno", name: "Bruno", coins: 2, alive: true, investments: [] });
@@ -315,6 +358,24 @@ describe("gavetas", () => {
       [2, "Roubou 3 de Eva como Trapaceiro."],
       [1, "Recebeu 4 como Trilionário."],
     ]);
+  });
+
+  it("a carta revelada pelo Clarividente fica marcada no camarote e no diário", () => {
+    const base = view("Mesa6");
+    const reveal: LogEntry = {
+      key: "REVEALED_CARD|ana|1",
+      turn: 4,
+      at: NOW,
+      actorId: "ana",
+      actorName: "Ana",
+      pred: "revelou uma carta de Bruno: Kamikaze como Clarividente.",
+      reveal: { targetId: "bruno", cardIndex: 1, card: "KAMIKAZE" },
+    };
+    const v = { ...base, log: [...base.log, reveal] };
+    const seat = selectSeatSheet(v, "bruno")!;
+    expect(seat.cards[1]).toEqual({ state: "revealed", role: "KAMIKAZE", index: 1 });
+    expect(selectSeats(v).find((s) => s.id === "bruno")!.cards[1]).toEqual({ state: "revealed", role: "KAMIKAZE", index: 1 });
+    expect(seat.log.map((l) => l.text)).toContain("Ana revelou uma carta de Bruno: Kamikaze como Clarividente.");
   });
 
   it("seu camarote: cartas, limite e papéis que a mesa viu", () => {

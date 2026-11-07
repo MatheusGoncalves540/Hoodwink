@@ -40,7 +40,7 @@ func (f *fakeReplayStore) Insert(ctx context.Context, r *models.MatchReplay) err
 	}
 	if _, exists := f.inserted[r.MatchID]; !exists {
 		cp := *r
-		cp.PlayerIDs = append([]string(nil), r.PlayerIDs...)
+		cp.PlayerIDs = append(models.StringArray(nil), r.PlayerIDs...)
 		cp.Data = append([]byte(nil), r.Data...)
 		if r.WinnerID != nil {
 			w := *r.WinnerID
@@ -298,7 +298,7 @@ func TestReplayDownloadNoStore(t *testing.T) {
 		MatchID:   testMatchUUID.String(),
 		EndedAt:   time.Date(2026, 11, 6, 12, 0, 0, 0, time.UTC),
 		WinnerID:  &w,
-		PlayerIDs: []string{testPlayerA, testPlayerB},
+		PlayerIDs: models.StringArray{testPlayerA, testPlayerB},
 		Data:      []byte{1, 2, 3},
 	}
 	store.findFn = func(ctx context.Context, matchID, playerID string) (*models.MatchReplay, error) {

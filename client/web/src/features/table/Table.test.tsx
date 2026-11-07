@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { fixture, type FixtureName } from "../../game/fixtures";
 import type { GameView } from "../../game/selectors";
 import type { PublicCard } from "../../game/protocol";
+import { CenterCurtain } from "../turn/CenterCurtain";
 import { Table, ownCardDisabled } from "./Table";
 
 const NOW = Date.UTC(2026, 10, 4, 21, 41);
@@ -35,6 +36,47 @@ describe("Mesa (fumaça em Node)", () => {
     expect(out).toContain("limite 20");
     expect(out).toContain("1 investimento, rende em 2");
     expect(out).toContain('aria-label="Tempo da jogada de Carla"');
+  });
+
+  it("o slot curtain desce até o pé: vem depois da faixa Você e fica por cima dela", () => {
+    const out = renderToStaticMarkup(<Table view={view("Mesa6")} slots={{ curtain: <p>ações na cortina</p> }} />);
+    const area = out.indexOf('data-slot="table-area"');
+    const curtain = out.indexOf('data-slot="curtain"');
+    expect(area).toBeGreaterThan(-1);
+    expect(out).toContain("ações na cortina");
+    // cabeçalho vem antes; a cortina cobre a faixa Você (as cartas aparecem no quadro de ações)
+    expect(out.indexOf("Rodada 4 · Taxa +1")).toBeLessThan(area);
+    expect(curtain).toBeGreaterThan(out.indexOf('aria-label="Você"'));
+  });
+
+  it("o aviso de tela inteira fica fora da área da mesa e da faixa Você", () => {
+    const out = renderToStaticMarkup(
+      <Table view={view("Mesa6")} dark slots={{ curtain: <p>ações na cortina</p>, screenOverlay: <p>aviso de morte súbita</p> }} />,
+    );
+    const overlay = out.indexOf('data-slot="screen-overlay"');
+    expect(overlay).toBeGreaterThan(out.indexOf('data-slot="curtain"'));
+    expect(overlay).toBeGreaterThan(out.indexOf('aria-label="Você"'));
+    expect(out).toContain("aviso de morte súbita");
+  });
+
+  it("com a cortina fechada sobra o handle e a faixa Você continua no lugar", () => {
+    const out = renderToStaticMarkup(
+      <Table
+        view={view("Mesa6")}
+        slots={{
+          curtain: (
+            <CenterCurtain open={false} onToggle={() => {}}>
+              <p>ações na cortina</p>
+            </CenterCurtain>
+          ),
+        }}
+      />,
+    );
+    expect(out).toContain('aria-expanded="false"');
+    expect(out).toContain("Abrir ações");
+    expect(out).toContain('aria-label="Você"');
+    // fechada, o handle descansa acima da faixa Você (--curtain-rest); a faixa segue na tela
+    expect(out.indexOf('data-slot="curtain"')).toBeGreaterThan(out.indexOf('aria-label="Você"'));
   });
 
   it("Mesa3 e Mesa10 mudam o número de camarotes", () => {

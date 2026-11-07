@@ -1,0 +1,104 @@
+# value = Valores afetados pelas taxas (nem sempre são os preços das cartas)
+
+Cards:
+  ASSASSIN:
+    value: 4
+    taxMinimum: 3
+    affectedByTaxes: true
+
+  KAMIKAZE:
+    canKillSelf: true
+    affectedByTaxes: false
+
+  POLITICAL:
+    fixedValue: 1
+    value: 2
+    affectedByTaxes: false
+    doubledValueCard: true
+    roundsUntilDecrease: 3
+    maxDoubled: 2
+
+  REBEL:
+    fixedValue: 1
+    value: 2
+    affectedByTaxes: false
+    doubledValueCard: true
+    roundsUntilDecrease: 3
+    maxDoubled: 2
+
+  TRILLIONAIRE:
+    value: 3
+    taxMinimum: 1
+    affectedByTaxes: true
+
+  CLAIRVOYANT:
+    value: 4
+    taxMinimum: 2
+    affectedByTaxes: true
+
+  GUARDIAN:
+    value: 5
+    taxMinimum: 3
+    futureProtectionTaxMinimum: 5
+    futureProtectionSurcharge: 1
+    clairvoyantBlockDiscount: 1
+    clairvoyantBlockTaxMinimum: 2
+    canDefendClairvoyant: true
+    affectedByTaxes: true
+
+  TRICKSTER:
+    value: 2
+    taxMinimum: 2
+    taxMaximum: 5
+    affectedByTaxes: true
+
+  GRAVEDIGGER:
+    value: 5
+    taxMinimum: 3
+    affectedByTaxes: true
+
+  CROUPIER:
+    value: 6
+    taxMinimum: 4
+    affectedByTaxes: true
+
+  INVESTOR:
+    value: 4
+    taxMinimum: 2
+    taxMaximum: 6
+    gracePeriod: 6
+    affectedByTaxes: true
+
+  SELFISH:
+    fixedValue: 1
+    value: 5
+    taxMinimum: 3
+    taxMaximum: 8
+    coinDenialThreshold: 2
+    affectedByTaxes: true
+
+Timeouts:
+  DEFAULT:
+    displayMessage: 6
+    displayImportantMessage: 8
+    waitingAction: 30
+  SUDDEN_DEATH:
+    displayMessage: 3
+    displayImportantMessage: 4
+    waitingAction: 15
+
+General:
+  # As taxas só mudam por efeito de cartas (Político/Rebelde) no modo clássico.
+  randomTaxesChanges: 0
+  copysOfEachCard: 2
+  initialCoins: 3
+  maxPlayers: 10
+  maxCoins: 20
+  maxTax: 5
+  minTax: -5
+
+  # Ações básicas
+  basicTakeCoins: 1
+  basicKillCardCost: 6
+  basicKillCardMinimum: 3
+  basicSwapMinCoins: 6

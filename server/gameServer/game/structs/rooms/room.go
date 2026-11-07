@@ -22,6 +22,7 @@ type Room struct {
 	Deck                      []structs.CardName                                    `json:"deck"`
 	CurrentPlayer             string                                                `json:"currentPlayer"`
 	GameEvent                 *structs.GameEvent                                    `json:"gameEvent"`
+	Passes                    PassesState                                           `json:"passes,omitempty"`
 	PendingEffects            []structs.EffectDTO                                   `json:"pendingEffects"`
 	PendingPresentationEvents []structs.PresentationEventDTO                        `json:"pendingPresentationEvents"`
 	GameOver                  bool                                                  `json:"gameOver"`

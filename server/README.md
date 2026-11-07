@@ -101,6 +101,7 @@ Outros alvos úteis:
 - `make migrate` — aplica as migrations pendentes (goose)
 - `make build` / `make test` — compila ou testa os dois módulos
 - `make engine-check` — verifica a versão/fecho do motor de replay; `make engine-bump` — congela o motor em `replay/engines/vN` (toda mudança no motor exige o bump)
+- `make version` / `make version-check` / `make game-bump` — versão do **jogo** (semver em `VERSION`), independente do motor; ver `VERSIONING.md`
 - `make help` — lista todos os alvos
 
 ---
@@ -418,6 +419,33 @@ LIMIT 20;
 
 Apagar um usuário não apaga os relatos: a FK usa `on delete set null`, então a
 linha continua com `user_id` nulo.
+
+### Arrays do Postgres (`uuid[]` e `int[]`)
+
+O driver devolve `player_ids` (em `match_replays`) e `turns` (em `bug_reports`)
+como o literal `{a,b}`. Sem um `sql.Scanner` próprio, o GORM falhava com
+`unsupported Scan, storing driver.Value type string into type *[]string` (ou
+`*[]int32`) — era a causa do `500` em `GET /me/matches` e em
+`POST /bugReports/flag`, com o relato e o replay gravados mas impossíveis de ler
+de volta.
+
+Os campos dos models usam `models.StringArray` e `models.Int32Array`
+(`server/backend/db/models/array.go`, com `Scan` para `string`/`[]byte`/`nil` e
+`Value` no formato `{...}`). Os stores convertem para `[]string`/`[]int32`; os
+DTOs e o JSON das rotas não mudam.
+
+Toda escrita de array é SQL cru com cast: `?::uuid[]` no `Insert` do replay e
+`ARRAY[?]::int[]` no `upsertTurnSQL`. Não grave esses campos por `db.Create`: o
+`driver.Valuer` devolve `text` e o Postgres recusa em `uuid[]`/`int[]`. Por isso
+o relato do Lobby usa `insertLobbyBugSQL` e deixa `turns` no default `'{}'`.
+
+O teste de integração roda contra um Postgres migrado e é pulado sem a variável:
+
+```bash
+cd server/backend
+HW_TEST_PG="postgres://usuario:senha@127.0.0.1:5432/hoodwink?sslmode=disable" \
+  go test ./routes/handlers -run TestPostgresArrays
+```
 
 ---
 
