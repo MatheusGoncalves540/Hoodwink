@@ -412,6 +412,20 @@ export const copy = {
   bugReportChooseCategory: "Escolha o que aconteceu.",
   bugReportShortDescription: "Escreva pelo menos 10 caracteres.",
   bugReportLobby: "Reportar bug",
+  // Apoie o dev (FEATURES.supportVideo): vídeo opcional, sem vantagem no jogo
+  support: {
+    open: "Apoie o dev · assista a um vídeo",
+    kicker: "Apoie o dev",
+    title: "Um vídeo curto, se quiser",
+    body: "O Hoodwink é feito por uma pessoa só. Um anúncio de uns 30 segundos ajuda a pagar o servidor.",
+    note: "Nada muda no jogo. É só um obrigado.",
+    watch: "Assistir ao vídeo",
+    watching: "Carregando o vídeo…",
+    thanksTitle: "Bravo!",
+    thanks: "Obrigado pelo apoio. A casa agradece de pé.",
+    unavailable: "O vídeo não está disponível agora. Obrigado mesmo assim!",
+    back: "☜ Agora não",
+  },
   bugReportLobbyTitle: "O que deu errado?",
 
   // histórico (predicados: o jogador vem antes, no histórico geral)

@@ -10,6 +10,8 @@ type Props = {
   seat: SeatVM;
   box: SeatBox;
   big: boolean;
+  /** Grade do celular (6+ adversários): camarote largo, nome inteiro em cima, sem "···". */
+  wide?: boolean;
   layout: Layout;
   onOpen?(id: string): void;
   /** Fluxo de alvo: camarote elegível ganha o anel de ouro. */
@@ -19,7 +21,7 @@ type Props = {
 };
 
 /** Camarote: arco, primeiro nome, 2 miniaturas + moeda e "···" quando há algo para ver. */
-export function Seat({ seat, box, big, layout, onOpen, targetable, dimmed }: Props) {
+export function Seat({ seat, box, big, wide, layout, onOpen, targetable, dimmed }: Props) {
   const desktop = layout === "desktop";
   const mini = desktop ? (big ? "desk-l" : "desk-s") : big ? "l" : "s";
   const coinSize = desktop ? (big ? 34 : 28) : big ? 26 : 22;
@@ -30,6 +32,7 @@ export function Seat({ seat, box, big, layout, onOpen, targetable, dimmed }: Pro
         "m-item",
         s.seat,
         !big && s.small,
+        wide && s.wide,
         seat.inScene && s.active,
         seat.out && s.out,
         targetable && s.targetable,

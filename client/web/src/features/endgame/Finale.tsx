@@ -22,6 +22,7 @@ import { Ticket } from "../../ui/Ticket/Ticket";
 import { Moldura } from "../../ui/Moldura/Moldura";
 import { cx } from "../../ui/cx";
 import s from "./Finale.module.css";
+import { SupportDev } from "../support/SupportDev";
 
 const REPLAY_POLL_MS = 3000;
 const REPLAY_POLL_TIMEOUT_MS = 30000;
@@ -140,6 +141,7 @@ export function Finale({ vm, layout, onNewRoom, onLobby, replay }: Props) {
         <Button variant="link" onClick={onLobby}>
           {copy.backToEntrance}
         </Button>
+        <SupportDev layout={layout} />
       </section>
     </main>
   );
