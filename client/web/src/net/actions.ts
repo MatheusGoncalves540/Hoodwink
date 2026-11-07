@@ -8,6 +8,7 @@ export type ClientMessage = { type: string; payload: unknown };
 export type Target = { playerId?: string; cardIndex?: number; allyCardIndex?: number; showToAll?: boolean; both?: boolean };
 
 export const startGame = (): ClientMessage => ({ type: "COMMAND_START_GAME", payload: {} });
+export const pass = (): ClientMessage => ({ type: "PASS", payload: {} });
 export const contest = (): ClientMessage => ({ type: "CONTEST", payload: {} });
 export const contestPenalty = (cardIndex: number): ClientMessage => ({ type: "CONTEST_PENALTY", payload: { TargetCardIndex: cardIndex } });
 export const chat = (msg: string): ClientMessage => ({ type: "CHAT_MESSAGE", payload: { msg } });
