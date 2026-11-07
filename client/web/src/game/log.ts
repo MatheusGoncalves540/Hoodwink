@@ -27,6 +27,8 @@ export type LogEntry = {
   role?: RoleId;
   /** acontecimento que também aparece na conversa, entre parênteses (contestação resolvida, saída de cena) */
   chat?: boolean;
+  /** REVEALED_CARD: carta, alvo, índice e se a mesa toda viu (memória do diário do alvo) */
+  reveal?: { targetId: string; cardIndex: number; card?: RoleId; showToAll: boolean };
 };
 
 export const eventKey = (e: GameEvent | null) => (e ? `${e.type}|${e.playerId}|${e.expiresAt}` : "");
@@ -92,7 +94,10 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
         }
         case "REVEALED_CARD": {
           const card = declaredRole(`CARD_PLAYED_${str(p.revealedCard)}`);
-          push(ev.playerId, copy.log.revealed(fname(str(p.targetPlayer)), card ? roleName(card) : undefined));
+          push(ev.playerId, copy.log.revealed(fname(str(p.targetPlayer)), card ? roleName(card) : undefined), {
+            // só a revelação pública vira memória da mesa; a privada fica no diário de quem jogou
+            reveal: { targetId: str(p.targetPlayer), cardIndex: num(p.targetCardIndex), card, showToAll: p.showToAllPlayers === true },
+          });
           break;
         }
         case "REVIVED_CARD":
