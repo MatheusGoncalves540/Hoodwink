@@ -4,31 +4,32 @@ import (
 	"context"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func ContestEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func ContestEffect(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+	sink = rooms.SinkOrNoop(sink)
+
 	contestPayload, ok := effect.Payload.(structs.ContestPayload)
 	if !ok {
-		utils.LogError("payload inválido para EffectContest")
+		pure.LogError("payload inválido para EffectContest")
 		return
 	}
 
 	// jogador que contestou
 	contestant, err := roomData.GetPlayer(effect.SourcePlayer)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
 	// jogador que teve a carta contestada
 	contestedPlayer, err := roomData.GetPlayer(contestPayload.ContestedPlayer)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
@@ -39,7 +40,7 @@ func ContestEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.
 	if !hasCard {
 		roomData.PopLastPendingEffect()
 	} else if err := contestedPlayer.RevealCardToAll(revealedCardIndex); err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 	}
 
 	// Quem escolhe a carta que morre:
@@ -52,10 +53,10 @@ func ContestEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.
 
 	timeoutDuration, err := roomData.GetTimeoutDuration(registryRules, "WaitingAction")
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
+	expiresAt := roomData.Now().Add(timeoutDuration * time.Second).UTC()
 
 	penaltyPayload := structs.NewContestPenaltyPayload(
 		contestedPlayer.Id,
@@ -71,9 +72,9 @@ func ContestEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.
 	roomData.GameEvent = structs.NewGameEvent(chooserID, structs.EventContestPenalty, expiresAt, penaltyPayload)
 
 	if err := roomData.AppendPendingEffect(structs.NewEffect(structs.EffectContestPenalty, chooserID, penaltyPayload)); err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
-	roomData.RegistryTimeout(rdb, ctx, expiresAt)
+	sink.RegistryTimeout(ctx, roomData, expiresAt)
 }

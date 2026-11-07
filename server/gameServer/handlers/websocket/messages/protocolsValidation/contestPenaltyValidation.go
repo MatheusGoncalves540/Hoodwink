@@ -1,9 +1,9 @@
 package protocolsValidation
 
 import (
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 // ValidateContestPenaltyProtocol valida a escolha da carta que morre na contestação
@@ -11,34 +11,34 @@ import (
 func ValidateContestPenaltyProtocol(roomData *rooms.Room, playerPlay *structs.PlayerPlay, payload structs.ContestPenaltyPayload) (*structs.ContestPenaltyPayload, *string, *string, bool) {
 	// Contest Penalty só pode ser usado durante um evento de penalidade de contestação
 	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventContestPenalty {
-		utils.LogInvldPlyrReq("Contest Penalty só pode ser usado durante um evento de penalidade de carta por contestação", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Contest Penalty só pode ser usado durante um evento de penalidade de carta por contestação", playerPlay.PlayerId)
 		return nil, nil, nil, false
 	}
 
 	payloadMap, ok := roomData.GameEvent.Payload.(map[string]interface{})
 	if !ok {
-		utils.LogError("payload does not match map structure")
+		pure.LogError("payload does not match map structure")
 		return nil, nil, nil, false
 	}
 
 	contestedPlayerId, ok := payloadMap["contestedPlayer"].(string)
 	if !ok {
-		utils.LogInvldPlyrReq("contestedPlayer not found or invalid in payload", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("contestedPlayer not found or invalid in payload", playerPlay.PlayerId)
 		return nil, nil, nil, false
 	}
 	contestingPlayerId, ok := payloadMap["contestingPlayer"].(string)
 	if !ok {
-		utils.LogInvldPlyrReq("contestingPlayer not found or invalid in payload", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("contestingPlayer not found or invalid in payload", playerPlay.PlayerId)
 		return nil, nil, nil, false
 	}
 	contestedCard, ok := payloadMap["contestedCard"].(string)
 	if !ok {
-		utils.LogInvldPlyrReq("contestedCard not found or invalid in payload", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("contestedCard not found or invalid in payload", playerPlay.PlayerId)
 		return nil, nil, nil, false
 	}
 	hasCard, ok := payloadMap["hasCard"].(bool)
 	if !ok {
-		utils.LogInvldPlyrReq("hasCard not found or invalid in payload", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("hasCard not found or invalid in payload", playerPlay.PlayerId)
 		return nil, nil, nil, false
 	}
 
@@ -50,23 +50,23 @@ func ValidateContestPenaltyProtocol(roomData *rooms.Room, playerPlay *structs.Pl
 	}
 
 	if playerPlay.PlayerId != chooserID {
-		utils.LogInvldPlyrReq("Apenas o jogador responsável pela escolha pode usar Contest Penalty", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Apenas o jogador responsável pela escolha pode usar Contest Penalty", playerPlay.PlayerId)
 		return nil, nil, nil, false
 	}
 
 	if payload.TargetCardIndex == nil {
-		utils.LogInvldPlyrReq("targetCardIndex é obrigatório", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("targetCardIndex é obrigatório", playerPlay.PlayerId)
 		return nil, nil, nil, false
 	}
 
 	targetPlayer, err := roomData.GetPlayer(targetPlayerID)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return nil, nil, nil, false
 	}
 	card, err := targetPlayer.GetCardByIndex(*payload.TargetCardIndex)
 	if err != nil || card.Dead {
-		utils.LogInvldPlyrReq("targetCardIndex não aponta para uma carta viva do alvo", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("targetCardIndex não aponta para uma carta viva do alvo", playerPlay.PlayerId)
 		return nil, nil, nil, false
 	}
 

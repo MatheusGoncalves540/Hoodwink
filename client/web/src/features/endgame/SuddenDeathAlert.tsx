@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { Layout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
 import { cx } from "../../ui/cx";
@@ -21,9 +22,12 @@ export function SuddenDeathAlert({ layout, seconds }: Props) {
       <div className={s.text}>
         <p className={s.deckOver}>{copy.deckOver}</p>
         <h1 className={cx("m-slam", s.title)} style={{ animationDelay: "2.45s" }}>
-          Morte
-          <br />
-          súbita
+          {copy.suddenDeathLines.map((line, i) => (
+            <Fragment key={line}>
+              {i > 0 && <br />}
+              {line}
+            </Fragment>
+          ))}
         </h1>
         <p className={s.each}>{copy.eachCue(seconds)}</p>
       </div>

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
 )
@@ -72,7 +73,8 @@ func (h *HeartbeatService) Stop() {
 	utils.LogDebug(fmt.Sprintf("Heartbeat parado para instância %s", h.instanceID))
 }
 
-// sendHeartbeat envia o heartbeat e renova TTL dos players gerenciados
+// sendHeartbeat envia o heartbeat e renova TTL dos players gerenciados.
+// Usa MGET (players) e pipelines (EXISTS/EXPIRE) para não fazer 3 comandos por jogador.
 func (h *HeartbeatService) sendHeartbeat() {
 	// Renova heartbeat da instância
 	heartbeatKey := fmt.Sprintf("instance:%s:alive", h.instanceID)
@@ -82,71 +84,70 @@ func (h *HeartbeatService) sendHeartbeat() {
 		return
 	}
 
-	// Busca todos os players gerenciados por esta instância
+	// Busca todos os players gerenciados por esta instância (playerId -> roomId)
 	players := h.getManagedPlayers()
+	if len(players) == 0 {
+		return
+	}
 
+	// Uma checagem de existência por sala (compartilhada entre os jogadores dela),
+	// em um único pipeline.
+	existsCmds := make(map[string]*redis.IntCmd, len(players))
+	pipe := h.rdb.Pipeline()
+	for _, roomId := range players {
+		if _, ok := existsCmds[roomId]; ok {
+			continue
+		}
+		existsCmds[roomId] = pipe.Exists(h.ctx, "room:"+roomId)
+	}
+	_, _ = pipe.Exec(h.ctx)
+
+	// Renova o TTL dos jogadores cuja sala ainda existe, também em um pipeline.
+	pipe = h.rdb.Pipeline()
 	playersRenewed := 0
-	for _, playerId := range players {
-		// Monta a chave do player
-		playerKey := fmt.Sprintf("player:%s:room", playerId)
-
-		// Busca o valor da chave (formato: roomId:instanceId)
-		value, err := h.rdb.Get(h.ctx, playerKey).Result()
-		if err != nil || value == "" {
-			continue // Não encontrado
-		}
-
-		// Separa roomId e instanceId
-		parts := strings.SplitN(value, ":", 2)
-		if len(parts) < 2 {
-			continue // Formato inesperado
-		}
-		roomId := parts[0]
-
-		// Verifica se a sala existe
-		roomKey := fmt.Sprintf("room:%s", roomId)
-		exists, err := h.rdb.Exists(h.ctx, roomKey).Result()
-		if err != nil || exists == 0 {
+	for playerId, roomId := range players {
+		if exists, err := existsCmds[roomId].Result(); err != nil || exists == 0 {
 			continue // Sala não existe
 		}
-
-		// Renova TTL do player
-		h.rdb.Expire(h.ctx, playerKey, h.HeartbeatTTL)
+		pipe.Expire(h.ctx, "player:"+playerId+":room", h.HeartbeatTTL)
 		playersRenewed++
 	}
-
 	if playersRenewed > 0 {
-		// utils.LogDebug(fmt.Sprintf(
-		// 	"Heartbeat enviado - Instância: %s, Players renovados: %d",
-		// 	h.instanceID, playersRenewed,
-		// ))
+		_, _ = pipe.Exec(h.ctx)
 	}
+
+	// utils.LogDebug(fmt.Sprintf(
+	// 	"Heartbeat enviado - Instância: %s, Players renovados: %d",
+	// 	h.instanceID, playersRenewed,
+	// ))
 }
 
-// getManagedPlayers retorna a lista de players gerenciados por esta instância
-func (h *HeartbeatService) getManagedPlayers() []string {
-	var players []string
+// getManagedPlayers retorna os players gerenciados por esta instância no formato
+// playerId -> roomId. Usa SCAN para achar as chaves e um único MGET para ler os valores.
+func (h *HeartbeatService) getManagedPlayers() map[string]string {
+	players := make(map[string]string)
 
-	// Busca todas as chaves de player:*:room
-	keys, err := h.rdb.Keys(h.ctx, "player:*:room").Result()
+	// Busca todas as chaves de player:*:room via SCAN (sem KEYS bloqueante).
+	keys, err := redisFuncs.ScanKeys(h.ctx, h.rdb, "player:*:room")
+	if err != nil || len(keys) == 0 {
+		return players
+	}
+
+	values, err := h.rdb.MGet(h.ctx, keys...).Result()
 	if err != nil {
 		return players
 	}
 
-	// Para cada chave, verifica se o valor contém nossa instanceID
-	for _, key := range keys {
-		value, err := h.rdb.Get(h.ctx, key).Result()
-		if err != nil {
+	suffix := ":" + h.instanceID
+	for i, key := range keys {
+		value, ok := values[i].(string)
+		if !ok || len(value) <= len(suffix) || !strings.HasSuffix(value, suffix) {
 			continue
 		}
 
-		// Verifica se o valor termina com nossa instanceID (formato: roomId:instanceId)
-		suffix := ":" + h.instanceID
-		if len(value) > len(suffix) && value[len(value)-len(suffix):] == suffix {
-			// Extrai playerId da chave "player:{playerId}:room"
-			playerId := key[7 : len(key)-5] // remove "player:" e ":room"
-			players = append(players, playerId)
-		}
+		// Extrai playerId da chave "player:{playerId}:room" e o roomId do valor.
+		playerId := key[7 : len(key)-5]
+		players[playerId] = strings.TrimSuffix(value, suffix)
 	}
 
 	return players
@@ -163,7 +164,7 @@ func IsInstanceAlive(ctx context.Context, rdb *redis.Client, instanceID string) 
 func GetAliveInstances(ctx context.Context, rdb *redis.Client) []string {
 	var instances []string
 
-	keys, err := rdb.Keys(ctx, "instance:*:alive").Result()
+	keys, err := redisFuncs.ScanKeys(ctx, rdb, "instance:*:alive")
 	if err != nil {
 		return instances
 	}

@@ -1,18 +1,13 @@
 package rooms
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand/v2"
-	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
 // IncrementTax incrementa as taxas pelo valor passado
@@ -27,7 +22,7 @@ func (r *Room) DecrementTax(amount int) {
 
 // RandomlyChangeTaxes aleatoriamente aumenta ou diminui as taxas.
 // No modo clássico a chance é 0: as taxas só mudam por efeito de cartas.
-func (r *Room) RandomlyChangeTaxes(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry) error {
+func (r *Room) RandomlyChangeTaxes(registryRules *rules.Registry) error {
 	generalRules, err := r.GetGeneralRules(registryRules)
 	if err != nil {
 		return err
@@ -37,7 +32,7 @@ func (r *Room) RandomlyChangeTaxes(ctx context.Context, rdb *redis.Client, regis
 		return nil
 	}
 
-	randPercentage := rand.IntN(99) + 1 // gera um número entre 1 e 100
+	randPercentage := r.Rand().IntN(99) + 1 // gera um número entre 1 e 100
 
 	if randPercentage <= *generalRules.RandomTaxesChanges {
 		// Taxas serão alteradas
@@ -45,41 +40,25 @@ func (r *Room) RandomlyChangeTaxes(ctx context.Context, rdb *redis.Client, regis
 		if generalRules.MaxTax != nil && r.Tax >= *generalRules.MaxTax {
 			// Se as taxas já estão no máximo, só podem diminuir
 			r.DecrementTax(1)
-			utils.LogDebug("Taxas diminuídas para " + fmt.Sprint(r.Tax))
+			pure.LogDebug("Taxas diminuídas para " + fmt.Sprint(r.Tax))
 		} else if generalRules.MinTax != nil && r.Tax <= *generalRules.MinTax {
 			// Se as taxas já estão no mínimo, só podem aumentar
 			r.IncrementTax(1)
-			utils.LogDebug("Taxas aumentadas para " + fmt.Sprint(r.Tax))
-		} else if rand.IntN(2) == 0 {
+			pure.LogDebug("Taxas aumentadas para " + fmt.Sprint(r.Tax))
+		} else if r.Rand().IntN(2) == 0 {
 			// Aumenta as taxas
 			r.IncrementTax(1)
-			utils.LogDebug("Taxas aumentadas para " + fmt.Sprint(r.Tax))
+			pure.LogDebug("Taxas aumentadas para " + fmt.Sprint(r.Tax))
 		} else {
 			// Diminui as taxas
 			r.DecrementTax(1)
-			utils.LogDebug("Taxas diminuídas para " + fmt.Sprint(r.Tax))
+			pure.LogDebug("Taxas diminuídas para " + fmt.Sprint(r.Tax))
 		}
 
 		r.EnforceInvestorMaxInvestments(registryRules)
 	}
 
 	return nil
-}
-
-// CheckIfItsEmpty verifica se uma sala está vazia (sem jogadores conectados)
-func (r *Room) CheckIfItsEmpty(ctx context.Context, rdb *redis.Client) (bool, error) {
-	// Verifica se há jogadores conectados (registrados nesta sala)
-	for playerId := range r.Players {
-		registeredRoom, registered, err := playerRedis.GetRegisteredRoomForPlayer(ctx, rdb, playerId)
-		if err != nil {
-			return false, err
-		}
-		if registered && registeredRoom == r.ID {
-			return false, nil
-		}
-	}
-
-	return true, nil
 }
 
 // Clone cria uma cópia profunda da sala (usando serialização JSON)
@@ -102,7 +81,7 @@ func (r *PublicRoomForUpdates) Clone() *PublicRoomForUpdates {
 func (r *Room) AppendChatMessage(player *players.Player, message string) error {
 	r.Chat = append(r.Chat, structs.ChatMessage{
 		PlayerName: player.Name,
-		Timestamp:  time.Now().UTC(),
+		Timestamp:  r.Now(),
 		Message:    message,
 	})
 

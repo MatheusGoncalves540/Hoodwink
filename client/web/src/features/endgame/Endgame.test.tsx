@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { fixture, type FixtureName } from "../../game/fixtures";
 import { selectDecision, selectFinale, type GameView } from "../../game/selectors";
-import { Finale } from "./Finale";
+import { Finale, type FinaleReplay } from "./Finale";
 import { OutOfScene } from "./OutOfScene";
 
 const NOW = Date.UTC(2026, 10, 4, 21, 41);
@@ -10,6 +10,20 @@ const view = (name: FixtureName): GameView => {
   const f = fixture(name, NOW);
   return { me: f.me, room: f.room, log: f.log };
 };
+
+const replay = (patch: Partial<FinaleReplay> = {}): FinaleReplay => ({
+  ready: false,
+  checking: false,
+  pending: false,
+  unauthorized: false,
+  downloading: false,
+  error: "",
+  onWatch() {},
+  onDownload() {},
+  onRetry() {},
+  onLogin() {},
+  ...patch,
+});
 
 describe("fim de jogo", () => {
   it("ForaDeCena: cartas mortas, rodada da saída e as duas ações", () => {
@@ -20,7 +34,7 @@ describe("fim de jogo", () => {
     expect(out).toContain("Suas cartas caíram na rodada 14.");
     expect(out).toContain('aria-label="Suas duas cartas, mortas: Guardiã e Trilionário"');
     expect(out).toContain("Abrir a conversa");
-    expect(out).toContain("Sair da sala");
+    expect(out).toContain("Sair da partida");
   });
 
   it("Fim: vencedor, ordem de saída e as ações", () => {
@@ -35,5 +49,64 @@ describe("fim de jogo", () => {
     expect(out).toContain("Você");
     expect(out).toContain("Criar outra sala");
     expect(out).toContain("☜ Voltar à entrada");
+  });
+
+  it("Fim: com replay pronto mostra Assistir e Baixar habilitados", () => {
+    const vm = selectFinale(view("Fim"));
+    const out = renderToStaticMarkup(
+      <Finale vm={vm} layout="mobile" onNewRoom={() => {}} onLobby={() => {}} replay={replay({ ready: true })} />,
+    );
+
+    expect(out).toContain("Replay da partida");
+    expect(out).toContain(">Assistir<");
+    expect(out).toContain(">Baixar<");
+    expect(out).not.toContain('aria-disabled="true"');
+  });
+
+  it("Fim: enquanto procura o replay, os botões ficam desabilitados", () => {
+    const vm = selectFinale(view("Fim"));
+    const out = renderToStaticMarkup(
+      <Finale vm={vm} layout="mobile" onNewRoom={() => {}} onLobby={() => {}} replay={replay({ checking: true })} />,
+    );
+
+    expect(out).toContain("Procurando o replay…");
+    expect(out.match(/aria-disabled="true"/g)?.length).toBe(2);
+  });
+
+  it("Fim: replay demorou mostra o aviso e deixa tentar de novo", () => {
+    const vm = selectFinale(view("Fim"));
+    const out = renderToStaticMarkup(
+      <Finale vm={vm} layout="mobile" onNewRoom={() => {}} onLobby={() => {}} replay={replay({ pending: true })} />,
+    );
+
+    expect(out).toContain("O replay ainda está sendo processado.");
+    expect(out).toContain("Tentar de novo");
+  });
+
+  it("Fim: sem login, o cartaz convida a entrar", () => {
+    const vm = selectFinale(view("Fim"));
+    const out = renderToStaticMarkup(
+      <Finale vm={vm} layout="mobile" onNewRoom={() => {}} onLobby={() => {}} replay={replay({ unauthorized: true })} />,
+    );
+
+    expect(out).toContain("Entre na sua conta para ver seus replays.");
+    expect(out).toMatch(/>Entrar</);
+  });
+
+  it("Fim: erro de download aparece sem esconder as ações", () => {
+    const vm = selectFinale(view("Fim"));
+    const out = renderToStaticMarkup(
+      <Finale
+        vm={vm}
+        layout="mobile"
+        onNewRoom={() => {}}
+        onLobby={() => {}}
+        replay={replay({ ready: true, error: "Não foi possível baixar o replay. Tente de novo." })}
+      />,
+    );
+
+    expect(out).toContain('role="alert"');
+    expect(out).toContain("Não foi possível baixar o replay. Tente de novo.");
+    expect(out).toContain(">Assistir<");
   });
 });

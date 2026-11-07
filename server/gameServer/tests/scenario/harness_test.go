@@ -21,7 +21,6 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/handlers/websocket/messages"
 )
 
 var registry = func() *rules.Registry {
@@ -70,6 +69,7 @@ func newTable(t testing.TB, seats ...seatSpec) *table {
 			p.Cards = append(p.Cards, structs.Card{Name: c, Index: idx})
 		}
 		room.Players[s.id] = p
+		room.AddConnected(s.id) // sem Redis, todo assento conta como conectado
 	}
 	room.GameEvent = structs.NewGameEvent(seats[0].id, structs.EventWaitingFirstAction, time.Now().Add(time.Minute), nil)
 	return &table{t: t, room: room}
@@ -97,7 +97,7 @@ func (tb *table) play(playerID, raw string) bool {
 	if err != nil {
 		return false
 	}
-	return messages.ApplyPlay(context.Background(), nil, tb.room, play, registry)
+	return engine.ApplyPlay(context.Background(), nil, tb.room, play, registry)
 }
 
 func (tb *table) mustPlay(playerID, raw string) {

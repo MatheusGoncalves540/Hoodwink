@@ -28,7 +28,7 @@ func newValidationRoom(player *players.Player, eventType structs.GameEventType, 
 		Rules:             structs.ClassicRules,
 		Tax:               0,
 		CurrentPlayer:     player.Id,
-		GameEvent:         structs.NewGameEvent(player.Id, eventType, time.Now().Add(time.Minute), payload),
+		GameEvent:         structs.NewGameEvent(player.Id, eventType, time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), payload),
 		Players:           map[string]*players.Player{player.Id: player},
 		DoubledCardValues: map[structs.TypePlayerPlays]structs.DoubledCardValues{},
 	}

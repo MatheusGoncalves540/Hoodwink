@@ -1,39 +1,39 @@
 package protocolsValidation
 
 import (
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 func ValidateTricksterProtocol(roomData *rooms.Room, registryRules *rules.Registry, playerPlay *structs.PlayerPlay, tricksterPayload *structs.TricksterPayload) bool {
 	// Trickster só pode ser usado durante o evento de espera de primeira ação
 	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
-		utils.LogInvldPlyrReq("Trickster só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Trickster só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
 		return false
 	}
 
 	if roomData.CurrentPlayer != playerPlay.PlayerId {
-		utils.LogInvldPlyrReq("Player tentou usar Trickster fora do seu turno", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Player tentou usar Trickster fora do seu turno", playerPlay.PlayerId)
 		return false
 	}
 
 	if tricksterPayload.TargetPlayer == playerPlay.PlayerId {
-		utils.LogInvldPlyrReq("Trickster só pode roubar moedas de um adversário", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Trickster só pode roubar moedas de um adversário", playerPlay.PlayerId)
 		return false
 	}
 
 	targetPlayer, err := roomData.GetPlayer(tricksterPayload.TargetPlayer)
 	if err != nil || !targetPlayer.Alive {
-		utils.LogInvldPlyrReq("Jogador alvo não encontrado", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Jogador alvo não encontrado", playerPlay.PlayerId)
 		return false
 	}
 
 	// verifica se player alvo do roubo tem moedas pra isso
 	err = roomData.VerifyPlayerHasEnoughCoins(targetPlayer, registryRules, playerPlay.Type, 0)
 	if err != nil {
-		utils.LogInvldPlyrReq(err.Error(), playerPlay.PlayerId)
+		pure.LogInvldPlyrReq(err.Error(), playerPlay.PlayerId)
 		return false
 	}
 

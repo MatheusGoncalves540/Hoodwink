@@ -54,18 +54,12 @@ spec:
             - configMapRef:
                 name: {{ include "hoodwink.fullname" . }}-gameserver-config
           env:
-            # O gameServer valida o JWT emitido pelo backend.
-            - name: BACKEND_JWT_SECRET
+            # Ticket de sala assinado pelo backend (EdDSA); o gameServer só confere a pública.
+            - name: TICKET_PUBLIC_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ include "hoodwink.secretName" . }}
-                  key: {{ .Values.secrets.keys.jwtSecret }}
-            # Ticket de sala do gameServer (não confundir com o do backend).
-            - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "hoodwink.secretName" . }}
-                  key: {{ .Values.secrets.keys.gameJwtSecret }}
+                  key: {{ .Values.secrets.keys.ticketPublicKey }}
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:

@@ -6,10 +6,9 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/redis/go-redis/v9"
 )
 
-func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, registryRules *rules.Registry) error {
+func NextRound(ctx context.Context, sink rooms.Sink, roomData *rooms.Room, registryRules *rules.Registry) error {
 	if roomData.GameOver {
 		return nil
 	}
@@ -20,7 +19,7 @@ func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, reg
 	}
 
 	// Define quem é o próximo jogador
-	nextPlayer, _, isNewTurn, err := roomData.GetNextRoundPlayer(ctx, rdb, currentPlayer)
+	nextPlayer, _, isNewTurn, err := roomData.GetNextRoundPlayer(currentPlayer)
 	if err != nil {
 		return err
 	}
@@ -33,30 +32,24 @@ func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, reg
 	roomData.DecreaseDoubledCardValuesRounds(registryRules)
 
 	// Aleatoriamente aumenta ou diminui as taxas
-	roomData.RandomlyChangeTaxes(ctx, rdb, registryRules)
+	roomData.RandomlyChangeTaxes(registryRules)
 
 	// O Investidor recebe no início do próprio turno e os investimentos avançam um turno
 	effects.PayInvestmentsForPlayer(registryRules, roomData, nextPlayer)
 
 	// o pagamento de investimentos pode matar o jogador ou encerrar a partida
 	if roomData.GameOver || !nextPlayer.Alive {
-		roomData.SaveRoom(ctx, rdb)
-		roomData.SendUpdatedRoomData(ctx, rdb, nil, []string{})
+		sink.Broadcast(ctx, roomData, nil, []string{})
 		return nil
 	}
 
 	// inicia novo turno caso tenhamos voltado para o primeiro jogador do turno
 	if isNewTurn {
-		NewTurn(ctx, rdb, roomData, registryRules)
+		NewTurn(ctx, sink, roomData, registryRules)
 	}
 
 	// inicia o efeito de espera pela primeira ação do próximo jogador
-	if err := effects.WaitingFirstActionEffect(ctx, rdb, roomData, nextPlayer); err != nil {
-		return err
-	}
-
-	// salva a sala com as atualizações de jogador atual e evento de espera pela primeira ação
-	if err := roomData.SaveRoom(ctx, rdb); err != nil {
+	if err := effects.WaitingFirstActionEffect(ctx, sink, roomData, nextPlayer); err != nil {
 		return err
 	}
 
@@ -64,6 +57,6 @@ func NextRound(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, reg
 }
 
 // Função chamada no inicio de um novo turno
-func NewTurn(ctx context.Context, rdb *redis.Client, roomData *rooms.Room, registryRules *rules.Registry) {
+func NewTurn(ctx context.Context, sink rooms.Sink, roomData *rooms.Room, registryRules *rules.Registry) {
 	roomData.Turn++
 }

@@ -23,8 +23,13 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 		return nil, nil
 	}
 
-	playerID, _ := claims["playerId"].(string)
-	roomID, _ := claims["roomId"].(string)
+	playerID, okPlayer := claims["playerId"].(string)
+	roomID, okRoom := claims["roomId"].(string)
+	username, okUsername := claims["username"].(string)
+	if !okPlayer || playerID == "" || !okRoom || roomID == "" || !okUsername || username == "" {
+		utils.SendError(w, "Ticket inválido: claims ausentes", http.StatusUnauthorized)
+		return nil, nil
+	}
 
 	// Carrega os dados da sala
 	roomData, err := redisFuncs.LoadRoom(ctx, rdb, roomID)
@@ -36,8 +41,25 @@ func ValidateConnection(w http.ResponseWriter, r *http.Request, jwtService *serv
 
 	// Jogo não iniciado, sincroniza a estrutura dos players na sala
 	if roomData.StartTime.IsZero() {
-		if err := roomService.SyncActivePlayers(r, rdb, roomData); err != nil {
+		synced, err := roomService.SyncActivePlayers(r, rdb, roomData)
+		if err != nil {
 			utils.LogError("Erro ao sincronizar jogadores da estrutura da sala: " + err.Error())
+		} else {
+			roomData = synced
+		}
+	}
+
+	// Revalida a associação jogador↔sala no upgrade (regra local equivalente ao
+	// ValidatePlayerEntry): jogador novo não entra em sala cheia nem em jogo já iniciado.
+	player, _ := roomData.GetPlayer(playerID)
+	if player == nil {
+		if roomData.IsFull() {
+			utils.SendError(w, "Sala está cheia", http.StatusUnauthorized)
+			return nil, nil
+		}
+		if !roomData.StartTime.IsZero() {
+			utils.SendError(w, "Jogo já começou", http.StatusUnauthorized)
+			return nil, nil
 		}
 	}
 

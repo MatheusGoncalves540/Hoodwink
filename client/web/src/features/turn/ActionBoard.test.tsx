@@ -39,4 +39,9 @@ describe("ActionBoard", () => {
     expect(out).toContain('aria-disabled="true"');
     expect(out).toContain("1+");
   });
+
+  it("liga o motivo ao botão desabilitado pelo aria-describedby", () => {
+    expect(out).toContain("aria-describedby=");
+    expect(out).toContain('aria-live="polite"');
+  });
 });
