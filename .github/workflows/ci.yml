@@ -148,12 +148,22 @@ jobs:
     steps:
       - name: Build + deploy via SSH
         uses: appleboy/ssh-action@v1
+        env:
+          PG_PASS: ${{ secrets.PG_PASS }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GAME_JWT_SECRET: ${{ secrets.GAME_JWT_SECRET }}
+          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+          TICKET_PRIVATE_KEY: ${{ secrets.TICKET_PRIVATE_KEY }}
+          TICKET_PUBLIC_KEY: ${{ secrets.TICKET_PUBLIC_KEY }}
+          REPLAY_SIGNING_KEY: ${{ secrets.REPLAY_SIGNING_KEY }}
+          REPLAY_PUBLIC_KEY_HEX: ${{ secrets.REPLAY_PUBLIC_KEY_HEX }}
         with:
           host: ${{ vars.VM_HOST || '144.33.18.156' }}
           username: ${{ secrets.VM_USER || 'ubuntu' }}
           key: ${{ secrets.VM_SSH_KEY }}
           command_timeout: 40m
-          envs: GITHUB_SHA
+          envs: GITHUB_SHA,PG_PASS,JWT_SECRET,GAME_JWT_SECRET,BACKEND_API_KEY,REDIS_PASSWORD,TICKET_PRIVATE_KEY,TICKET_PUBLIC_KEY,REPLAY_SIGNING_KEY,REPLAY_PUBLIC_KEY_HEX
           script: |
             set -euo pipefail
             export KUBECONFIG="$HOME/.kube/config"
@@ -175,10 +185,29 @@ jobs:
             git checkout -f "$SHA"
             SHORT=$(git rev-parse --short HEAD)
 
-            if [ ! -f k8s/.env.production ]; then
-              echo "::error::Crie $REPO/k8s/.env.production (chaves: PG_PASS, JWT_SECRET, GAME_JWT_SECRET, BACKEND_API_KEY, REDIS_PASSWORD, TICKET_PRIVATE_KEY, TICKET_PUBLIC_KEY, REPLAY_SIGNING_KEY)."
-              exit 1
-            fi
+            echo "==> Materializando segredos do GitHub"
+            required="PG_PASS JWT_SECRET GAME_JWT_SECRET BACKEND_API_KEY REDIS_PASSWORD TICKET_PRIVATE_KEY TICKET_PUBLIC_KEY REPLAY_SIGNING_KEY REPLAY_PUBLIC_KEY_HEX"
+            for name in $required; do
+              if [ -z "${!name:-}" ]; then
+                echo "::error::Secret $name ausente no environment production do GitHub."
+                exit 1
+              fi
+            done
+
+            umask 077
+            cat > k8s/.env.production <<ENVFILE
+            PG_PASS=$PG_PASS
+            JWT_SECRET=$JWT_SECRET
+            GAME_JWT_SECRET=$GAME_JWT_SECRET
+            BACKEND_API_KEY=$BACKEND_API_KEY
+            REDIS_PASSWORD=$REDIS_PASSWORD
+            TICKET_PRIVATE_KEY=$TICKET_PRIVATE_KEY
+            TICKET_PUBLIC_KEY=$TICKET_PUBLIC_KEY
+            REPLAY_SIGNING_KEY=$REPLAY_SIGNING_KEY
+            REPLAY_PUBLIC_KEY_HEX=$REPLAY_PUBLIC_KEY_HEX
+            ENVFILE
+            chmod 600 k8s/.env.production
+            trap 'rm -f k8s/.env.production' EXIT
 
             echo "==> Build das imagens (nativo arm64) $SHORT"
             set -a

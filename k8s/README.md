@@ -77,7 +77,9 @@ Secrets/vars do repositório (os mesmos nomes do Summus):
 | secret | `VM_USER`    | `ubuntu`         |
 | secret | `VM_SSH_KEY` | chave privada SSH |
 
-Segredos da aplicação em `~/Hoodwink/k8s/.env.production` na VM:
+Os segredos da aplicação vivem no **environment `production` do GitHub** e são
+materializados na VM pelo job de deploy (o `k8s/.env.production` é gerado,
+usado e apagado no mesmo run):
 
 ```dotenv
 PG_PASS=<senha do Postgres>
@@ -91,10 +93,12 @@ REPLAY_SIGNING_KEY=<base64 do PEM PKCS8 Ed25519>
 REPLAY_PUBLIC_KEY_HEX=<64 hex da chave pública Ed25519>
 ```
 
-O `init-secrets.sh` gera os dois pares. `REPLAY_PUBLIC_KEY_HEX` é passada no
-build do web (`--build-arg VITE_REPLAY_PUBLIC_KEY=...`); sem ela o bundle usa a
-chave de dev e os replays de produção aparecem como "não oficial" (ainda
-reproduzem).
+Cadastre com `gh secret set <NOME> --env production` (o valor é pedido no
+prompt, sem ficar no histórico). O `init-secrets.sh` continua disponível para
+gerar os pares localmente, mas não é mais necessário na VM. O
+`REPLAY_PUBLIC_KEY_HEX` é passado no build do web
+(`--build-arg VITE_REPLAY_PUBLIC_KEY=...`); sem ele o bundle usa a chave de dev
+e os replays de produção aparecem como "não oficial" (ainda reproduzem).
 
 ## Chaves do ticket
 
@@ -114,9 +118,9 @@ openssl pkey -pubout | base64 -w0                  # TICKET_PUBLIC_KEY (PKIX)
   `helm upgrade --atomic` sobe backend e gameServer juntos). Tickets vivos de
   até 2h (`TICKET_EXPIRATION`) caem e o cliente pede outro no próximo
   `/getTicket`.
-- **Ordem de deploy**: preencha `.env.production` com as chaves novas ANTES do
-  push em `production` e rode `sudo bash k8s/scripts/edge-nginx.sh` (bloqueia
-  `/api/internal/` com 404). Backend e gameServer saem no mesmo
+- **Ordem de deploy**: cadastre as chaves novas no environment `production`
+  do GitHub ANTES do push e rode `sudo bash k8s/scripts/edge-nginx.sh`
+  (bloqueia `/api/internal/` com 404). Backend e gameServer saem no mesmo
   `helm upgrade --atomic` — nunca só um deles, ou a entrada nas salas quebra.
 
 ## Deploy manual
