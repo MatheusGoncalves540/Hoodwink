@@ -9,7 +9,8 @@ describe("mobileSeats", () => {
     for (let k = 1; k <= 10; k++) {
       const l = mobileSeats(k);
       expect(l.boxes).toHaveLength(k);
-      expect(l.boxes[0]).toMatchObject(k <= 5 ? { w: 96, h: 104 } : { w: 70, h: 88 });
+      expect(l.boxes[0]).toMatchObject(k <= 5 ? { w: 96, h: 104 } : { w: 120, h: 62 });
+      expect(!!l.wide).toBe(k > 5);
     }
   });
 
@@ -24,6 +25,12 @@ describe("mobileSeats", () => {
 
   it("zero adversários: nada", () => {
     expect(mobileSeats(0).boxes).toEqual([]);
+  });
+
+  it("de 6 em diante: grade de 3 colunas na ordem de jogo, dentro do palco", () => {
+    const { boxes } = mobileSeats(9);
+    expect(boxes.slice(0, 4).map((b) => [b.x, b.y])).toEqual([[8, 64], [135, 64], [262, 64], [8, 134]]);
+    boxes.forEach((b) => expect(b.x + b.w).toBeLessThanOrEqual(390));
   });
 
   it("10 jogadores do replay cabem sem sobrepor", () => {

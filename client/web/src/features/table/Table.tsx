@@ -141,7 +141,7 @@ export function Table({ view, unread = 0, onSeat, onMenu, onChat, targets, youAw
         </div>
       )}
       {desktop && <aside className={s.rail} data-slot="rail">{slots.rail}</aside>}
-      {targets && <TargetSpotlight boxes={litBoxes} desktop={desktop} />}
+      {targets && <TargetSpotlight boxes={litBoxes} cx={width / 2} desktop={desktop} />}
       {slots.prompt && (
         <div className={s.prompt} data-slot="prompt">
           {slots.prompt}

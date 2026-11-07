@@ -26,6 +26,7 @@ export function SeatRing({ seats, layoutSeats, layout, onSeat, targets }: Props)
             seat={seat}
             box={box}
             big={layoutSeats.big}
+            wide={layoutSeats.wide}
             layout={layout}
             onOpen={onSeat}
             targetable={!!targets?.includes(seat.id)}

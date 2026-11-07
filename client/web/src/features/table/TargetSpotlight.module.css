@@ -1,4 +1,4 @@
-/* Um refletor por camarote elegível. --x/--y/--w/--h = caixa do camarote (game/seats.ts), relativa à tela.
+/* Canhão grande da escolha de alvo. --x/--y/--w/--h = caixa de cada camarote aceso (game/seats.ts), relativa à tela.
    Acima de cabeçalho, faixa Você e trilho; abaixo dos camarotes acesos (.targetable) e do cartaz. */
 .layer {
   --lamp-w: 48px;
@@ -21,40 +21,33 @@
   background: var(--hw-scrim);
   pointer-events: auto;
 }
-.light {
-  position: absolute;
-  inset: 0;
-}
-/* feixe da lente até o pé do camarote, um pouco mais largo que ele */
+/* o feixe do canhão: o clip-path (TargetSpotlight.tsx) abre sobre todos e fecha no escolhido */
 .beam {
   position: absolute;
-  left: calc(var(--x) - 22px);
-  top: calc(var(--lamp-h) - 2px);
-  width: calc(var(--w) + 44px);
-  height: calc(var(--y) + var(--h) - var(--lamp-h) + 2px);
-  clip-path: polygon(41% 0, 59% 0, 100% 100%, 0 100%);
+  inset: 0;
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--hw-lampada) 38%, transparent),
     var(--hw-cone) 72%,
     color-mix(in srgb, var(--hw-lampada) 18%, transparent)
   );
+  transition: clip-path 0.45s var(--m-drawer);
 }
 .pool {
   position: absolute;
-  left: calc(var(--x) - 30px);
-  top: calc(var(--y) + var(--h) - 26px);
-  width: calc(var(--w) + 60px);
-  height: 52px;
+  left: calc(var(--x) - 20px);
+  top: calc(var(--y) + var(--h) - 14px);
+  width: calc(var(--w) + 40px);
+  height: 28px;
   border-radius: 50%;
   background: radial-gradient(closest-side, color-mix(in srgb, var(--hw-lampada) 62%, transparent), var(--hw-poca) 58%, transparent);
 }
 .lamp {
   position: absolute;
   top: 0;
-  left: calc(var(--x) + var(--w) / 2 - var(--lamp-w) / 2);
   width: var(--lamp-w);
   height: var(--lamp-h);
+  translate: -50% 0;
 }
 .truss {
   stroke: var(--hw-filete);
