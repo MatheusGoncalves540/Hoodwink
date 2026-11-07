@@ -19,13 +19,34 @@ ENABLED="/etc/nginx/sites-enabled/$DOMAIN"
 SNIPPET="/etc/nginx/snippets/$DOMAIN-proxy.conf"
 LE_DIR="/etc/letsencrypt/live/$DOMAIN"
 
+# Real IP: só funciona se o nginx tiver http_realip_module compilado.
+if ! nginx -V 2>&1 | grep -q http_realip_module; then
+  echo "nginx sem http_realip_module; recompile com o módulo e rode de novo." >&2
+  exit 1
+fi
+
+# Atualiza as faixas da Cloudflare (idempotente; roda também num timer semanal).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$SCRIPT_DIR/cloudflare-realip.sh"
+
 install -d -m 755 /var/www/certbot /etc/nginx/snippets
 
 cat > "$SNIPPET" <<'EOF'
+# Faixas da Cloudflare e header que o realip substitui. A troca só acontece
+# quando a conexão vem de uma dessas faixas; um CF-Connecting-IP forjado de
+# fora delas é ignorado.
+real_ip_header CF-Connecting-IP;
+include /etc/nginx/snippets/cloudflare-realip.conf;
+
 location ^~ /.well-known/acme-challenge/ {
     root /var/www/certbot;
     default_type "text/plain";
     try_files $uri =404;
+}
+
+# Rotas internas do backend nunca saem pela borda.
+location ^~ /api/internal/ {
+    return 404;
 }
 
 # API Go (o prefixo /api/ é removido pelo proxy_pass com barra final).
@@ -35,6 +56,7 @@ location /api/ {
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header CF-Connecting-IP "";
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
@@ -48,6 +70,7 @@ location /gs/ {
     proxy_set_header Connection "upgrade";
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header CF-Connecting-IP "";
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_read_timeout 3600s;

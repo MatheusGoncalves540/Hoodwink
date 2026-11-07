@@ -1,10 +1,12 @@
-# podman run -d --name hoodwink-backend --restart=always -p 8088:8088 --env-file .env hoodwink-backend
+# Build a partir da raiz do monorepo server/ (o backend depende do módulo local replay):
+#   sudo docker build -f server/backend/Dockerfile -t hoodwink-backend server
+#   podman run -d --name hoodwink-backend --restart=always -p 8088:8088 --env-file .env hoodwink-backend
 
 #############
 
 # Multi-stage build for lightweight and secure image
 # Build stage
-FROM docker.io/library/golang:1.24.4-alpine AS builder
+FROM docker.io/library/golang:1.26.5-alpine AS builder
 
 # Install necessary build tools
 RUN apk add --no-cache git ca-certificates
@@ -12,17 +14,19 @@ RUN apk add --no-cache git ca-certificates
 # Set working directory
 WORKDIR /app
 
-# Copy go mod files
-COPY go.mod go.sum ./
+# Copy go mod files dos módulos locais (replace ../replay)
+COPY replay/go.mod replay/go.sum ./replay/
+COPY backend/go.mod backend/go.sum ./backend/
 
 # Download dependencies
-RUN go mod download
+RUN cd backend && go mod download
 
 # Copy source code
-COPY . .
+COPY replay ./replay
+COPY backend ./backend
 
 # Build the application with optimizations
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o main .
+RUN cd backend && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-w -s" -o /app/main .
 
 # Runtime stage
 FROM alpine:latest

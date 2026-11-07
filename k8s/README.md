@@ -82,10 +82,42 @@ Segredos da aplicação em `~/Hoodwink/k8s/.env.production` na VM:
 ```dotenv
 PG_PASS=<senha do Postgres>
 JWT_SECRET=<segredo do JWT do backend>
-GAME_JWT_SECRET=<segredo do ticket do gameServer>
+GAME_JWT_SECRET=<segredo legado do ticket; sai num deploy seguinte>
 BACKEND_API_KEY=<uuid usado entre gameServer e backend>
 REDIS_PASSWORD=<senha do Redis>
+TICKET_PRIVATE_KEY=<base64 do PEM PKCS8 Ed25519>
+TICKET_PUBLIC_KEY=<base64 do PEM PKIX Ed25519>
+REPLAY_SIGNING_KEY=<base64 do PEM PKCS8 Ed25519>
+REPLAY_PUBLIC_KEY_HEX=<64 hex da chave pública Ed25519>
 ```
+
+O `init-secrets.sh` gera os dois pares. `REPLAY_PUBLIC_KEY_HEX` é passada no
+build do web (`--build-arg VITE_REPLAY_PUBLIC_KEY=...`); sem ela o bundle usa a
+chave de dev e os replays de produção aparecem como "não oficial" (ainda
+reproduzem).
+
+## Chaves do ticket
+
+O ticket do WebSocket é assinado pelo backend com **Ed25519** e verificado pelo
+gameServer só com a chave pública. As chaves são geradas pelo
+`init-secrets.sh`; para gerar manualmente:
+
+```bash
+openssl genpkey -algorithm ed25519 | base64 -w0   # TICKET_PRIVATE_KEY (PKCS8)
+openssl pkey -pubout | base64 -w0                  # TICKET_PUBLIC_KEY (PKIX)
+```
+
+- **Formato**: base64 do PEM em uma linha (privada PKCS8, pública PKIX). O
+  código faz `base64 -d` → `pem.Decode` → PKCS8/PKIX e sobe com erro se faltar
+  ou for inválida (sem imprimir o valor).
+- **Rotação**: troque o par nos dois serviços no mesmo deploy (o
+  `helm upgrade --atomic` sobe backend e gameServer juntos). Tickets vivos de
+  até 2h (`TICKET_EXPIRATION`) caem e o cliente pede outro no próximo
+  `/getTicket`.
+- **Ordem de deploy**: preencha `.env.production` com as chaves novas ANTES do
+  push em `production` e rode `sudo bash k8s/scripts/edge-nginx.sh` (bloqueia
+  `/api/internal/` com 404). Backend e gameServer saem no mesmo
+  `helm upgrade --atomic` — nunca só um deles, ou a entrada nas salas quebra.
 
 ## Deploy manual
 
@@ -93,9 +125,12 @@ REDIS_PASSWORD=<senha do Redis>
 cd ~/Hoodwink && git fetch origin && git checkout -f origin/production
 SHA=$(git rev-parse --short HEAD)
 
-sudo docker build -t ghcr.io/matheusgoncalves540/hoodwink-backend:$SHA server/backend
-sudo docker build -t ghcr.io/matheusgoncalves540/hoodwink-gameserver:$SHA server/gameServer
-sudo docker build -t ghcr.io/matheusgoncalves540/hoodwink-web:$SHA client/web
+sudo docker build -f server/backend/Dockerfile -t ghcr.io/matheusgoncalves540/hoodwink-backend:$SHA server
+sudo docker build -f server/gameServer/Dockerfile -t ghcr.io/matheusgoncalves540/hoodwink-gameserver:$SHA server
+set -a; . k8s/.env.production; set +a
+sudo docker build \
+  --build-arg "VITE_REPLAY_PUBLIC_KEY=${REPLAY_PUBLIC_KEY_HEX:-}" \
+  -t ghcr.io/matheusgoncalves540/hoodwink-web:$SHA client/web
 for image in backend gameserver web; do
   sudo docker save "ghcr.io/matheusgoncalves540/hoodwink-$image:$SHA" -o "/tmp/$image.tar"
   sudo k3s ctr images import "/tmp/$image.tar"
@@ -117,6 +152,58 @@ helm upgrade --install hoodwink k8s/charts/hoodwink -n hoodwink \
 sudo bash k8s/scripts/edge-nginx.sh        # config HTTP + reload
 sudo bash k8s/scripts/edge-nginx.sh --tls  # depois do DNS: emite o certificado
 ```
+
+## IP do jogador na borda (Cloudflare realip)
+
+O `edge-nginx.sh` exige `http_realip_module` (`nginx -V 2>&1 | grep -q
+http_realip_module`), chama o `cloudflare-realip.sh` e escreve no snippet do
+domínio:
+
+- `real_ip_header CF-Connecting-IP;`
+- `include /etc/nginx/snippets/cloudflare-realip.conf;`
+- `proxy_set_header X-Real-IP $remote_addr;` e `proxy_set_header CF-Connecting-IP "";`
+  em todos os `location` de backend (`/api/`) e gameServer (`/gs/`, inclusive o
+  upgrade do WebSocket).
+
+O `cloudflare-realip.sh` baixa `https://www.cloudflare.com/ips-v4` e `/ips-v6`,
+recusa lista vazia ou linha que não seja CIDR, grava o include, roda `nginx -t`
+e só então recarrega (se falhar, restaura o arquivo anterior). Ele também roda
+num timer systemd semanal:
+
+```bash
+# (manual na VM) ajuste o caminho para onde o repositório estiver
+cat > /etc/systemd/system/cloudflare-realip.service <<'EOF'
+[Unit]
+Description=Atualiza faixas da Cloudflare (realip)
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /root/Hoodwink/k8s/scripts/cloudflare-realip.sh
+EOF
+cat > /etc/systemd/system/cloudflare-realip.timer <<'EOF'
+[Unit]
+Description=Atualiza faixas da Cloudflare semanalmente
+[Timer]
+OnCalendar=weekly
+Persistent=true
+[Install]
+WantedBy=timers.target
+EOF
+systemctl daemon-reload
+systemctl enable --now cloudflare-realip.timer
+```
+
+### Portas 8088/4444 fechadas para fora
+
+Backend (8088) e gameServer (4444) usam `hostNetwork` e respondem no IP do nó;
+quem fecha o acesso externo é a security list da Oracle. Conferir de fora da VM:
+
+```bash
+nc -zv -w3 <IP-público-da-VM> 8088   # não deve conectar
+nc -zv -w3 <IP-público-da-VM> 4444   # não deve conectar
+```
+
+Se conectarem, feche as portas na security list da Oracle (o `/internal/*` já
+fica atrás da API key, mas não deve ser exposto).
 
 ## Operação
 

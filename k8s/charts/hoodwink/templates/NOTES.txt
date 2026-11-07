@@ -12,4 +12,5 @@ Pods:
 O Secret {{ include "hoodwink.secretName" . }} precisa existir antes do upgrade
 (chaves: {{ .Values.secrets.keys.pgPass }}, {{ .Values.secrets.keys.jwtSecret }},
 {{ .Values.secrets.keys.gameJwtSecret }}, {{ .Values.secrets.keys.backendApiKey }},
-{{ .Values.secrets.keys.redisPassword }}).
+{{ .Values.secrets.keys.redisPassword }}, {{ .Values.secrets.keys.ticketPrivateKey }},
+{{ .Values.secrets.keys.ticketPublicKey }}).

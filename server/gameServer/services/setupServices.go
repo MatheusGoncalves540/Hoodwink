@@ -5,10 +5,11 @@ import (
 )
 
 type Services struct {
-	RoomService      *RoomService
-	JWTService       *JWTService
-	BackendService   *BackendService
-	HeartbeatService *HeartbeatService
+	RoomService       *RoomService
+	JWTService        *JWTService
+	BackendService    *BackendService
+	HeartbeatService  *HeartbeatService
+	RequestLogShipper *RequestLogShipper
 	// MessageService *MessageService
 }
 
@@ -17,13 +18,19 @@ func SetupServices(redisClient *redis.Client) *Services {
 	JWTService := NewJWTService()
 	backendService := NewBackendService()
 	heartbeatService := NewHeartbeatService(redisClient)
+	requestLogShipper := NewRequestLogShipper()
 	// messageService := NewMessageService(db, userService, roomService)
 
-	return &Services{
-		RoomService:      roomService,
-		JWTService:       JWTService,
-		BackendService:   backendService,
-		HeartbeatService: heartbeatService,
+	services := &Services{
+		RoomService:       roomService,
+		JWTService:        JWTService,
+		BackendService:    backendService,
+		HeartbeatService:  heartbeatService,
+		RequestLogShipper: requestLogShipper,
 		// MessageService: messageService,
 	}
+
+	InitReplayRecorder(backendService)
+
+	return services
 }
