@@ -1,0 +1,6 @@
+.git
+**/*_test.go
+**/testdata
+replay/e2e
+tools
+**/*.md
