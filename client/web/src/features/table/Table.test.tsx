@@ -2,7 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { fixture, type FixtureName } from "../../game/fixtures";
 import type { GameView } from "../../game/selectors";
-import { Table } from "./Table";
+import type { PublicCard } from "../../game/protocol";
+import { Table, ownCardDisabled } from "./Table";
 
 const NOW = Date.UTC(2026, 10, 4, 21, 41);
 const view = (name: FixtureName): GameView => {
@@ -41,5 +42,22 @@ describe("Mesa (fumaça em Node)", () => {
     const out10 = html("Mesa10");
     expect(out10.match(/Ver o lugar/g)).toHaveLength(9);
     expect(out10).toContain("Iracema");
+  });
+
+  it("Crupê aceita carta morta; Coveiro só morta; Guardiã só viva e sem proteção", () => {
+    const card = (dead: boolean, protectedAlso = false): PublicCard => ({
+      name: "ASSASSIN",
+      index: 0,
+      protected: protectedAlso,
+      dead,
+    });
+    expect(ownCardDisabled("CROUPIER", card(true))).toBe(false);
+    expect(ownCardDisabled("CROUPIER", card(false))).toBe(false);
+    expect(ownCardDisabled("GRAVEDIGGER", card(true))).toBe(false);
+    expect(ownCardDisabled("GRAVEDIGGER", card(false))).toBe(true);
+    expect(ownCardDisabled("GUARDIAN", card(true))).toBe(true);
+    expect(ownCardDisabled("GUARDIAN", card(false, true))).toBe(true);
+    expect(ownCardDisabled("GUARDIAN", card(false))).toBe(false);
+    expect(ownCardDisabled("SWAP_CARDS", card(true))).toBe(true);
   });
 });
