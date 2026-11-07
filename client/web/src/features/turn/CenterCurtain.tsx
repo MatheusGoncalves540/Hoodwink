@@ -15,24 +15,36 @@ export function curtainState(open: boolean, move: CurtainMove): boolean {
   return !open;
 }
 
+/** Arraste vertical no handle: para cima abre, para baixo fecha; menos de 30 px é toque. */
+export function swipeMove(dy: number): CurtainMove | null {
+  if (dy <= -30) return "open";
+  if (dy >= 30) return "close";
+  return null;
+}
+
 type Props = {
   open: boolean;
   /** Sem `onToggle` a cortina não recolhe (durante o alvo, o painel fica preso aberto). */
   onToggle?(open: boolean): void;
+  /** Conteúdo do handle (título, moedas, tempo): fica à vista com a gaveta fechada. */
+  peek?: ReactNode;
   children: ReactNode;
 };
 
 /**
- * Gaveta do miolo da mesa: o handle é a borda de cima e sobe junto com o painel
- * (fechada, só ele fica à vista no pé). O conteúdo fechado sai do foco com
+ * Gaveta da mesa, puxada de baixo para cima: o handle é a borda de cima e sobe junto com o painel
+ * (fechada, só ele fica à vista no pé, acima da faixa Você). Toque ou arraste abre e fecha;
+ * aberta, para em --curtain-top e deixa o palco de cima à vista. O conteúdo fechado sai do foco com
  * `inert` + `visibility`. Com Menos movimento a troca é instantânea
  * ([data-motion="reduced"] em styles/motion.css).
  */
-export function CenterCurtain({ open, onToggle, children }: Props) {
+export function CenterCurtain({ open, onToggle, peek, children }: Props) {
   const bodyId = useId();
   const bodyRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLButtonElement>(null);
   const collapsible = onToggle != null;
+  const startY = useRef<number | null>(null);
+  const swiped = useRef(false);
 
   // fechada, o conteúdo sai do foco e da árvore de acessibilidade
   useEffect(() => {
@@ -63,7 +75,7 @@ export function CenterCurtain({ open, onToggle, children }: Props) {
   }, [open, collapsible, onToggle]);
 
   return (
-    <div className={cx(s.curtain, open && s.open, collapsible && s.hasHandle)} data-open={open || undefined}>
+    <div className={cx(s.curtain, open && s.open, collapsible && s.hasHandle, peek != null && s.hasPeek)} data-open={open || undefined}>
       <div className={s.drawer}>
         {collapsible && (
           <button
@@ -72,10 +84,30 @@ export function CenterCurtain({ open, onToggle, children }: Props) {
             className={s.handle}
             aria-expanded={open}
             aria-controls={bodyId}
-            onClick={() => move("toggle")}
+            aria-label={peek != null ? (open ? copy.curtainClose : copy.curtainOpen) : undefined}
+            onPointerDown={(e) => {
+              // o soltar cai fora do handle quando o dedo desce: captura para receber o pointerup
+              e.currentTarget.setPointerCapture?.(e.pointerId);
+              startY.current = e.clientY;
+              swiped.current = false;
+            }}
+            onPointerUp={(e) => {
+              if (startY.current == null) return;
+              const next = swipeMove(e.clientY - startY.current);
+              startY.current = null;
+              if (next) {
+                swiped.current = true;
+                move(next);
+              }
+            }}
+            onClick={() => {
+              // o arraste já moveu a gaveta; o click que vem depois não desfaz
+              if (swiped.current) swiped.current = false;
+              else move("toggle");
+            }}
           >
             <span aria-hidden="true" className={s.grip} />
-            <span className={s.handleLabel}>{open ? copy.curtainClose : copy.curtainOpen}</span>
+            {peek ?? <span className={s.handleLabel}>{open ? copy.curtainClose : copy.curtainOpen}</span>}
           </button>
         )}
         <div id={bodyId} ref={bodyRef} className={s.body} aria-hidden={open ? undefined : true}>

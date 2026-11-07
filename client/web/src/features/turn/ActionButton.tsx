@@ -3,6 +3,7 @@ import { copy } from "../../game/copy";
 import type { Price } from "../../game/pricing";
 import { actionDef, BASIC_GROUP, isBasic, ROLE_GROUPS, type ActionId } from "../../game/roles";
 import { cx } from "../../ui/cx";
+import { CardFace } from "../../ui/Card/Card";
 import { RoleEyes } from "./RoleEyes";
 import s from "./ActionButton.module.css";
 
@@ -12,7 +13,9 @@ const toneOf = (id: ActionId) => (isBasic(id) ? BASIC_GROUP.tone : ROLE_GROUPS.f
 type Props = {
   role: ActionId;
   price: Price;
+  /** Você tem esta carta viva: miniatura da carta à esquerda e contorno de ouro. */
   held: boolean;
+  heldProtected?: boolean;
   offTurn: boolean;
   /** Moedas que faltam; null quando dá para pagar. */
   missing: number | null;
@@ -21,8 +24,8 @@ type Props = {
   onClick(role: ActionId): void;
 };
 
-/** Botão da tela 6 (personagem ou ação do turno): faixa de arte, nome, "☞ na mão", descrição e preço. */
-export const ActionButton = memo(function ActionButton({ role, price, held, offTurn, missing, blocked, onClick }: Props) {
+/** Botão da tela 6 (personagem ou ação do turno): faixa de arte, carta (se na mão), nome, descrição e preço. */
+export const ActionButton = memo(function ActionButton({ role, price, held, heldProtected, offTurn, missing, blocked, onClick }: Props) {
   const descId = useId();
   const def = actionDef(role);
   const tone = toneOf(role);
@@ -42,7 +45,7 @@ export const ActionButton = memo(function ActionButton({ role, price, held, offT
   return (
     <button
       type="button"
-      className={cx("m-item", s.button, disabled && s.off)}
+      className={cx("m-item", s.button, held && s.inHand, disabled && s.off)}
       style={{ "--tone": `var(--hw-tom-${tone})`, "--band": `var(--hw-tom-${tone}-faixa)`, "--m-base": ".25s" } as CSSProperties}
       aria-label={label}
       aria-disabled={disabled || undefined}
@@ -53,10 +56,14 @@ export const ActionButton = memo(function ActionButton({ role, price, held, offT
         <RoleEyes look={def.look} />
         <span className={s.fade} />
       </span>
+      {held && !isBasic(role) && (
+        <span className={s.thumb} aria-hidden="true">
+          <CardFace size="s" role={role} protected={heldProtected} bottom={heldProtected ? copy.cardState.protected : undefined} />
+        </span>
+      )}
       <span className={cx(s.text, disabled && s.textOff)}>
         <span className={s.nameRow}>
           <span className={s.name}>{def.name}</span>
-          {held && <span className={s.held}>{copy.inHand}</span>}
         </span>
         <span id={descId} aria-live="polite" className={s.desc}>
           {blocked ?? (poor ? copy.missing(missing) : copy.roleDesc(role, price))}

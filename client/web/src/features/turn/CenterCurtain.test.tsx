@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { CenterCurtain, curtainState } from "./CenterCurtain";
+import { CenterCurtain, curtainState, swipeMove } from "./CenterCurtain";
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 
@@ -12,6 +12,23 @@ describe("CenterCurtain", () => {
     expect(curtainState(false, "close")).toBe(false);
     expect(curtainState(false, "toggle")).toBe(true);
     expect(curtainState(true, "toggle")).toBe(false);
+  });
+
+  it("arrastar o handle: para cima abre, para baixo fecha, pouco movimento é toque", () => {
+    expect(swipeMove(-80)).toBe("open");
+    expect(swipeMove(60)).toBe("close");
+    expect(swipeMove(-10)).toBeNull();
+    expect(swipeMove(29)).toBeNull();
+  });
+
+  it("com peek o handle vira o cabeçalho e mantém o nome acessível", () => {
+    const out = html(
+      <CenterCurtain open={false} onToggle={() => {}} peek={<span>Escolha uma ação</span>}>
+        <p>ações do turno</p>
+      </CenterCurtain>,
+    );
+    expect(out).toContain('aria-label="Abrir ações"');
+    expect(out).toContain("Escolha uma ação");
   });
 
   it("fechada deixa só o handle e esconde o conteúdo da árvore de acessibilidade", () => {
