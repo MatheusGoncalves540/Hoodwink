@@ -361,7 +361,7 @@ func TestPatchDeOutroUsuario403(t *testing.T) {
 func TestPatchDono200(t *testing.T) {
 	uid := "u1"
 	cat := "tela"
-	report := &models.BugReport{ID: 1, Source: "partida", UserID: &uid, Category: &cat, Turns: []int32{3}}
+	report := &models.BugReport{ID: 1, Source: "partida", UserID: &uid, Category: &cat, Turns: models.Int32Array{3}}
 	store := &fakePatchStore{
 		findFn: func(ctx context.Context, id int64) (*models.BugReport, error) { return report, nil },
 		updateFn: func(ctx context.Context, id int64, userID string, c, d *string, context json.RawMessage) (*models.BugReport, error) {

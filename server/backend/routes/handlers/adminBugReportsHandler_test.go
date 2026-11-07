@@ -106,7 +106,7 @@ func (f *fakeAdminStore) Update(ctx context.Context, id int64, userID string, ca
 func TestListAdminBugReportsResposta(t *testing.T) {
 	uid := "u1"
 	store := &fakeAdminStore{listFn: func(ctx context.Context, f bugListFilter) ([]models.BugReport, int64, int64, error) {
-		return []models.BugReport{{ID: 1, Source: "partida", UserID: &uid, Turns: []int32{2}}}, 1, 1, nil
+		return []models.BugReport{{ID: 1, Source: "partida", UserID: &uid, Turns: models.Int32Array{2}}}, 1, 1, nil
 	}}
 	req := httptest.NewRequest(http.MethodGet, "/admin/bugReports", nil)
 	rr := httptest.NewRecorder()
@@ -152,7 +152,7 @@ func TestAdminBugReportsPatchIdInexistente404(t *testing.T) {
 func TestAdminBugReportsPatchOK(t *testing.T) {
 	uid := "u1"
 	store := &fakeAdminStore{updateStatusFn: func(ctx context.Context, id int64, status string) (*models.BugReport, error) {
-		return &models.BugReport{ID: id, Source: "partida", UserID: &uid, Status: status, CreatedAt: time.Now(), UpdatedAt: time.Now(), Turns: []int32{1}}, nil
+		return &models.BugReport{ID: id, Source: "partida", UserID: &uid, Status: status, CreatedAt: time.Now(), UpdatedAt: time.Now(), Turns: models.Int32Array{1}}, nil
 	}}
 	h := &Handler{BugReportStore: store}
 	rr := httptest.NewRecorder()
