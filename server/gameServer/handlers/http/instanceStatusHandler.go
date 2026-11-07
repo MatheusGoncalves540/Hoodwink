@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/services"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 	"github.com/redis/go-redis/v9"
@@ -61,7 +62,7 @@ func (h *HTTPHandler) GetInstancesStatus(rdb *redis.Client) http.HandlerFunc {
 func getManagedPlayersByInstance(ctx context.Context, rdb *redis.Client, instanceID string) []string {
 	var players []string
 
-	keys, err := rdb.Keys(ctx, "player:*:room").Result()
+	keys, err := redisFuncs.ScanKeys(ctx, rdb, "player:*:room")
 	if err != nil {
 		return players
 	}
@@ -87,7 +88,7 @@ func getManagedPlayersByInstance(ctx context.Context, rdb *redis.Client, instanc
 func getOrphanedPlayers(ctx context.Context, rdb *redis.Client, aliveInstances []string) []string {
 	var orphaned []string
 
-	keys, err := rdb.Keys(ctx, "player:*:room").Result()
+	keys, err := redisFuncs.ScanKeys(ctx, rdb, "player:*:room")
 	if err != nil {
 		return orphaned
 	}

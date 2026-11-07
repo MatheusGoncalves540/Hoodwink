@@ -11,7 +11,8 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
-// JWTBackendMiddleware verifica o header Authorization, valida, e injeta o struct UserClaims no contexto
+// JWTBackendMiddleware valida o token de login com o backend via
+// /internal/validateToken e injeta ClaimsBackend{Id, Username} no contexto.
 func JWTBackendMiddleware(next http.Handler, h *httpHandlers.HTTPHandler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -19,28 +20,26 @@ func JWTBackendMiddleware(next http.Handler, h *httpHandlers.HTTPHandler) http.H
 			utils.SendError(w, "Token não fornecido", http.StatusUnauthorized)
 			return
 		}
-
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		claimsRaw, err := h.JWTService.ParseToken(tokenStr, true)
-		if err != nil {
+
+		id, username, status := h.BackendService.ValidateToken(r.Context(), tokenStr)
+		if status != http.StatusOK {
+			if status == http.StatusServiceUnavailable {
+				utils.SendError(w, "Servidor de login indisponível", http.StatusServiceUnavailable)
+				return
+			}
 			utils.SendError(w, "Token inválido", http.StatusUnauthorized)
 			return
 		}
 
-		claims := claimsRaw
 		player := &endpointStructures.ClaimsBackend{
-			Id:       claims["id"].(string),
-			Username: claims["username"].(string),
-			Provider: claims["provider"].(string),
-			Email:    claims["email"].(string),
-			Temp:     claims["temp"].(bool),
+			Id:       id,
+			Username: username,
 		}
 
-		switch v := claims["exp"].(type) {
-		case float64:
-			player.Exp = int64(v)
-		case int64:
-			player.Exp = v
+		if info, ok := r.Context().Value(reqInfoContextKey).(*ReqInfo); ok {
+			info.UserID = id
+			info.Username = username
 		}
 
 		ctx := context.WithValue(r.Context(), contextKeys.PlayerContextKey, player)
