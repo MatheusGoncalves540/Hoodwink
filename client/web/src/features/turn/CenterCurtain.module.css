@@ -1,0 +1,78 @@
+/* Cortina do miolo da mesa: cobre só a área dos jogadores (o slot em Table.module.css
+   já recorta cabeçalho, trilho e faixa Você). Fechada, sobra o handle no pé. */
+.curtain {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* a área dos jogadores continua clicável: só o painel e o handle recebem toque */
+  pointer-events: none;
+}
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  transform: translateY(100%);
+  transition:
+    transform 0.32s var(--m-drawer),
+    visibility 0s linear 0.32s;
+}
+.body > * {
+  pointer-events: auto;
+}
+.open .body {
+  visibility: visible;
+  transform: none;
+  transition: transform 0.32s var(--m-drawer);
+}
+/* fechada, o corpo não ocupa altura: o handle desce até o pé do slot */
+.curtain:not(.open) .body {
+  flex: 0 0 0;
+}
+.handle {
+  flex-shrink: 0;
+  align-self: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 6px 18px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: auto;
+  border: 2px solid var(--hw-tinta);
+  border-bottom: 0;
+  border-radius: var(--hw-radius-m) var(--hw-radius-m) 0 0;
+  background: var(--hw-luz);
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 12px;
+  cursor: pointer;
+}
+.grip {
+  width: 36px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--hw-tinta);
+  opacity: 0.45;
+}
+.handleLabel {
+  white-space: nowrap;
+}
+
+/* Menos movimento também chega por data-motion="reduced" (styles/motion.css). */
+@media (prefers-reduced-motion: reduce) {
+  .body,
+  .open .body {
+    transition: none;
+  }
+}
