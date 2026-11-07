@@ -30,7 +30,7 @@ import { CLASSIC_RULES } from "./rules.classic";
 
 export type GameView = { me: string | null; room: PublicRoom | null; log: LogEntry[] };
 
-export type MiniCard = { state: "back" | "revealed" | "protected" | "dead"; role?: RoleId };
+export type MiniCard = { state: "back" | "revealed" | "protected" | "dead"; role?: RoleId; index?: number };
 export type SeatVM = {
   id: string;
   name: string;
@@ -68,7 +68,7 @@ export function opponents(v: GameView) {
 export function selectSeats(v: GameView): SeatVM[] {
   return opponents(v).map((p) => {
     const out = !p.alive;
-    const cards = p.cards.map(miniCard);
+    const cards = p.cards.map((c): MiniCard => ({ ...miniCard(c), index: c.index }));
     return {
       id: p.id,
       name: p.name,

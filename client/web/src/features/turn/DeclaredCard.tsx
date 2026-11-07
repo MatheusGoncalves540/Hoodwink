@@ -44,7 +44,7 @@ export function DeclaredCard({ view, layout }: { view: GameView; layout: Layout 
         ) : (
           <div className={cx(s.dashed, phase === "declared" && "m-drop")} style={{ width: desktop ? 132 : 116, height: desktop ? 186 : 162 }}>
             {phase === "declared" && (
-              <span className={s.value} aria-label={`valor base ${value}`}>
+              <span className={s.value} aria-label={copy.baseValue(value)}>
                 {value}
               </span>
             )}

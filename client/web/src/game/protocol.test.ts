@@ -26,6 +26,7 @@ describe("parseRoom", () => {
   it("normaliza a mensagem real do servidor", () => {
     expect(parseRoom(serverMessage)).toEqual({
       id: "K7Q2",
+      matchId: "",
       name: "",
       turn: 4,
       tax: 1,

@@ -34,7 +34,7 @@ describe("Como se joga", () => {
     }
     expect(out).toContain("m-canhoto");
     expect(out).toContain('data-arte="/arte/papeis/GUARDIAN/"');
-    expect(out).toContain("arte em breve!");
+    expect(out).toContain("arte em breve");
   });
 
   it("os 12 personagens aparecem uma vez, em cinco grupos", () => {

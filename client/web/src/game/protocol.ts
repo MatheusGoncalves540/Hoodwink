@@ -93,6 +93,8 @@ export const chatMessageSchema = z.object({
 
 export const publicRoomSchema = z.object({
   id: z.string(),
+  /** UUID v7 público da partida (relato de bug e replay). */
+  matchId: z.string().default(""),
   name: z.string().default(""),
   /** ainda não vem em PublicRoomForUpdates (pedido ao servidor); quem cria a sala sabe o número */
   maxPlayers: z.number().optional(),

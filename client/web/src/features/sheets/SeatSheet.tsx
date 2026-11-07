@@ -37,13 +37,13 @@ export function SeatSheetBody({ vm, onPickCard }: { vm: SeatSheetVM; onPickCard?
       </div>
 
       <div className={s.cards}>
-        {vm.cards.map((c, i) => {
-          if (!onPickCard) return <SheetCard key={i} state={c.state} role={c.role} />;
+        {vm.cards.map((c) => {
+          if (!onPickCard) return <SheetCard key={c.index} state={c.state} role={c.role} />;
           const disabled = c.state === "dead";
           const state = copy.cardState[c.state === "back" ? "hidden" : c.state];
           return (
             <button
-              key={i}
+              key={c.index}
               type="button"
               className={s.pick}
               aria-label={copy.pickCard(vm.name, state)}

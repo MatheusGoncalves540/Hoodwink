@@ -37,7 +37,7 @@ export function Footlights({ vm, layout }: { vm: ReturnType<typeof selectFootlig
                 </span>
                 <span aria-hidden="true" className={s.pips}>
                   {Array.from({ length: e.rounds }, (_, i) => (
-                    <span key={i} className={s.pip} />
+                    <span key={`${e.role}-${i}`} className={s.pip} />
                   ))}
                 </span>
               </div>

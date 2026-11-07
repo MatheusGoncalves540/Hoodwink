@@ -3,7 +3,7 @@
   position: absolute;
   left: 12px;
   right: 12px;
-  top: 540px;
+  top: min(540px, 64svh);
   display: flex;
   gap: 8px;
   align-items: stretch;
@@ -24,7 +24,7 @@
   overflow-x: auto;
 }
 .item {
-  height: 54px;
+  height: clamp(44px, 6.4svh, 54px);
   box-sizing: border-box;
   padding: 6px 10px;
   border: 1.5px solid var(--hw-tinta);
@@ -71,12 +71,12 @@
 }
 
 .desk {
-  top: 596px;
+  top: min(596px, 66.3svh);
   left: 48px;
   right: 48px;
 }
 .desk .item {
-  height: 60px;
+  height: clamp(52px, 6.7svh, 60px);
   padding: 6px 14px;
 }
 .desk {

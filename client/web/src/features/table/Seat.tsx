@@ -45,7 +45,7 @@ export function Seat({ seat, box, big, layout, onOpen, targetable, dimmed }: Pro
         <span className={s.body}>
           <span className={s.cards}>
             {seat.cards.slice(0, 2).map((c, i) => (
-              <CardMini key={i} state={c.state} role={c.role} size={mini} />
+              <CardMini key={c.index ?? i} state={c.state} role={c.role} size={mini} />
             ))}
           </span>
           <Coin size={coinSize} value={seat.coins} />

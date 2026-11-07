@@ -62,3 +62,24 @@ Módulos da tela, cada um trocável sem mexer no resto:
 ## 6. Texto para o jogador
 
 Todo texto que o jogador lê passa pela skill `texto-claro` (`.claude/skills/texto-claro/SKILL.md`): linguagem simples, sem jargão do jogo sem explicação, sem cara de texto de IA.
+
+## 7. Reportar problema: botão, confirmação e cartão
+
+Onde: `web/src/features/bugReport/`, `features/sheets/RoomMenu.tsx`, `features/sheets/DesktopRail.tsx`, `features/endgame/Finale.tsx` e `features/lobby/Lobby.tsx`. Textos em `game/copy.ts` (`bugReport*`) e categorias em `BUG_CATEGORIES`.
+
+Especificação registrada aqui (botão, confirmação, aviso e cartão):
+
+- **O botão nunca ocupa o lugar de uma ação de jogo.** "Algo deu errado" mora no menu da sala (`RoomMenu`) e no trilho do desktop (`DesktopRail`), longe do `ActionBoard` e dos camarotes. Não vira botão flutuante sobre a mesa, não cobre carta, lugar ou timer e não substitui "Duvidar", "Deixar passar" nem "Sair da partida".
+- **Confirmação sempre.** O primeiro toque só abre a pergunta "Marcar que algo deu errado agora?". Só "Marcar" chama a API. "Cancelar" fecha sem rede e sem gravar rascunho.
+- **Sem `alert`, `confirm` ou `prompt`.** Avisos, erros e o aviso de marcado ficam no próprio cartão ou na linha do botão (`role="status"` ou `role="alert"`). Nada de diálogo nativo.
+- **Componentes.** O cartão abre em `ui/Sheet`, usa `ui/Button` em Marcar/Cancelar/Pular e `ui/TextField` no texto. A ação principal (Enviar) pode usar `ui/Ticket`, como "Criar sala".
+- **Foco preso no mobile.** `Sheet` é modal e prende o foco; no desktop ele já é o trilho não modal das outras gavetas. Fechar devolve o foco a quem abriu.
+- **Alvos de 44 px.** Botão, categorias, Enviar e Pular têm pelo menos 44 px de altura ou lado, inclusive no mobile de 390 px.
+- **Categorias em grade.** 2 colunas no mobile e 3 no desktop, na ordem de `BUG_CATEGORIES`, com o nome inteiro da categoria e estado selecionado visível sem depender só de cor.
+- **Cartão do fim e do Lobby.** Título com o turno ou os turnos marcados, as 6 categorias, texto opcional no fim e Enviar/Pular. No Lobby, categoria e texto (10 a 2000 caracteres) são obrigatórios.
+- **Uma vez por rascunho.** No fim, só aparece se houver rascunho daquela partida. Na abertura do Lobby, só para rascunhos de menos de 7 dias do usuário atual. Some ao enviar ou pular.
+- **Pular não apaga o relato.** Pular apaga só o rascunho; o relato com `match_id` e turnos fica no banco.
+- **Aviso de marcado.** Curto, na própria linha, sem bloquear a vez: "Marcado. No fim da partida a gente pergunta o que foi."
+- **Dados do aparelho.** Chave ligada por padrão, com o aviso do que vai (versão, tela e últimos erros; a conversa da partida não). Desligada, o relato vai sem contexto.
+- **Erros não perdem texto.** 429 e falha de rede mantêm o texto e o rascunho. 401 abre o login. 403/404 apagam o rascunho e mostram "Esse relato não existe mais".
+- **Texto do jogador é texto.** Descrição e nome aparecem como texto (o React escapa); nunca viram HTML.

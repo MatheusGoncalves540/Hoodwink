@@ -1,12 +1,12 @@
 /* Main/ContestaBlefe/ContestaVerdade: carta no palco + texto ao lado. */
 .stage {
   position: absolute;
-  top: 300px;
+  top: min(300px, 35.6svh);
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
-  gap: 36px;
+  gap: clamp(16px, 4.3svh, 36px);
   padding: 0 20px;
 }
 .figure {
@@ -107,7 +107,7 @@
   margin: 0;
   font-family: var(--hw-font-display);
   font-weight: 400;
-  font-size: 34px;
+  font-size: clamp(28px, 4.03svh, 34px);
   line-height: 1.05;
 }
 .effect {
@@ -118,17 +118,17 @@
 
 /* Desktop (ContestaBlefeDesk): palco do quadro do meio, papel grande e texto em 22 px. */
 .desk {
-  top: 390px;
+  top: min(390px, 43.4svh);
   right: 420px;
   justify-content: center;
-  gap: 32px;
+  gap: clamp(16px, 3.6svh, 32px);
   padding: 0 64px;
 }
 .desk .lead {
   font-size: 22px;
 }
 .desk .role {
-  font-size: 88px;
+  font-size: clamp(56px, 9.8svh, 88px);
 }
 .desk .effect {
   font-size: 22px;
