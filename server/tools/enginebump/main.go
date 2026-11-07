@@ -7,9 +7,11 @@
 package main
 
 import (
+	_ "embed"
 	"errors"
 	"flag"
 	"fmt"
+	"go/format"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -20,11 +22,17 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-tools/closure"
 )
 
+// registryTemplate é o bloco de uma versão da interface Engine; {{N}} é o número.
+//
+//go:embed registry.tmpl
+var registryTemplate string
+
 // errNothingToFreeze sinaliza que o fecho não mudou desde a última gravação.
 var errNothingToFreeze = errors.New("fecho do motor não mudou desde a última versão")
 
 func main() {
 	repo := flag.String("repo", "", "raiz do repositório (vazio = auto-detecta)")
+	registryOnly := flag.Bool("registry-only", false, "regenera só engines/registry.go a partir das cópias congeladas")
 	flag.Parse()
 
 	root, err := closure.FindRepoRoot(mustCwd())
@@ -37,6 +45,14 @@ func main() {
 
 	gameServerDir := filepath.Join(root, "server", "gameServer")
 	replayDir := filepath.Join(root, "server", "replay")
+
+	if *registryOnly {
+		if err := writeRegistry(replayDir); err != nil {
+			fatal(err)
+		}
+		fmt.Println("engine-bump: registry.go regenerado")
+		return
+	}
 
 	next, err := run(gameServerDir, replayDir)
 	if err != nil {
@@ -295,36 +311,34 @@ func writeRegistry(replayDir string) error {
 	b.WriteString("// Code generated pelo enginebump (make engine-bump). NÃO edite à mão.\n")
 	b.WriteString("//\n")
 	b.WriteString("// Package engines registra as cópias congeladas do motor por versão.\n")
-	b.WriteString("// O runner (T10) consulta Registry para acionar o motor da versão da partida.\n")
+	b.WriteString("// O runner consulta Registry e conversa com a sala como any: cada versão\n")
+	b.WriteString("// faz o cast para os seus próprios tipos congelados.\n")
 	b.WriteString("package engines\n\n")
 	b.WriteString("import (\n")
-	b.WriteString("\t\"context\"\n\n")
+	b.WriteString("\t\"context\"\n\t\"encoding/json\"\n\t\"errors\"\n\t\"fmt\"\n\t\"sort\"\n\t\"strconv\"\n\t\"sync\"\n\t\"time\"\n\n")
 	for _, n := range versions {
-		fmt.Fprintf(&b, "\tenginev%d %q\n", n, closure.ReplayModule+"/engines/v"+strconv.Itoa(n)+"/game/engine")
-		fmt.Fprintf(&b, "\troomsv%d %q\n", n, closure.ReplayModule+"/engines/v"+strconv.Itoa(n)+"/game/structs/rooms")
-		fmt.Fprintf(&b, "\tstructsv%d %q\n", n, closure.ReplayModule+"/engines/v"+strconv.Itoa(n)+"/game/structs")
-		fmt.Fprintf(&b, "\trulesv%d %q\n", n, closure.ReplayModule+"/engines/v"+strconv.Itoa(n)+"/game/rules")
+		v := strconv.Itoa(n)
+		fmt.Fprintf(&b, "\tenginev%s %q\n", v, closure.ReplayModule+"/engines/v"+v+"/game/engine")
+		fmt.Fprintf(&b, "\teffectsv%s %q\n", v, closure.ReplayModule+"/engines/v"+v+"/game/engine/effects")
+		fmt.Fprintf(&b, "\trulesv%s %q\n", v, closure.ReplayModule+"/engines/v"+v+"/game/rules")
+		fmt.Fprintf(&b, "\tstructsv%s %q\n", v, closure.ReplayModule+"/engines/v"+v+"/game/structs")
+		fmt.Fprintf(&b, "\tplayersv%s %q\n", v, closure.ReplayModule+"/engines/v"+v+"/game/structs/players")
+		fmt.Fprintf(&b, "\troomsv%s %q\n", v, closure.ReplayModule+"/engines/v"+v+"/game/structs/rooms")
 	}
+	fmt.Fprintf(&b, "\n\t%q\n", closure.ReplayModule+"/format")
 	b.WriteString(")\n\n")
 
+	b.WriteString(registryShared)
+
 	for _, n := range versions {
-		fmt.Fprintf(&b, "// EngineV%d liga as funções do motor v%d aos tipos congelados dessa versão.\n", n, n)
-		fmt.Fprintf(&b, "type EngineV%d struct {\n", n)
-		fmt.Fprintf(&b, "\tApplyPlay func(context.Context, roomsv%d.Sink, *roomsv%d.Room, *structsv%d.PlayerPlay, *rulesv%d.Registry) bool\n", n, n, n, n)
-		fmt.Fprintf(&b, "\tTick      func(context.Context, roomsv%d.Sink, *rulesv%d.Registry, *roomsv%d.Room)\n", n, n, n)
-		b.WriteString("}\n\n")
-		fmt.Fprintf(&b, "// Version identifica a versão deste motor.\n")
-		fmt.Fprintf(&b, "func (EngineV%d) Version() int { return %d }\n\n", n, n)
-		fmt.Fprintf(&b, "// V%d é o motor congelado da versão %d.\n", n, n)
-		fmt.Fprintf(&b, "var V%d = EngineV%d{ApplyPlay: enginev%d.ApplyPlay, Tick: enginev%d.Tick}\n\n", n, n, n, n)
+		b.WriteString(strings.ReplaceAll(registryTemplate, "{{N}}", strconv.Itoa(n)))
+		b.WriteString("\n")
 	}
 
-	b.WriteString("// Engine é a interface mínima comum a todas as versões congeladas.\n")
-	b.WriteString("type Engine interface {\n\tVersion() int\n}\n\n")
 	b.WriteString("// Registry associa o número da versão ao motor congelado.\n")
 	b.WriteString("var Registry = map[int]Engine{\n")
 	for _, n := range versions {
-		fmt.Fprintf(&b, "\t%d: V%d,\n", n, n)
+		fmt.Fprintf(&b, "\t%d: EngineV%d{},\n", n, n)
 	}
 	b.WriteString("}\n")
 
@@ -332,8 +346,49 @@ func writeRegistry(replayDir string) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(dir, "registry.go"), []byte(b.String()), 0o644)
+	src, err := format.Source([]byte(b.String()))
+	if err != nil {
+		return fmt.Errorf("formatar registry.go: %w", err)
+	}
+	return os.WriteFile(filepath.Join(dir, "registry.go"), src, 0o644)
 }
+
+// registryShared é escrito uma vez no registry.go: a interface que o runner vê
+// e os helpers que não dependem da versão.
+const registryShared = `// Engine isola o runner dos tipos congelados de cada versão. A sala circula
+// como any; cada versão faz o cast para os seus próprios tipos.
+type Engine interface {
+	Version() int
+	NewRoom(*format.Replay) (any, error)
+	Clone(any) any
+	SetNow(any, time.Time)
+	ClearNow(any)
+	SetConnected(any, []string)
+	StartGame(raw, sink any) error
+	ApplyPlay(raw, sink any, player string, payload []byte) (bool, error)
+	Tick(raw, sink any) error
+	CheckMode(string) error
+	GameOver(any) bool
+	WinnerID(any) string
+	CanonicalJSON(any) ([]byte, error)
+}
+
+// matchIDString formata os 16 bytes do MatchID como UUID canônico.
+func matchIDString(b [16]byte) string {
+	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
+}
+
+// PlayerID mapeia o índice de jogador do replay para o id usado na sala.
+func PlayerID(index uint8) string { return strconv.Itoa(int(index)) }
+
+func truncateForHash(t time.Time) time.Time {
+	if t.IsZero() {
+		return t
+	}
+	return t.Truncate(time.Millisecond)
+}
+
+`
 
 func mustCwd() string {
 	wd, err := os.Getwd()

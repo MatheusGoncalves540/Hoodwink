@@ -69,7 +69,7 @@ func buildSyntheticReplay(t *testing.T) (*format.Replay, []string) {
 		}
 		r.pos++
 
-		h, err := canonicalHash(r.room)
+		h, err := r.canonicalHash(r.room)
 		if err != nil {
 			t.Fatalf("hash no passo %d: %v", r.pos, err)
 		}
@@ -77,7 +77,7 @@ func buildSyntheticReplay(t *testing.T) (*format.Replay, []string) {
 
 		if r.nextCheckpointIdx < len(r.checkpointPositions) &&
 			r.pos == r.checkpointPositions[r.nextCheckpointIdx] {
-			c, err := checkpointOf(r.room)
+			c, err := r.checkpointOf(r.room)
 			if err != nil {
 				t.Fatalf("checkpoint no passo %d: %v", r.pos, err)
 			}
@@ -250,7 +250,7 @@ func TestJogadaRecusadaNaoMudaEstado(t *testing.T) {
 		t.Fatalf("start: %v", err)
 	}
 	r.pos = 1
-	before, err := canonicalHash(r.room)
+	before, err := r.canonicalHash(r.room)
 	if err != nil {
 		t.Fatalf("hash antes: %v", err)
 	}
@@ -262,7 +262,7 @@ func TestJogadaRecusadaNaoMudaEstado(t *testing.T) {
 	if applied {
 		t.Fatal("jogada fora do turno deveria ser recusada")
 	}
-	after, err := canonicalHash(r.room)
+	after, err := r.canonicalHash(r.room)
 	if err != nil {
 		t.Fatalf("hash depois: %v", err)
 	}
