@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { fixture, type FixtureName } from "../../game/fixtures";
 import type { GameView } from "../../game/selectors";
 import type { PublicCard } from "../../game/protocol";
+import { CenterCurtain } from "../turn/CenterCurtain";
 import { Table, ownCardDisabled } from "./Table";
 
 const NOW = Date.UTC(2026, 10, 4, 21, 41);
@@ -57,6 +58,25 @@ describe("Mesa (fumaça em Node)", () => {
     expect(overlay).toBeGreaterThan(out.indexOf('data-slot="curtain"'));
     expect(overlay).toBeGreaterThan(out.indexOf('aria-label="Você"'));
     expect(out).toContain("aviso de morte súbita");
+  });
+
+  it("com a cortina fechada sobra o handle e a faixa Você continua no lugar", () => {
+    const out = renderToStaticMarkup(
+      <Table
+        view={view("Mesa6")}
+        slots={{
+          curtain: (
+            <CenterCurtain open={false} onToggle={() => {}}>
+              <p>ações na cortina</p>
+            </CenterCurtain>
+          ),
+        }}
+      />,
+    );
+    expect(out).toContain('aria-expanded="false"');
+    expect(out).toContain("Abrir ações");
+    expect(out).toContain('aria-label="Você"');
+    expect(out.indexOf('aria-label="Você"')).toBeGreaterThan(out.indexOf('data-slot="curtain"'));
   });
 
   it("Mesa3 e Mesa10 mudam o número de camarotes", () => {
