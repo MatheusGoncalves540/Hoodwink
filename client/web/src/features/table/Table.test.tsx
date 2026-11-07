@@ -37,6 +37,28 @@ describe("Mesa (fumaça em Node)", () => {
     expect(out).toContain('aria-label="Tempo da jogada de Carla"');
   });
 
+  it("o slot curtain vive dentro da área da mesa, fora do cabeçalho e da faixa Você", () => {
+    const out = renderToStaticMarkup(<Table view={view("Mesa6")} slots={{ curtain: <p>ações na cortina</p> }} />);
+    const area = out.indexOf('data-slot="table-area"');
+    const curtain = out.indexOf('data-slot="curtain"');
+    expect(area).toBeGreaterThan(-1);
+    expect(curtain).toBeGreaterThan(area);
+    expect(out).toContain("ações na cortina");
+    // cabeçalho vem antes da área; a faixa Você (HUD) fica depois da cortina
+    expect(out.indexOf("Rodada 4 · Taxa +1")).toBeLessThan(area);
+    expect(out.indexOf('aria-label="Você"')).toBeGreaterThan(curtain);
+  });
+
+  it("o aviso de tela inteira fica fora da área da mesa e da faixa Você", () => {
+    const out = renderToStaticMarkup(
+      <Table view={view("Mesa6")} dark slots={{ curtain: <p>ações na cortina</p>, screenOverlay: <p>aviso de morte súbita</p> }} />,
+    );
+    const overlay = out.indexOf('data-slot="screen-overlay"');
+    expect(overlay).toBeGreaterThan(out.indexOf('data-slot="curtain"'));
+    expect(overlay).toBeGreaterThan(out.indexOf('aria-label="Você"'));
+    expect(out).toContain("aviso de morte súbita");
+  });
+
   it("Mesa3 e Mesa10 mudam o número de camarotes", () => {
     expect(html("Mesa3").match(/Ver o lugar/g)).toHaveLength(2);
     const out10 = html("Mesa10");

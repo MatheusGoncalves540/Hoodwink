@@ -34,6 +34,11 @@ describe("ActionBoard", () => {
     expect(out).toContain('aria-label="Trocar cartas, Precisa de 6 moedas"');
   });
 
+  it("mostra a fileira só de leitura com suas cartas", () => {
+    expect(out).toContain('aria-label="Suas cartas"');
+    expect(out).toContain('data-slot="hand"');
+  });
+
   it("Egoísta fica fora do turno, desabilitado, com 1+", () => {
     expect(out).toContain('aria-label="Egoísta, fora do seu turno"');
     expect(out).toContain('aria-disabled="true"');

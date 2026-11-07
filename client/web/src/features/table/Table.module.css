@@ -4,6 +4,8 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 480px;
+  /* altura da faixa Você: a cortina do miolo usa a mesma clamp para não encostar */
+  --hw-youbar-h: clamp(180px, 28svh, 236px);
   /* a composição tem 700 px de base: em landscape/teclado aberto a tela rola em vez de cortar */
   min-height: max(100svh, 700px);
   margin: 0 auto;
@@ -15,6 +17,7 @@
 }
 .desk {
   max-width: none;
+  --hw-youbar-h: clamp(160px, 21.8svh, 196px);
 }
 .tableArea {
   position: absolute;
@@ -41,6 +44,19 @@
   right: 0;
   bottom: 0;
   z-index: 4;
+}
+
+/* Cortina do miolo: abaixo do cabeçalho e acima da faixa Você, sem cobrir trilho. */
+.curtainSlot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52px;
+  bottom: var(--hw-youbar-h);
+  z-index: 5;
+}
+.desk .curtainSlot {
+  top: 64px;
 }
 
 /* Desktop (Mesa6Desk.dc.html): palco de 1020 px + trilho de 420 px */
