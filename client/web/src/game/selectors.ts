@@ -373,7 +373,8 @@ export function kamikazeAlly(v: GameView): number | null {
 
 export function selectLog(v: GameView, playerId?: string) {
   return v.log
-    .filter((e) => !playerId || e.actorId === playerId || e.reveal?.targetId === playerId)
+    // a revelação pública entra no diário do alvo pela linha derivada de selectPublicReveals
+    .filter((e) => !playerId || e.actorId === playerId || (e.reveal?.targetId === playerId && e.reveal.showToAll !== true))
     .map((e) => ({ key: e.key, turn: e.turn, text: playerId && e.actorId === playerId ? logSelfText(e) : logText(e) }))
     .reverse();
 }
@@ -449,14 +450,43 @@ export type SeatSheetVM = {
   alive: boolean;
   cards: (MiniCard & { index: number })[];
   investments: number[];
+  /** cartas que a mesa viu deste jogador (revelação pública do Clarividente) */
+  revealed: RevealedCardVM[];
   log: { key: string; turn: number; text: string }[];
 };
+
+export type RevealedCardVM = { key: string; turn: number; cardIndex: number; card?: RoleId };
+
+/**
+ * Memória do diário para a gaveta do alvo: só a revelação com "mostrar para todos"
+ * conta, e duas revelações da mesma carta ficam com o turno mais recente.
+ */
+export function selectPublicReveals(v: GameView, playerId: string): RevealedCardVM[] {
+  const byCard = new Map<number, RevealedCardVM>();
+  for (const e of v.log) {
+    // troca de carta apaga o que a mesa já tinha visto daquele jogador
+    if (e.forgetCards === playerId) byCard.clear();
+    const r = e.reveal;
+    if (!r || !r.showToAll || r.targetId !== playerId) continue;
+    const prev = byCard.get(r.cardIndex);
+    if (!prev || e.turn >= prev.turn) byCard.set(r.cardIndex, { key: e.key, turn: e.turn, cardIndex: r.cardIndex, card: r.card });
+  }
+  return [...byCard.values()].sort((a, b) => b.turn - a.turn);
+}
 
 /** Gaveta de um camarote (telas 4 e 14): cartas no estado que a mesa vê, diário do ator e investimentos. */
 export function selectSeatSheet(v: GameView, id: string): SeatSheetVM | null {
   const p = v.room?.players[id];
   if (!p) return null;
-  const known = revealedCards(v.log).get(p.id);
+  // A fileira da gaveta só marca a carta vista em revelação privada; a pública
+  // vive na memória do diário (bloco "Carta revelada no turno N"), sem abrir a carta.
+  const known = revealedCards(v.log.filter((e) => e.reveal?.showToAll !== true)).get(p.id);
+  const revealed = selectPublicReveals(v, id);
+  const log = [
+    ...selectLog(v, id),
+    // linha derivada: a revelação pública é memória do diário do alvo, não estado da carta
+    ...revealed.map((r) => ({ key: `REVEAL|${r.key}`, turn: r.turn, text: copy.revealLog(r.card ? roleName(r.card) : undefined) })),
+  ].sort((a, b) => b.turn - a.turn);
   return {
     id: p.id,
     name: p.name,
@@ -464,7 +494,8 @@ export function selectSeatSheet(v: GameView, id: string): SeatSheetVM | null {
     alive: p.alive,
     cards: p.cards.map((c) => ({ ...cardWithReveal(c, known), index: c.index })),
     investments: p.investments,
-    log: selectLog(v, id),
+    revealed,
+    log,
   };
 }
 
