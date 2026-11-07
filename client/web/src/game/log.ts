@@ -27,8 +27,11 @@ export type LogEntry = {
   role?: RoleId;
   /** acontecimento que também aparece na conversa, entre parênteses (contestação resolvida, saída de cena) */
   chat?: boolean;
-  /** Carta revelada pelo Clarividente que este aparelho viu (a mesa toda ou só quem jogou). */
-  reveal?: { targetId: string; cardIndex: number; role: RoleId };
+  /**
+   * REVEALED_CARD: carta, alvo, índice e se a mesa toda viu. Também é a carta
+   * que este aparelho viu o Clarividente revelar (a mesa toda ou só quem jogou).
+   */
+  reveal?: { targetId: string; cardIndex: number; card?: RoleId; showToAll?: boolean };
   /** O evento trocou as cartas deste jogador: o que a mesa viu antes não vale mais. */
   forgetCards?: string;
 };
@@ -97,9 +100,11 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
           break;
         }
         case "REVEALED_CARD": {
-          const targetId = str(p.targetPlayer);
           const card = declaredRole(`CARD_PLAYED_${str(p.revealedCard)}`);
-          push(ev.playerId, copy.log.revealed(fname(targetId), card ? roleName(card) : undefined), card ? { reveal: { targetId, cardIndex: num(p.targetCardIndex), role: card } } : {});
+          push(ev.playerId, copy.log.revealed(fname(str(p.targetPlayer)), card ? roleName(card) : undefined), {
+            // só a revelação pública vira memória da mesa; a privada fica no diário de quem jogou
+            reveal: { targetId: str(p.targetPlayer), cardIndex: num(p.targetCardIndex), card, showToAll: p.showToAllPlayers === true },
+          });
           break;
         }
         case "REVIVED_CARD":
@@ -149,7 +154,8 @@ export function appendLog(log: LogEntry[], prev: PublicRoom | null, next: Public
       out[i] = {
         ...out[i],
         pred: copy.log.revealed(fname(targetId), roleName(card)),
-        reveal: { targetId, cardIndex: num(p.targetCardIndex), role: card },
+        // mantém "para todos" quando a fase pública já marcou a revelação
+        reveal: { targetId, cardIndex: num(p.targetCardIndex), card, showToAll: out[i].reveal?.showToAll === true || p.showToAllPlayers === true },
       };
     }
   }
@@ -173,7 +179,7 @@ export function revealedCards(log: LogEntry[]): Map<string, Map<number, RoleId>>
     if (e.forgetCards) out.delete(e.forgetCards);
     if (e.reveal) {
       const cards = out.get(e.reveal.targetId) ?? new Map<number, RoleId>();
-      cards.set(e.reveal.cardIndex, e.reveal.role);
+      cards.set(e.reveal.cardIndex, e.reveal.card!);
       out.set(e.reveal.targetId, cards);
     }
   }

@@ -106,6 +106,19 @@ describe("appendLog", () => {
     ]);
   });
 
+  it("guarda a carta revelada, o alvo, o índice e se a mesa toda viu", () => {
+    const log = run([
+      room(4, "CARD_PLAYED_CLAIRVOYANT", "a", { targetPlayer: "b", targetCardIndex: 1 }),
+      room(4, "REVEALED_CARD", "a", { targetPlayer: "b", targetCardIndex: 1, revealedCard: "KAMIKAZE", showToAllPlayers: true }),
+      room(6, "REVEALED_CARD", "a", { targetPlayer: "c", targetCardIndex: 0, revealedCard: "REBEL", showToAllPlayers: false }),
+    ]);
+    expect(log.map((e) => e.reveal)).toEqual([
+      undefined,
+      { targetId: "b", cardIndex: 1, card: "KAMIKAZE", showToAll: true },
+      { targetId: "c", cardIndex: 0, card: "REBEL", showToAll: false },
+    ]);
+  });
+
   it("a mesma sala reaplicada (reconexão) não duplica linhas", () => {
     const r = room(1, "CARD_PLAYED_REBEL", "a");
     const once = appendLog([], null, r, 0);

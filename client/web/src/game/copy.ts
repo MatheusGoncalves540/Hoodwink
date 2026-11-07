@@ -65,6 +65,8 @@ export const copy = {
   seatSheet: (name: string) => `Lugar de ${name}`,
   tableSaw: "O que a mesa já viu",
   nothingSeen: "Ainda nada. A mesa observa.",
+  revealMemory: (turn: number) => `Carta revelada no turno ${turn}`,
+  revealLog: (card?: string) => `Teve ${card ? `a carta ${card}` : "uma carta"} revelada para todos.`,
   cardState: { dead: "morta", revealed: "revelada", protected: "protegida", hidden: "escondida" },
   inHandState: "na mão",
   yourBox: "Seu lugar",
