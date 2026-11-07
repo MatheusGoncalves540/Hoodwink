@@ -31,20 +31,30 @@ export function Sheet({ open, onClose, label, mode, children, footer, backLabel 
   const mobile = mode === "mobile";
   // Aberta por estado (sem Dialog.Trigger), o Radix não sabe a quem devolver o foco: guardamos quem abriu.
   const opener = useRef<HTMLElement | null>(null);
+  // No desktop a gaveta não é modal: o foco entra no painel, e o Esc fecha pelo Dialog.Root.
+  const content = useRef<HTMLDivElement>(null);
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()} modal={mobile}>
       <Dialog.Portal>
         {mobile && <Dialog.Overlay className={cx("m-scrim", s.scrim)} />}
         <Dialog.Content
+          ref={content}
           aria-describedby={undefined}
           className={cx("stub", mobile ? cx("m-sheet", s.sheet) : s.rail, fill && mobile && s.fill)}
           onInteractOutside={mobile ? undefined : (e) => e.preventDefault()}
-          onOpenAutoFocus={() => {
+          onOpenAutoFocus={(e) => {
             opener.current = document.activeElement as HTMLElement | null;
+            if (!mobile) {
+              e.preventDefault();
+              content.current?.focus();
+            }
           }}
           onCloseAutoFocus={(e) => {
+            const back = opener.current;
+            // se quem abriu sumiu da tela, deixa o Radix devolver o foco ao fluxo normal
+            if (!back?.isConnected) return;
             e.preventDefault();
-            opener.current?.focus();
+            back.focus();
           }}
         >
           <Dialog.Title className={s.hidden}>{label}</Dialog.Title>

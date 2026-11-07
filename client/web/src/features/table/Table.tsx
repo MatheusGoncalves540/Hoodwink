@@ -3,7 +3,7 @@
  * A view é pura (testável em Node); TableScene liga ao gameStore/uiStore.
  * Slots para as camadas de T21–T24: stageOverlay, bottomPanel, sheet, scenery, rail e screenOverlay.
  */
-import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLayout } from "../../app/useLayout";
 import { copy } from "../../game/copy";
 import { actionDef, type ActionId } from "../../game/roles";
@@ -42,6 +42,8 @@ const SuddenDeathStage = lazy(() => import("../endgame/SuddenDeathStage").then((
 const SuddenDeathAlert = lazy(() => import("../endgame/SuddenDeathAlert").then((m) => ({ default: m.SuddenDeathAlert })));
 
 export type TableSlots = {
+  /** Cabeçalho próprio (replay): substitui menu/rodada/conversa. */
+  header?: ReactNode;
   /** Painel de reação sobre o palco (T22). */
   stageOverlay?: ReactNode;
   /** Ações/contestação no pé, no lugar da faixa "Você" (T21/T22/T23). */
@@ -67,33 +69,39 @@ type Props = {
   hideYou?: boolean;
   /** Morte súbita: a mesa inteira fica escura. */
   dark?: boolean;
+  /** Palco anuncia a troca de jogador? No replay, não: o passo a passo já tem rótulos. */
+  stageLive?: boolean;
   slots?: TableSlots;
 };
 
-export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hideYou, dark, slots = {} }: Props) {
+export function Table({ view, unread = 0, onSeat, onMenu, onChat, targeting, hideYou, dark, stageLive, slots = {} }: Props) {
   const layout = useLayout();
   const desktop = layout === "desktop";
   const [ref, width] = useStageWidth(desktop ? 1020 : 390);
-  const seats = selectSeats(view);
-  const stage = selectStage(view);
-  const footlights = selectFootlights(view);
-  const you = selectYou(view);
-  const layoutSeats = desktop ? desktopSeats(seats.length, width) : mobileSeats(seats.length, width);
-  const activeIndex = seats.findIndex((seat) => seat.inScene);
+  const seats = useMemo(() => selectSeats(view), [view]);
+  const stage = useMemo(() => selectStage(view), [view]);
+  const footlights = useMemo(() => selectFootlights(view), [view]);
+  const you = useMemo(() => selectYou(view), [view]);
+  const layoutSeats = useMemo(
+    () => (desktop ? desktopSeats(seats.length, width) : mobileSeats(seats.length, width)),
+    [desktop, seats.length, width],
+  );
+  const activeIndex = useMemo(() => seats.findIndex((seat) => seat.inScene), [seats]);
   const activeBox = activeIndex >= 0 ? layoutSeats.boxes[activeIndex] : undefined;
+  const decision = useMemo(() => selectDecision(view), [view]);
   const room = view.room;
 
   return (
     // data-deixa: na sua vez o ambiente para; só o timer e o botão de ação tremem (motion.css)
-    <main data-theme={dark ? "dark" : undefined} data-deixa={selectDecision(view).kind === "myTurn" || undefined} className={cx(s.screen, desktop && s.desk)}>
+    <main data-theme={dark ? "dark" : undefined} data-deixa={decision.kind === "myTurn" || undefined} className={cx(s.screen, desktop && s.desk)}>
       {slots.scenery && <div className={s.scenery}>{slots.scenery}</div>}
 
-      <Header turn={room?.turn ?? 0} tax={room?.tax ?? 0} unread={unread} layout={layout} sudden={footlights.suddenDeath} onMenu={onMenu} onChat={onChat} />
+      {slots.header ?? <Header turn={room?.turn ?? 0} tax={room?.tax ?? 0} unread={unread} layout={layout} sudden={footlights.suddenDeath} onMenu={onMenu} onChat={onChat} />}
 
       <div ref={ref} className={s.tableArea}>
         <Spotlight box={activeBox} width={width} top={desktop ? 64 : 0} />
         <SeatRing seats={seats} layoutSeats={layoutSeats} layout={layout} onSeat={onSeat} targeting={targeting} />
-        {!slots.stageOverlay && <Stage vm={stage} layout={layout} />}
+        {!slots.stageOverlay && <Stage vm={stage} layout={layout} live={stageLive} />}
         <Footlights vm={footlights} layout={layout} />
         {slots.bottomPanel && <div className={s.bottomPanel}>{slots.bottomPanel}</div>}
       </div>
@@ -121,10 +129,10 @@ export function TableScene() {
   const layout = useLayout();
   const chatInputRef = useRef<HTMLInputElement>(null);
   const [passed, setPassed] = useState<string | null>(null);
-  const view = { me, room, log };
-  const decision = selectDecision(view);
-  const footlights = selectFootlights(view);
-  const declared = selectStage(view).declared;
+  const view = useMemo(() => ({ me, room, log }), [me, room, log]);
+  const decision = useMemo(() => selectDecision(view), [view]);
+  const footlights = useMemo(() => selectFootlights(view), [view]);
+  const declared = useMemo(() => selectStage(view).declared, [view]);
   const [showAlert, setShowAlert] = useState(false);
   const evKey = room?.gameEvent ? eventKey(room.gameEvent) : "";
   const unread = Math.max(0, (room?.chat.length ?? 0) - chatSeen);
@@ -144,46 +152,55 @@ export function TableScene() {
     return () => clearTimeout(timer);
   }, [footlights.suddenDeath, room?.id]);
 
-  const sendPlay = (role: ActionId, target?: Target) => {
-    try {
-      // Kamikaze: o servidor exige saber qual Kamikaze seu morre (targetAllyCardIndex)
-      const ally = role === "KAMIKAZE" ? (kamikazeAlly(view) ?? undefined) : undefined;
-      send(play(role, me ?? "", { showToAll: targeting?.showToAll, allyCardIndex: ally, ...target }));
-    } catch (e) {
-      console.error(e);
-    }
-    setTargeting(null);
-  };
+  const sendPlay = useCallback(
+    (role: ActionId, target?: Target) => {
+      try {
+        // Kamikaze: o servidor exige saber qual Kamikaze seu morre (targetAllyCardIndex)
+        const ally = role === "KAMIKAZE" ? (kamikazeAlly(view) ?? undefined) : undefined;
+        send(play(role, me ?? "", { showToAll: targeting?.showToAll, allyCardIndex: ally, ...target }));
+      } catch (e) {
+        console.error(e);
+      }
+      setTargeting(null);
+    },
+    [view, me, targeting, setTargeting],
+  );
 
-  const pickRole = (role: ActionId) => {
-    const def = actionDef(role);
-    if (def.target === "own") {
-      setTargeting({ role });
-      open("you");
-      return;
-    }
-    if (def.target === "other") {
-      setTargeting({ role });
-      return;
-    }
-    sendPlay(role);
-  };
+  const pickRole = useCallback(
+    (role: ActionId) => {
+      const def = actionDef(role);
+      if (def.target === "own") {
+        setTargeting({ role });
+        open("you");
+        return;
+      }
+      if (def.target === "other") {
+        setTargeting({ role });
+        return;
+      }
+      sendPlay(role);
+    },
+    [open, sendPlay, setTargeting],
+  );
 
   const closeSheet = () => {
     close();
     setTargeting(null);
   };
 
-  const onSeat = (seatId: string) => {
-    if (targeting) {
-      const needsCard = ["ASSASSIN", "KAMIKAZE", "CLAIRVOYANT", "KILL_CARD"].includes(targeting.role);
-      if (!needsCard) {
-        sendPlay(targeting.role, { playerId: seatId });
-        return;
+  const onSeat = useCallback(
+    (seatId: string) => {
+      if (targeting) {
+        const needsCard = ["ASSASSIN", "KAMIKAZE", "CLAIRVOYANT", "KILL_CARD"].includes(targeting.role);
+        if (!needsCard) {
+          sendPlay(targeting.role, { playerId: seatId });
+          return;
+        }
       }
-    }
-    open({ seat: seatId });
-  };
+      open({ seat: seatId });
+    },
+    [targeting, sendPlay, open],
+  );
 
   const pickSeatCard = (index: number) => {
     if (!targeting || typeof openSheet !== "object" || !openSheet) return;

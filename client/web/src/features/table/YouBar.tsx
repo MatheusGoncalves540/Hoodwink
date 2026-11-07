@@ -19,12 +19,12 @@ export function YouBar({ vm, suddenDeath, layout }: { vm: ReturnType<typeof sele
     <section aria-label={copy.youRegion} className={cx(s.bar, layout === "desktop" && s.desk, suddenDeath && s.sudden)}>
       <div className={s.top}>
         <div className={s.cards}>
-          {vm.cards.map((c, i) =>
+          {vm.cards.map((c) =>
             c.dead ? (
-              <CardDead key={i} size={cardSize} role={c.role} className={s.card} />
+              <CardDead key={c.index} size={cardSize} role={c.role} className={s.card} />
             ) : c.role ? (
               <CardFace
-                key={i}
+                key={c.index}
                 size={cardSize}
                 role={c.role}
                 protected={c.protected}
@@ -32,7 +32,7 @@ export function YouBar({ vm, suddenDeath, layout }: { vm: ReturnType<typeof sele
                 className={s.card}
               />
             ) : (
-              <CardBack key={i} size={cardSize} className={s.card} />
+              <CardBack key={c.index} size={cardSize} className={s.card} />
             ),
           )}
         </div>

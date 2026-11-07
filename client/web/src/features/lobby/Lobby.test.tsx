@@ -27,9 +27,10 @@ describe("Lobby (fumaça em Node)", () => {
     expect(out).not.toContain("Perfil de");
   });
 
-  it("com login, o perfil mostra a inicial e o nome", () => {
-    const out = html(<Profile signedIn name="Matheus" onLogin={() => {}} />);
-    expect(out).toContain('aria-label="Perfil de Matheus"');
-    expect(out).toMatch(/>M<\/span>/);
+  it("com login, o avatar vira botão para abrir o perfil", () => {
+    const out = html(<Profile signedIn name="Matheus" onLogin={() => {}} onProfile={() => {}} />);
+    expect(out).toContain('aria-label="Abrir perfil"');
+    expect(out).toMatch(/<button type="button" aria-label="Abrir perfil"/);
+    expect(out).toMatch(/>M<\/button>/);
   });
 });

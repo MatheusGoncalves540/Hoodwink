@@ -74,7 +74,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   shift: () => set({ presentation: get().presentation.slice(1) }),
   reset: () => {
     set({ room: null, log: [], presentation: [] });
-    useUiStore.setState({ openSheet: null, chatDraft: "", chatSeen: 0, targeting: null });
+    useUiStore.setState({ openSheet: null, chatSeen: 0, targeting: null });
   },
   loadFixture: (name, now = Date.now()) => {
     const f = fixture(name, now);
