@@ -25,8 +25,13 @@ RUN cd gameServer && go mod download
 COPY replay ./replay
 COPY gameServer ./gameServer
 
-# Build the application with optimizations
-RUN cd gameServer && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-w -s" -o /app/main .
+# Build the application with optimizations. A versão do jogo vem do deploy
+# (VERSION na raiz); sem ela o binário reporta "dev".
+ARG GAME_VERSION="dev"
+ARG GAME_COMMIT="unknown"
+RUN cd gameServer && CGO_ENABLED=0 GOOS=linux go build -trimpath \
+      -ldflags="-w -s -X github.com/MatheusGoncalves540/Hoodwink-gameServer/version.Version=${GAME_VERSION} -X github.com/MatheusGoncalves540/Hoodwink-gameServer/version.Commit=${GAME_COMMIT}" \
+      -o /app/main .
 
 # Runtime stage
 FROM docker.io/library/alpine:latest

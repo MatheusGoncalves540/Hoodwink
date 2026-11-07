@@ -17,6 +17,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/version"
 	"github.com/MatheusGoncalves540/Hoodwink-replay/format"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -52,13 +53,15 @@ func FinalizeReplay(ctx context.Context, backend *BackendService, rdb *redis.Cli
 	// que é o índice usado pelo vencedor e pelo backend.
 	playerIDs := playerIDsByReplayIndex(room)
 	upload := struct {
-		Data      string   `json:"data"`
-		RoomID    string   `json:"room_id"`
-		PlayerIDs []string `json:"player_ids"`
+		Data        string   `json:"data"`
+		RoomID      string   `json:"room_id"`
+		PlayerIDs   []string `json:"player_ids"`
+		GameVersion string   `json:"game_version"`
 	}{
-		Data:      base64.StdEncoding.EncodeToString(hwr),
-		RoomID:    room.ID,
-		PlayerIDs: playerIDs,
+		Data:        base64.StdEncoding.EncodeToString(hwr),
+		RoomID:      room.ID,
+		PlayerIDs:   playerIDs,
+		GameVersion: version.Version,
 	}
 	body, err := json.Marshal(upload)
 	if err != nil {
