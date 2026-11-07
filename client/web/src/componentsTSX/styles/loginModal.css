@@ -50,9 +50,12 @@
   color: var(--hw-tinta-suave);
 }
 .hw-login-google {
+  width: 100%;
   min-height: 44px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 .hw-login-espera {
   margin: 0;
@@ -64,6 +67,43 @@
   color: var(--hw-ouro-texto);
   align-self: center;
 }
+.hw-login-erro {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--hw-alerta);
+}
 .hw-login-voltar {
   margin-top: 4px;
+}
+.hw-login-ou {
+  margin: 0;
+  font-family: var(--hw-font-rotulo);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hw-ouro-texto);
+}
+.hw-login-local {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hw-login-local-nome {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--hw-font-texto);
+  font-size: 16px;
+  text-align: center;
+  color: var(--hw-tinta);
+  background: var(--hw-luz);
+  border: 1px solid var(--hw-ouro);
+  border-radius: 3px;
+}
+.hw-login-local-nome:focus-visible {
+  outline: 2px solid var(--hw-ouro);
+  outline-offset: 2px;
 }

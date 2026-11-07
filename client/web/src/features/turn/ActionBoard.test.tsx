@@ -19,7 +19,8 @@ describe("ActionBoard", () => {
   it("usa o preço de pricing.ts e marca o que está na mão", () => {
     expect(out).toContain('aria-label="Assassino, custa 4"');
     expect(out).toContain('aria-label="Trilionário, recebe 4 moedas"');
-    expect(out).toContain('aria-label="Kamikaze, custa 0"');
+    // sem Kamikaze vivo na mão o servidor recusaria o sacrifício: botão desligado com o motivo
+    expect(out).toContain('aria-label="Kamikaze, Precisa de um Kamikaze vivo na mão"');
     expect(out).toContain("☞ na mão");
     expect(out).toContain('aria-label="Guardiã, custa 7, faltam 2 moedas"');
   });
@@ -37,5 +38,10 @@ describe("ActionBoard", () => {
     expect(out).toContain('aria-label="Egoísta, fora do seu turno"');
     expect(out).toContain('aria-disabled="true"');
     expect(out).toContain("1+");
+  });
+
+  it("liga o motivo ao botão desabilitado pelo aria-describedby", () => {
+    expect(out).toContain("aria-describedby=");
+    expect(out).toContain('aria-live="polite"');
   });
 });

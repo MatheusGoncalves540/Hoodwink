@@ -3,33 +3,32 @@ package effects
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func StealCoinsEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func StealCoinsEffect(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	stealCoinsPayload, ok := effect.Payload.(structs.StealCoinsPayload)
 	if !ok {
-		utils.LogError("payload inválido para StealCoinsPayload")
+		pure.LogError("payload inválido para StealCoinsPayload")
 		return
 	}
 	generalRules, err := roomData.GetGeneralRules(registryRules)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
 	sourcePlayer, err := roomData.GetPlayer(effect.SourcePlayer)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 	targetPlayer, err := roomData.GetPlayer(*stealCoinsPayload.TargetPlayer)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
@@ -38,7 +37,7 @@ func StealCoinsEffect(ctx context.Context, rdb *redis.Client, registryRules *rul
 	if lostCoins > targetPlayer.Coins {
 		lostCoins = targetPlayer.Coins
 	}
-	earnedCoins := utils.CeilDiv(lostCoins, 2)
+	earnedCoins := pure.CeilDiv(lostCoins, 2)
 
 	// subtrai as moedas do jogador
 	targetPlayer.RemoveCoins(lostCoins)
@@ -61,6 +60,6 @@ func StealCoinsEffect(ctx context.Context, rdb *redis.Client, registryRules *rul
 			Payload:      greedPayload,
 		}
 
-		KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
+		KillAnnouncerCard(ctx, sink, registryRules, roomData, killEffect)
 	}
 }

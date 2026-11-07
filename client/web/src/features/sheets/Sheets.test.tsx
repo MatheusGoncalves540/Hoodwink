@@ -76,7 +76,7 @@ describe("menu e conversa (fumaça em Node)", () => {
     expect(out).toContain("Animações de espera");
     expect(out).toContain("Desenhos tremendo, texto respirando, lâmpadas.");
     expect(out).toContain("Sair da partida");
-    expect(out).toContain("Seu lugar fica na mesa e o tempo corre sem você. Para voltar, entre de novo com o código K7Q2.");
+    expect(out).toContain("Seu lugar fica na mesa. Para voltar, use o código K7Q2.");
     expect(out.match(/aria-checked="true"/g)).toHaveLength(3);
     expect(out.match(/aria-checked="false"/g)).toHaveLength(1);
   });

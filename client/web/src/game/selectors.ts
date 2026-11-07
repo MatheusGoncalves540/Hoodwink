@@ -30,7 +30,7 @@ import { CLASSIC_RULES } from "./rules.classic";
 
 export type GameView = { me: string | null; room: PublicRoom | null; log: LogEntry[] };
 
-export type MiniCard = { state: "back" | "revealed" | "protected" | "dead"; role?: RoleId };
+export type MiniCard = { state: "back" | "revealed" | "protected" | "dead"; role?: RoleId; index?: number };
 export type SeatVM = {
   id: string;
   name: string;
@@ -68,7 +68,7 @@ export function opponents(v: GameView) {
 export function selectSeats(v: GameView): SeatVM[] {
   return opponents(v).map((p) => {
     const out = !p.alive;
-    const cards = p.cards.map(miniCard);
+    const cards = p.cards.map((c): MiniCard => ({ ...miniCard(c), index: c.index }));
     return {
       id: p.id,
       name: p.name,
@@ -156,7 +156,7 @@ export function selectYou(v: GameView) {
 export type Block = { role: RoleId; cost: number; payload: "guardian" | "selfish" };
 export type Decision =
   | { kind: "none" | "myTurn" | "outOfScene" | "finale" }
-  | { kind: "react"; actorId: string; role: RoleId | null; canContest: boolean; block: Block | null; targetsMe: boolean }
+  | { kind: "react"; actorId: string; role: RoleId | null; canContest: boolean; block: Block | null; targetsMe: boolean; kamikaze?: true }
   | { kind: "pickCardToKill"; targetId: string; role: RoleId }
   | { kind: "waitPick"; chooserId: string; role: RoleId }
   | { kind: "waitOther"; actorId: string };
@@ -193,8 +193,18 @@ export function selectDecision(v: GameView): Decision {
     if (victim === me.id) return { kind: "waitPick", chooserId: chooser, role: card };
     return { kind: "waitOther", actorId: chooser };
   }
-  if (ev.type === "CARD_KILLED" && p.targetPlayer === me.id && p.cause !== "CONTEST_PENALTY" && p.cause !== "KAMIKAZE") {
-    return { kind: "react", actorId: ev.playerId, role: null, canContest: false, block: guardian("reaction"), targetsMe: true };
+  if (ev.type === "CARD_KILLED" && p.targetPlayer === me.id) {
+    // Guardiã na hora não segura contestação, Kamikaze nem ganância; carta já protegida não precisa (guardianValidation.go)
+    const card = me.cards.find((c) => c.index === Number(p.targetCardIndex));
+    const blockable = !["CONTEST_PENALTY", "KAMIKAZE", "GREED"].includes(String(p.cause)) && !card?.protected;
+    // Kamikaze revida quando é ele que está morrendo e a morte vai acontecer de fato (kamikazeValidation.go)
+    const dies = !card?.protected || p.cause === "CONTEST_PENALTY" || p.cause === "GREED";
+    const kamikaze = card?.name === "KAMIKAZE" && !card.dead && dies;
+    if (blockable || kamikaze) {
+      const block = blockable ? guardian("reaction") : null;
+      return { kind: "react", actorId: ev.playerId, role: null, canContest: false, block, targetsMe: true, ...(kamikaze && { kamikaze: true as const }) };
+    }
+    return { kind: "none" };
   }
   // ações do turno (Pegar moeda, Trocar cartas) ninguém impede (02 §2)
   const basic = p.cause === "TAKE_COINS" || p.cause === "SWAP_CARDS";
@@ -207,6 +217,21 @@ export function selectDecision(v: GameView): Decision {
     return { kind: "react", actorId: ev.playerId, role: null, canContest: false, block: { role: "SELFISH", cost, payload: "selfish" }, targetsMe: false };
   }
   return { kind: "none" };
+}
+
+/**
+ * Qual Kamikaze seu morre (targetAllyCardIndex): na reação, o que está sendo morto;
+ * no seu turno, o primeiro vivo. null = você não tem Kamikaze vivo (o servidor recusaria).
+ */
+export function kamikazeAlly(v: GameView): number | null {
+  const me = v.me ? v.room?.players[v.me] : undefined;
+  if (!me) return null;
+  const ev = v.room?.gameEvent;
+  const p = payload(v);
+  const live = (c: PublicCard) => c.name === "KAMIKAZE" && !c.dead;
+  const dying = ev?.type === "CARD_KILLED" && p.targetPlayer === me.id ? me.cards.find((c) => c.index === Number(p.targetCardIndex)) : undefined;
+  if (dying) return live(dying) ? dying.index : null;
+  return me.cards.find(live)?.index ?? null;
 }
 
 export function selectLog(v: GameView, playerId?: string) {

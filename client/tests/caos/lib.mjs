@@ -6,7 +6,7 @@
  * Uso: rode da raiz do repo. Os caminhos podem vir de HOODWINK_BACKEND_ENV e
  * HOODWINK_GAME_ENV; as URLs, de GAME_URL e WEB_URL.
  */
-import { createHmac } from "node:crypto";
+import { createHmac, sign } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 export const BACKEND_ENV = process.env.HOODWINK_BACKEND_ENV ?? "D:/GitHub/Hoodwink-server/backend/.env";
@@ -29,11 +29,13 @@ let cached;
 export function secrets() {
   if (cached) return cached;
   const backend = readEnv(BACKEND_ENV);
-  const game = readEnv(GAME_ENV);
-  if (!backend.JWT_SECRET || backend.JWT_SECRET !== game.BACKEND_JWT_SECRET) {
-    throw new Error("JWT_SECRET do backend e BACKEND_JWT_SECRET do gameServer não batem");
+  if (!backend.JWT_SECRET) {
+    throw new Error("JWT_SECRET do backend ausente");
   }
-  cached = { backend: backend.JWT_SECRET, game: game.JWT_SECRET };
+  if (!backend.TICKET_PRIVATE_KEY) {
+    throw new Error("TICKET_PRIVATE_KEY do backend ausente");
+  }
+  cached = { backend: backend.JWT_SECRET, ticketPrivateKey: backend.TICKET_PRIVATE_KEY };
   return cached;
 }
 
@@ -54,11 +56,19 @@ export function jwt(id, username, ttlSeconds = 3600) {
   return `${header}.${payload}.${signature}`;
 }
 
-/** Ticket do WebSocket: claims playerId, username, roomId, exp; assinado com o JWT_SECRET do gameServer. */
+/** Ticket do WebSocket: claims playerId, username, roomId, exp, aud; assinado Ed25519 com a TICKET_PRIVATE_KEY do backend. */
 export function ticketJwt(playerId, username, roomId, ttlSeconds = 3600) {
-  const header = b64({ alg: "HS256", typ: "JWT" });
-  const payload = b64({ playerId, username, roomId, exp: Math.floor(Date.now() / 1000) + ttlSeconds });
-  const signature = createHmac("sha256", secrets().game).update(`${header}.${payload}`).digest("base64url");
+  const header = b64({ alg: "EdDSA", typ: "JWT" });
+  const payload = b64({
+    playerId,
+    username,
+    roomId,
+    aud: "hoodwink-ticket",
+    exp: Math.floor(Date.now() / 1000) + ttlSeconds,
+  });
+  const data = Buffer.from(`${header}.${payload}`);
+  const privPem = Buffer.from(secrets().ticketPrivateKey, "base64").toString("utf8");
+  const signature = sign(null, data, privPem).toString("base64url");
   return `${header}.${payload}.${signature}`;
 }
 

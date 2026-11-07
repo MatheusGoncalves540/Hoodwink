@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ENV } from "../config/envs";
-import { getTicket, newRoom } from "./api";
+import { getTicket, newRoom, refreshToken } from "./api";
 
 const base = ENV.VITE_GAMESERVER_URL.replace(/\/$/, "");
 const json = (body: unknown, status = 200) =>
@@ -47,5 +47,36 @@ describe("api", () => {
   it("recusa resposta de sucesso em formato inesperado", async () => {
     stubFetch(json({ message: "Ticket gerado", data: {} }));
     await expect(getTicket("jwt", "K7Q2")).rejects.toThrow();
+  });
+
+  describe("refreshToken", () => {
+    it("devolve o token novo em 200", async () => {
+      stubFetch(json({ data: { token: "novo.jwt" } }));
+      await expect(refreshToken("velho.jwt")).resolves.toEqual({ status: "ok", token: "novo.jwt" });
+    });
+
+    it("401 devolve unauthorized", async () => {
+      stubFetch(json({ message: "inválido" }, 401));
+      await expect(refreshToken("velho.jwt")).resolves.toEqual({ status: "unauthorized" });
+    });
+
+    it("rede falhou devolve failed (mantém o token)", async () => {
+      vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("rede"); }));
+      await expect(refreshToken("velho.jwt")).resolves.toEqual({ status: "failed" });
+    });
+
+    it("duas chamadas simultâneas fazem 1 POST", async () => {
+      let calls = 0;
+      vi.stubGlobal("fetch", vi.fn(async () => {
+        calls += 1;
+        await new Promise((r) => setTimeout(r, 10));
+        return json({ data: { token: "novo.jwt" } });
+      }));
+
+      const [a, b] = await Promise.all([refreshToken("velho.jwt"), refreshToken("velho.jwt")]);
+      expect(a).toEqual({ status: "ok", token: "novo.jwt" });
+      expect(b).toEqual({ status: "ok", token: "novo.jwt" });
+      expect(calls).toBe(1);
+    });
   });
 });

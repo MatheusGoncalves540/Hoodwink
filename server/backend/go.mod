@@ -3,15 +3,19 @@ module github.com/MatheusGoncalves540/Hoodwink
 go 1.24.4
 
 require (
-	github.com/go-chi/chi/v5 v5.2.1
+	github.com/MatheusGoncalves540/Hoodwink-replay v0.0.0
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	google.golang.org/api v0.239.0
 	gorm.io/driver/postgres v1.6.0
 )
+
+// Módulos locais (monorepo): o replay importa o gameServer para o motor congelado.
+replace github.com/MatheusGoncalves540/Hoodwink-replay => ../replay
 
 require (
 	cloud.google.com/go/auth v0.16.2 // indirect

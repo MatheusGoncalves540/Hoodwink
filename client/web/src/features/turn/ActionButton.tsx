@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { memo, useId, type CSSProperties } from "react";
 import { copy } from "../../game/copy";
 import type { Price } from "../../game/pricing";
 import { actionDef, BASIC_GROUP, isBasic, ROLE_GROUPS, type ActionId } from "../../game/roles";
@@ -22,7 +22,8 @@ type Props = {
 };
 
 /** Botão da tela 6 (personagem ou ação do turno): faixa de arte, nome, "☞ na mão", descrição e preço. */
-export function ActionButton({ role, price, held, offTurn, missing, blocked, onClick }: Props) {
+export const ActionButton = memo(function ActionButton({ role, price, held, offTurn, missing, blocked, onClick }: Props) {
+  const descId = useId();
   const def = actionDef(role);
   const tone = toneOf(role);
   const poor = missing != null;
@@ -45,6 +46,7 @@ export function ActionButton({ role, price, held, offTurn, missing, blocked, onC
       style={{ "--tone": `var(--hw-tom-${tone})`, "--band": `var(--hw-tom-${tone}-faixa)`, "--m-base": ".25s" } as CSSProperties}
       aria-label={label}
       aria-disabled={disabled || undefined}
+      aria-describedby={disabled ? descId : undefined}
       onClick={disabled ? undefined : () => onClick(role)}
     >
       <span className={cx(s.art, disabled && s.artOff)} aria-hidden="true">
@@ -56,9 +58,11 @@ export function ActionButton({ role, price, held, offTurn, missing, blocked, onC
           <span className={s.name}>{def.name}</span>
           {held && <span className={s.held}>{copy.inHand}</span>}
         </span>
-        <span className={s.desc}>{blocked ?? (poor ? copy.missing(missing) : copy.roleDesc(role, price))}</span>
+        <span id={descId} aria-live="polite" className={s.desc}>
+          {blocked ?? (poor ? copy.missing(missing) : copy.roleDesc(role, price))}
+        </span>
       </span>
       <span className={cx(s.price, price.kind === "gain" && s.gain, disabled && s.priceOff)}>{priceText}</span>
     </button>
   );
-}
+});

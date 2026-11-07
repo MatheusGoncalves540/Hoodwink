@@ -3,8 +3,8 @@ package engine
 import (
 	"fmt"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 // BuildEffect é responsável por construir uma instância de Effect a partir de um EffectDTO, validando o payload e garantindo que os dados estejam corretos antes de criar o efeito. Ele é usado para converter os dados brutos do Redis em uma estrutura segura e utilizável dentro do motor de jogo.
@@ -28,7 +28,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.KillCardPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -39,7 +39,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.EarnCoinsPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -50,7 +50,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.StealCoinsPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -61,7 +61,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.ContestPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -72,7 +72,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.ContestPenaltyPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -83,7 +83,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.KillCardPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -94,7 +94,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.ChangeCardPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -105,7 +105,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.InvestmentPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -116,7 +116,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.RichnessDeniedPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -127,7 +127,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.AssassinPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -138,7 +138,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.KamikazePayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -149,7 +149,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.TrillionairePayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -160,7 +160,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.PoliticalPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -171,7 +171,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.RebelPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -182,7 +182,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.ClairvoyantPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -193,7 +193,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.GuardianPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -204,7 +204,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.TricksterPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -215,7 +215,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.GravediggerPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -226,7 +226,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.CroupierPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -237,7 +237,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.InvestorPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload
@@ -248,7 +248,7 @@ func BuildEffect(dto structs.EffectDTO) (structs.Effect, error) {
 			return structs.Effect{}, fmt.Errorf("payload ausente para o efeito %s", dto.Cause)
 		}
 		var payload structs.SelfishPayload
-		if err := utils.DecodeStrictJSON(dto.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(dto.Payload, &payload); err != nil {
 			return structs.Effect{}, fmt.Errorf("payload inválido para o efeito %s: %w", dto.Cause, err)
 		}
 		effect.Payload = payload

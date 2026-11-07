@@ -11,13 +11,11 @@ import type { ActionId } from "../game/roles";
 
 export type UiState = {
   openSheet: OpenSheet;
-  chatDraft: string;
   chatSeen: number;
   targeting: { role: ActionId; target?: { playerId: string; cardIndex: number }; showToAll?: boolean } | null;
   suddenDeathShown: string | null;
   open(sheet: OpenSheet): void;
   close(): void;
-  setDraft(text: string): void;
   markChatSeen(count: number): void;
   setTargeting(t: UiState["targeting"]): void;
   setSuddenDeathShown(roomId: string): void;
@@ -25,13 +23,11 @@ export type UiState = {
 
 export const useUiStore = create<UiState>((set) => ({
   openSheet: null,
-  chatDraft: "",
   chatSeen: 0,
   targeting: null,
   suddenDeathShown: null,
   open: (openSheet) => set({ openSheet }),
   close: () => set({ openSheet: null }),
-  setDraft: (chatDraft) => set({ chatDraft }),
   markChatSeen: (chatSeen) => set({ chatSeen }),
   setTargeting: (targeting) => set({ targeting }),
   setSuddenDeathShown: (suddenDeathShown) => set({ suddenDeathShown }),

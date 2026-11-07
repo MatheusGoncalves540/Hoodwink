@@ -3,34 +3,33 @@ package effects
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
 // ContestPenaltyEffect aplica a penalidade da contestação.
 // Se o jogador contestado tinha a carta, ele escolhe uma carta do contestador para morrer
 // e depois descarta a carta revelada, comprando outra do baralho.
 // Se não tinha, o contestador escolhe uma carta do jogador contestado para morrer.
-func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func ContestPenaltyEffect(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	contestPenaltyPayload, ok := effect.Payload.(structs.ContestPenaltyPayload)
 	if !ok {
-		utils.LogError("payload inválido para EffectContestPenalty")
+		pure.LogError("payload inválido para EffectContestPenalty")
 		return
 	}
 
 	contestedPlayer, err := roomData.GetPlayer(contestPenaltyPayload.ContestedPlayer)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
 	contestingPlayer, err := roomData.GetPlayer(contestPenaltyPayload.ContestingPlayer)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
@@ -41,17 +40,17 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 		targetPlayer = contestingPlayer
 	}
 
-	targetIndex := pickAliveCardIndex(targetPlayer, contestPenaltyPayload.TargetCardIndex)
+	targetIndex := pickAliveCardIndex(roomData, targetPlayer, contestPenaltyPayload.TargetCardIndex)
 	if targetIndex == nil {
-		utils.LogError("nenhuma carta viva disponível para a penalidade de contestação")
+		pure.LogError("nenhuma carta viva disponível para a penalidade de contestação")
 		return
 	}
 
 	killPayload := structs.NewKillCardPayload(string(structs.EffectContestPenalty), &targetPlayer.Id, targetIndex)
 
 	killEffect := structs.NewEffect(structs.EffectContestPenalty, effect.SourcePlayer, killPayload)
-	if err := KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect); err != nil {
-		utils.LogError(err)
+	if err := KillAnnouncerCard(ctx, sink, registryRules, roomData, killEffect); err != nil {
+		pure.LogError(err)
 		return
 	}
 
@@ -69,8 +68,8 @@ func ContestPenaltyEffect(ctx context.Context, rdb *redis.Client, registryRules 
 	changeCardPayload := structs.NewChangeCardPayload(string(structs.EffectContestPenalty), &contestedPlayer.Id, &revealedIndex, nil)
 
 	changeCardEffect := structs.NewEffect(structs.EffectContestPenalty, effect.SourcePlayer, changeCardPayload)
-	if err := ChangeCardAnnouncer(ctx, rdb, registryRules, roomData, changeCardEffect); err != nil {
-		utils.LogError(err)
+	if err := ChangeCardAnnouncer(ctx, sink, registryRules, roomData, changeCardEffect); err != nil {
+		pure.LogError(err)
 	}
 }
 
@@ -89,7 +88,7 @@ func resolveRevealedCardIndex(player *players.Player, payload structs.ContestPen
 
 // pickAliveCardIndex valida o índice escolhido e, caso seja inválido ou a carta
 // esteja morta, escolhe aleatoriamente uma carta viva do jogador alvo.
-func pickAliveCardIndex(player *players.Player, chosen *int) *int {
+func pickAliveCardIndex(roomData *rooms.Room, player *players.Player, chosen *int) *int {
 	if chosen != nil {
 		card, err := player.GetCardByIndex(*chosen)
 		if err == nil && !card.Dead {
@@ -101,6 +100,6 @@ func pickAliveCardIndex(player *players.Player, chosen *int) *int {
 	if len(aliveIndexes) == 0 {
 		return nil
 	}
-	index := utils.GetRandomElementFromSlice(aliveIndexes)
+	index := aliveIndexes[roomData.Rand().IntN(len(aliveIndexes))]
 	return &index
 }

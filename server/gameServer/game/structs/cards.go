@@ -1,9 +1,5 @@
 package structs
 
-import (
-	"math/rand/v2"
-)
-
 type CardName string
 
 type Card struct {
@@ -55,8 +51,4 @@ var AllCards = []CardName{
 	CardCroupier,
 	CardInvestor,
 	CardSelfish,
-}
-
-func RandomCard() CardName {
-	return AllCards[rand.IntN(len(AllCards))]
 }

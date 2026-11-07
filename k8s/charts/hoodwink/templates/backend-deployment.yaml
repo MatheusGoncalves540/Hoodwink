@@ -102,6 +102,21 @@ spec:
                 secretKeyRef:
                   name: {{ include "hoodwink.secretName" . }}
                   key: {{ .Values.secrets.keys.jwtSecret }}
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.backendApiKey }}
+            - name: TICKET_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.ticketPrivateKey }}
+            - name: REPLAY_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hoodwink.secretName" . }}
+                  key: {{ .Values.secrets.keys.replaySigningKey }}
           startupProbe:
             httpGet:
               path: /alive

@@ -1,0 +1,12 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/main ."
+bin = "./tmp/main"
+include_ext = ["go", "yaml"]
+exclude_dir = ["tmp", "tests", "plans", "Obsidian Vault", ".git", ".github", ".vscode"]
+delay = 1000
+# /mnt/d no WSL2 não entrega eventos inotify ao air: sem polling o binário nunca é recompilado.
+poll = true
+poll_interval = 800

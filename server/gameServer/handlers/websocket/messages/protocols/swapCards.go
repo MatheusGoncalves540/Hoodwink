@@ -7,12 +7,11 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/redis/go-redis/v9"
 )
 
 // SwapCardsProtocol aplica a ação básica de trocar cartas com o baralho.
 // Uma carta custa metade das moedas (arredondada para cima); duas cartas custam todas as moedas.
-func SwapCardsProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, payload structs.SwapCardsPayload) error {
+func SwapCardsProtocol(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, payload structs.SwapCardsPayload) error {
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		return err
@@ -30,10 +29,10 @@ func SwapCardsProtocol(ctx context.Context, rdb *redis.Client, registryRules *ru
 	)
 	changeCardEffect := structs.NewEffect(structs.EffectSwapCards, playerPlay.PlayerId, changeCardPayload)
 
-	if err := effects.ChangeCardAnnouncer(ctx, rdb, registryRules, roomData, changeCardEffect); err != nil {
+	if err := effects.ChangeCardAnnouncer(ctx, sink, registryRules, roomData, changeCardEffect); err != nil {
 		return err
 	}
 
-	lockAction(ctx, rdb, roomData, playerPlay.PlayerId)
+	lockAction(ctx, sink, roomData, playerPlay.PlayerId)
 	return nil
 }

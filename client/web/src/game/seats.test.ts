@@ -5,8 +5,8 @@ const overlap = (a: SeatBox, b: SeatBox) =>
   a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
 describe("mobileSeats", () => {
-  it("devolve k posições para k de 1 a 9, com o tamanho certo", () => {
-    for (let k = 1; k <= 9; k++) {
+  it("devolve k posições para k de 1 a 10, com o tamanho certo", () => {
+    for (let k = 1; k <= 10; k++) {
       const l = mobileSeats(k);
       expect(l.boxes).toHaveLength(k);
       expect(l.boxes[0]).toMatchObject(k <= 5 ? { w: 96, h: 104 } : { w: 70, h: 88 });
@@ -25,11 +25,17 @@ describe("mobileSeats", () => {
   it("zero adversários: nada", () => {
     expect(mobileSeats(0).boxes).toEqual([]);
   });
+
+  it("10 jogadores do replay cabem sem sobrepor", () => {
+    const { boxes } = mobileSeats(10);
+    expect(boxes).toHaveLength(10);
+    boxes.forEach((b, i) => boxes.slice(i + 1).forEach((o) => expect(overlap(b, o)).toBe(false)));
+  });
 });
 
 describe("desktopSeats", () => {
-  it("nenhum camarote se sobrepõe e todos ficam no palco (k 1..9, largura 900..1400)", () => {
-    for (let k = 1; k <= 9; k++) {
+  it("nenhum camarote se sobrepõe e todos ficam no palco (k 1..10, largura 900..1400)", () => {
+    for (let k = 1; k <= 10; k++) {
       for (let S = 900; S <= 1400; S += 50) {
         const { boxes } = desktopSeats(k, S);
         expect(boxes).toHaveLength(k);

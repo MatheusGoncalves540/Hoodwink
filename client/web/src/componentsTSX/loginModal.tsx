@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Dialog } from "radix-ui";
 import { copy } from "../game/copy";
 import { useAuthStore } from "../store/authStore";
@@ -6,6 +7,57 @@ import { Label } from "../ui/Label/Label";
 import { Moldura } from "../ui/Moldura/Moldura";
 import "./styles/loginModal.css";
 import GoogleAuth from "./googleAuth";
+import loginLocal from "../Auth/loginLocal";
+
+/** Entrar sem Google, para quem está na mesma rede (Radmin). O backend só aceita em ambiente local. */
+function LocalLogin() {
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const clean = name.trim();
+
+  const submit = async () => {
+    if (!clean || busy) return;
+    setError("");
+    setBusy(true);
+    const outcome = await loginLocal(clean, setAuth);
+    setBusy(false);
+    if (outcome.status === "error") setError(outcome.message);
+  };
+
+  return (
+    <form
+      className="hw-login-local"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void submit();
+      }}
+    >
+      <input
+        className="hw-login-local-nome"
+        aria-label={copy.loginModal.localName}
+        placeholder={copy.loginModal.localName}
+        value={name}
+        onChange={(e) => {
+          setName(e.target.value);
+          setError("");
+        }}
+        maxLength={20}
+        autoComplete="off"
+        spellCheck={false}
+      />
+      <Button type="submit" variant="outline" disabled={!clean || busy}>
+        {copy.loginModal.localEnter}
+      </Button>
+      {error && (
+        <p role="alert" className="hw-login-erro">
+          {error}
+        </p>
+      )}
+    </form>
+  );
+}
 
 /** Bilheteria: o login aparece como um cartaz pequeno, com o mesmo letreiro de lâmpadas da entrada. */
 function LoginModal() {
@@ -24,6 +76,8 @@ function LoginModal() {
               {copy.loginModal.text}
             </Dialog.Description>
             <GoogleAuth />
+            <p className="hw-login-ou">{copy.loginModal.localOr}</p>
+            <LocalLogin />
             <Dialog.Close asChild>
               <Button variant="link" className="hw-login-voltar">
                 {copy.loginModal.back}

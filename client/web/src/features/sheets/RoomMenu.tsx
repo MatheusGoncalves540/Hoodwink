@@ -8,6 +8,7 @@ import { useSessionStore } from "../../store/sessionStore";
 import { Button } from "../../ui/Button/Button";
 import { Sheet } from "../../ui/Sheet/Sheet";
 import { Toggle } from "../../ui/Toggle/Toggle";
+import { FlagButton } from "../bugReport/FlagButton";
 import s from "./RoomMenu.module.css";
 
 const SOUND_KEY = "hw-som";
@@ -24,9 +25,11 @@ type ContentProps = {
   onMotion(value: boolean): void;
   onIdle(value: boolean): void;
   onLeave(): void;
+  matchId: string;
+  mode: "mobile" | "desktop";
 };
 
-export function RoomMenuContent({ code, turn, sound, vibration, motion, onSound, onVibration, onMotion, onIdle, onLeave }: ContentProps) {
+export function RoomMenuContent({ code, turn, sound, vibration, motion, onSound, onVibration, onMotion, onIdle, onLeave, matchId, mode }: ContentProps) {
   const [confirm, setConfirm] = useState(false);
   return (
     <>
@@ -54,6 +57,8 @@ export function RoomMenuContent({ code, turn, sound, vibration, motion, onSound,
       </a>
 
       <p className={s.warning}>{copy.menuWarning(code)}</p>
+
+      <FlagButton mode={mode} matchId={matchId} turn={turn} />
 
       {confirm ? (
         <div className={s.confirm}>
@@ -128,6 +133,8 @@ export function RoomMenu({ view, mode, onClose }: Props) {
         onMotion={motion.setAll}
         onIdle={motion.setIdle}
         onLeave={leave}
+        matchId={view.room?.matchId ?? ""}
+        mode={mode}
       />
     </Sheet>
   );

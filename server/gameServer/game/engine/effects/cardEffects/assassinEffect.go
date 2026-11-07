@@ -4,18 +4,17 @@ import (
 	"context"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func AssassinEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func AssassinEffect(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	// resolve o efeito de matar carta
 	assassinPayload, ok := effect.Payload.(structs.AssassinPayload)
 	if !ok {
-		utils.LogError("payload inválido para AssassinPayload")
+		pure.LogError("payload inválido para AssassinPayload")
 		return
 	}
 
@@ -27,9 +26,9 @@ func AssassinEffect(ctx context.Context, rdb *redis.Client, registryRules *rules
 		Payload:      killPayload,
 	}
 
-	err := effects.KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect)
+	err := effects.KillAnnouncerCard(ctx, sink, registryRules, roomData, killEffect)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 }

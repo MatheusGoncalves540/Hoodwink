@@ -3,18 +3,17 @@ package effects
 import (
 	"context"
 
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func ChangeCardAnnouncer(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
+func ChangeCardAnnouncer(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) error {
 	// decodifica o changeCardPayload
 	changeCardPayload, ok := effect.Payload.(structs.ChangeCardPayload)
 	if !ok {
-		utils.LogError("payload inválido para ChangeCardPayload (announcer)")
+		pure.LogError("payload inválido para ChangeCardPayload (announcer)")
 		return nil
 	}
 

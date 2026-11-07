@@ -22,7 +22,7 @@ func (h *Handler) GetUserInfoByIDHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, err := h.UserService.GetUserByID(playerID)
+	user, err := h.UserService.GetUserByID(r.Context(), playerID)
 	if err != nil {
 		utils.SendError(w, "Erro ao buscar informações do usuário", http.StatusInternalServerError)
 		return

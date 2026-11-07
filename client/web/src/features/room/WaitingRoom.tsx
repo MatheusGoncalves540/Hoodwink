@@ -30,7 +30,7 @@ export function WaitingRoom({ view, onLeave, onStart }: Props) {
   return (
     <main className={cx(s.screen, layout === "desktop" && s.desk)}>
       <header className={s.header}>
-        <button type="button" className={s.back} aria-label={copy.leaveRoom} onClick={onLeave}>
+        <button type="button" className={s.back} aria-label={copy.leaveScene} onClick={onLeave}>
           <svg
             aria-hidden="true"
             width="22"
@@ -55,6 +55,7 @@ export function WaitingRoom({ view, onLeave, onStart }: Props) {
         <Ticket
           size="l"
           disabled={!canStart}
+          reason={!canStart ? copy.startHint : undefined}
           onClick={onStart}
           className={cx("m-rise", s.startButton)}
         >

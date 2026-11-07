@@ -4,24 +4,23 @@ import (
 	"context"
 
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/engine/effects"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/players"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
-	"github.com/redis/go-redis/v9"
 )
 
-func KamikazeEffect(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
+func KamikazeEffect(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, effect structs.Effect) {
 	kamikazePayload, ok := effect.Payload.(structs.KamikazePayload)
 	if !ok {
-		utils.LogError("payload inválido para KamikazePayload")
+		pure.LogError("payload inválido para KamikazePayload")
 		return
 	}
 
 	sourcePlayer, err := roomData.GetPlayer(effect.SourcePlayer)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return
 	}
 
@@ -31,7 +30,7 @@ func KamikazeEffect(ctx context.Context, rdb *redis.Client, registryRules *rules
 		selfKillIndex := findLiveKamikazeIndex(sourcePlayer, kamikazePayload.TargetAllyCardIndex)
 		if selfKillIndex != nil {
 			if err := sourcePlayer.KillCard(*selfKillIndex); err != nil {
-				utils.LogError(err)
+				pure.LogError(err)
 			} else {
 				roomData.VerifyIfPlayerDead(sourcePlayer)
 			}
@@ -46,8 +45,8 @@ func KamikazeEffect(ctx context.Context, rdb *redis.Client, registryRules *rules
 		Payload:      killPayload,
 	}
 
-	if err := effects.KillAnnouncerCard(ctx, rdb, registryRules, roomData, killEffect); err != nil {
-		utils.LogError(err)
+	if err := effects.KillAnnouncerCard(ctx, sink, registryRules, roomData, killEffect); err != nil {
+		pure.LogError(err)
 	}
 }
 

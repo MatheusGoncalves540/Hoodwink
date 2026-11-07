@@ -8,10 +8,9 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/redis/go-redis/v9"
 )
 
-func SelfishProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
+func SelfishProtocol(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		return fmt.Errorf("falha ao obter jogador: %w", err)
@@ -27,7 +26,7 @@ func SelfishProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 	if err != nil {
 		return err
 	}
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
+	expiresAt := roomData.Now().Add(timeoutDuration * time.Second).UTC()
 
 	// salva o que foi negado ao usar Selfish
 	whatWasDeniedValue := string(roomData.GameEvent.Type)
@@ -63,6 +62,6 @@ func SelfishProtocol(ctx context.Context, rdb *redis.Client, registryRules *rule
 		return fmt.Errorf("falha ao registrar efeito selfish: %w", err)
 	}
 
-	roomData.RegistryTimeout(rdb, ctx, expiresAt)
+	sink.RegistryTimeout(ctx, roomData, expiresAt)
 	return nil
 }

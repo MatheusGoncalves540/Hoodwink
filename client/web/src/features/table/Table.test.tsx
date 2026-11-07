@@ -15,8 +15,8 @@ describe("Mesa (fumaça em Node)", () => {
   it("Mesa6 desenha cabeçalho, camarotes, palco, ribalta e faixa Você", () => {
     const out = html("Mesa6");
     expect(out).toContain('aria-label="Lugares na mesa, toque para ver detalhes"');
-    expect(out).toContain('aria-label="Ver o lugar de Ana, 7 moedas"');
-    expect(out).toContain('aria-label="Ver o lugar de Davi, fora do jogo"');
+    expect(out).toContain('aria-label="Ana, 7 moedas. Ver o lugar"');
+    expect(out).toContain('aria-label="Davi, fora do jogo. Ver o lugar"');
     expect(out).toContain('aria-label="Palco"');
     expect(out).toContain("Rodada 4 · Taxa +1");
     expect(out).toContain("Conversa da mesa, 2 novas");
@@ -37,9 +37,9 @@ describe("Mesa (fumaça em Node)", () => {
   });
 
   it("Mesa3 e Mesa10 mudam o número de camarotes", () => {
-    expect(html("Mesa3").match(/Ver o lugar de/g)).toHaveLength(2);
+    expect(html("Mesa3").match(/Ver o lugar/g)).toHaveLength(2);
     const out10 = html("Mesa10");
-    expect(out10.match(/Ver o lugar de/g)).toHaveLength(9);
+    expect(out10.match(/Ver o lugar/g)).toHaveLength(9);
     expect(out10).toContain("Iracema");
   });
 });
