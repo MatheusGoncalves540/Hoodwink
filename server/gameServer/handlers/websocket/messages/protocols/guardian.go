@@ -8,10 +8,9 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/redis/go-redis/v9"
 )
 
-func GuardianProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, payload *structs.GuardianPayload) error {
+func GuardianProtocol(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay, payload *structs.GuardianPayload) error {
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
 		return err
@@ -22,7 +21,7 @@ func GuardianProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	if err != nil {
 		return err
 	}
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
+	expiresAt := roomData.Now().Add(timeoutDuration * time.Second).UTC()
 
 	guardianPayload := structs.GuardianPayload{}
 
@@ -56,7 +55,7 @@ func GuardianProtocol(ctx context.Context, rdb *redis.Client, registryRules *rul
 	}
 
 	// registra o timeout no redis
-	roomData.RegistryTimeout(rdb, ctx, expiresAt)
+	sink.RegistryTimeout(ctx, roomData, expiresAt)
 
 	return nil
 }

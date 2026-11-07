@@ -1,51 +1,51 @@
 package protocolsValidation
 
 import (
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
 )
 
 func ValidateClairvoyantProtocol(roomData *rooms.Room, registryRules *rules.Registry, playerPlay *structs.PlayerPlay, clairvoyantPayload structs.ClairvoyantPayload) bool {
 	sourcePlayer, err := roomData.GetPlayer(playerPlay.PlayerId)
 	if err != nil {
-		utils.LogError(err)
+		pure.LogError(err)
 		return false
 	}
 
 	// Clairvoyant só pode ser usado durante o evento de espera de primeira ação
 	if roomData.GameEvent == nil || roomData.GameEvent.Type != structs.EventWaitingFirstAction {
-		utils.LogInvldPlyrReq("Clairvoyant só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Clairvoyant só pode ser usado durante o evento de espera de primeira ação", playerPlay.PlayerId)
 		return false
 	}
 
 	if roomData.CurrentPlayer != playerPlay.PlayerId {
-		utils.LogInvldPlyrReq("Player tentou usar Clairvoyant fora do seu turno", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Player tentou usar Clairvoyant fora do seu turno", playerPlay.PlayerId)
 		return false
 	}
 
 	// verifica se player tem moedas pra isso
 	err = roomData.VerifyPlayerHasEnoughCoins(sourcePlayer, registryRules, playerPlay.Type, 0)
 	if err != nil {
-		utils.LogInvldPlyrReq(err, playerPlay.PlayerId)
+		pure.LogInvldPlyrReq(err, playerPlay.PlayerId)
 		return false
 	}
 
 	if clairvoyantPayload.TargetPlayer == playerPlay.PlayerId {
-		utils.LogInvldPlyrReq("Clairvoyant só pode revelar a carta de um adversário", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Clairvoyant só pode revelar a carta de um adversário", playerPlay.PlayerId)
 		return false
 	}
 
 	targetPlayer, err := roomData.GetPlayer(clairvoyantPayload.TargetPlayer)
 	if err != nil || !targetPlayer.Alive {
-		utils.LogInvldPlyrReq("Jogador alvo inválido para o Clairvoyant", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Jogador alvo inválido para o Clairvoyant", playerPlay.PlayerId)
 		return false
 	}
 
 	card, err := targetPlayer.GetCardByIndex(clairvoyantPayload.TargetCardIndex)
 	if err != nil || card.Dead {
-		utils.LogInvldPlyrReq("Clairvoyant tentou revelar uma carta morta", playerPlay.PlayerId)
+		pure.LogInvldPlyrReq("Clairvoyant tentou revelar uma carta morta", playerPlay.PlayerId)
 		return false
 	}
 

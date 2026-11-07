@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
+	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/pure"
 )
 
 func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
@@ -16,7 +16,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 	switch p.Type {
 	case PlayChatMessage:
 		var payload ChatMessagePayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para chat message: %w", err)
 		}
 		if payload.Msg == "" {
@@ -30,14 +30,14 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 			return struct{}{}, nil
 		}
 		var empty struct{}
-		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &empty); err != nil {
 			return nil, fmt.Errorf("payload inválido para contest: %w", err)
 		}
 		return empty, nil
 
 	case PlayContestPenalty:
 		var payload ContestPenaltyPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para contest penalty: %w", err)
 		}
 		if payload.TargetCardIndex != nil && *payload.TargetCardIndex < 0 {
@@ -50,14 +50,14 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 			return struct{}{}, nil
 		}
 		var empty struct{}
-		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &empty); err != nil {
 			return nil, fmt.Errorf("payload inválido para take coins: %w", err)
 		}
 		return empty, nil
 
 	case PlayBasicKill:
 		var payload AssassinPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para kill card: %w", err)
 		}
 		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
@@ -73,7 +73,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 
 	case PlaySwapCards:
 		var payload SwapCardsPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para swap cards: %w", err)
 		}
 		if payload.TargetCardIndex == nil {
@@ -86,7 +86,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 
 	case PlayAssassinCard:
 		var payload AssassinPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para assassin: %w", err)
 		}
 		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
@@ -102,7 +102,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 
 	case PlayKamikazeCard:
 		var payload KamikazePayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para kamikaze: %w", err)
 		}
 		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
@@ -124,7 +124,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 			return struct{}{}, nil
 		}
 		var empty struct{}
-		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &empty); err != nil {
 			return nil, fmt.Errorf("payload inválido para trillionaire: %w", err)
 		}
 		return empty, nil
@@ -134,7 +134,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 			return struct{}{}, nil
 		}
 		var empty struct{}
-		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &empty); err != nil {
 			return nil, fmt.Errorf("payload inválido para political: %w", err)
 		}
 		return empty, nil
@@ -144,14 +144,14 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 			return struct{}{}, nil
 		}
 		var empty struct{}
-		if err := utils.DecodeStrictJSON(p.Payload, &empty); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &empty); err != nil {
 			return nil, fmt.Errorf("payload inválido para rebel: %w", err)
 		}
 		return empty, nil
 
 	case PlayClairvoyantCard:
 		var payload ClairvoyantPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para clairvoyant: %w", err)
 		}
 		if payload.TargetPlayer == "" {
@@ -164,7 +164,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 
 	case PlayGuardianCard:
 		var payload GuardianPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para guardian: %w", err)
 		}
 		if payload.TargetPlayer == "" {
@@ -177,7 +177,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 
 	case PlayTricksterCard:
 		var payload TricksterPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para trickster: %w", err)
 		}
 		if payload.TargetPlayer == "" {
@@ -187,7 +187,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 
 	case PlayGravediggerCard:
 		var payload GravediggerPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para gravedigger: %w", err)
 		}
 		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
@@ -203,7 +203,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 
 	case PlayCroupierCard:
 		var payload CroupierPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para croupier: %w", err)
 		}
 		if payload.TargetPlayer == nil || *payload.TargetPlayer == "" {
@@ -222,7 +222,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 			return InvestorPayload{}, nil
 		}
 		var payload InvestorPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para investor: %w", err)
 		}
 		return payload, nil
@@ -232,7 +232,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 			return SelfishPayload{}, nil
 		}
 		var payload SelfishPayload
-		if err := utils.DecodeStrictJSON(p.Payload, &payload); err != nil {
+		if err := pure.DecodeStrictJSON(p.Payload, &payload); err != nil {
 			return nil, fmt.Errorf("payload inválido para selfish: %w", err)
 		}
 		return payload, nil
@@ -244,7 +244,7 @@ func (p *PlayerPlayDTO) ValidatePayload() (any, error) {
 
 func ParsePlayerPlay(data []byte, playerId string) (*PlayerPlay, error) {
 	var raw PlayerPlayDTO
-	if err := utils.DecodeStrictJSON(data, &raw); err != nil {
+	if err := pure.DecodeStrictJSON(data, &raw); err != nil {
 		return nil, err
 	}
 

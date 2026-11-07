@@ -8,10 +8,9 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/rules"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/game/structs/rooms"
-	"github.com/redis/go-redis/v9"
 )
 
-func PoliticalProtocol(ctx context.Context, rdb *redis.Client, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
+func PoliticalProtocol(ctx context.Context, sink rooms.Sink, registryRules *rules.Registry, roomData *rooms.Room, playerPlay *structs.PlayerPlay) error {
 	cardRules, err := roomData.GetCardRules(registryRules, string(playerPlay.Type))
 	if err != nil {
 		return fmt.Errorf("%s", "Erro ao obter regras da carta Political: "+err.Error())
@@ -27,7 +26,7 @@ func PoliticalProtocol(ctx context.Context, rdb *redis.Client, registryRules *ru
 	if err != nil {
 		return err
 	}
-	expiresAt := time.Now().Add(timeoutDuration * time.Second).UTC()
+	expiresAt := roomData.Now().Add(timeoutDuration * time.Second).UTC()
 
 	// marca a remoção de coins
 	cardPrice, err := roomData.GetCardValue(registryRules, structs.TypePlayerPlays(playerPlay.Type), 0)
@@ -54,6 +53,6 @@ func PoliticalProtocol(ctx context.Context, rdb *redis.Client, registryRules *ru
 	}
 
 	// registra o timeout no redis
-	roomData.RegistryTimeout(rdb, ctx, expiresAt)
+	sink.RegistryTimeout(ctx, roomData, expiresAt)
 	return nil
 }

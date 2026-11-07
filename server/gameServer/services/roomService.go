@@ -13,6 +13,7 @@ import (
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/redisFuncs/playerRedis"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/routes/endpointStructures"
 	"github.com/MatheusGoncalves540/Hoodwink-gameServer/utils"
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -32,6 +33,13 @@ func NewRoomService(redisClient *redis.Client) *RoomService {
 
 func (s *RoomService) CreateNewRoom(r *http.Request, registryRules *rules.Registry, createRoomRequest endpointStructures.CreateRoomRequest, customMatch bool) (*rooms.Room, error) {
 	RoomId := utils.GenerateNewId()
+
+	matchID, err := uuid.NewV7()
+	if err != nil {
+		return nil, fmt.Errorf("gerar matchId: %w", err)
+	}
+	seed := rooms.NewSeed()
+
 	// TODO: desmockar tudo isso
 	roomData := &rooms.Room{
 		ID:                        RoomId,
@@ -53,6 +61,9 @@ func (s *RoomService) CreateNewRoom(r *http.Request, registryRules *rules.Regist
 		GameOver:                  false,
 		StartTime:                 time.Time{},
 		Created:                   time.Now().UTC(),
+		MatchID:                   matchID.String(),
+		Seed:                      seed,
+		Rng:                       rooms.NewRngState(seed),
 	}
 
 	// obtém as regras gerais do jogo
@@ -79,14 +90,16 @@ func (s *RoomService) CreateNewRoom(r *http.Request, registryRules *rules.Regist
 		roomData.Deck = append(roomData.Deck, structs.AllCards...)
 	}
 
-	// embaralha o deck
-	utils.ShuffleSlice(roomData.Deck)
+	// embaralha o deck com o RNG semeado da sala (determinístico para o replay)
+	roomData.Rand().Shuffle(len(roomData.Deck), func(i, j int) {
+		roomData.Deck[i], roomData.Deck[j] = roomData.Deck[j], roomData.Deck[i]
+	})
 
 	// define o evento inicial da sala como "esperando início"
 	roomData.GameEvent = structs.NewGameEvent("", structs.EventWaitingStart, time.Time{}, nil)
 
 	// Salva a sala com TTL inicial de 5 segundos
-	err = roomData.SaveRoomWithTTL(r.Context(), s.redisClient, time.Duration(s.roomTTL)*time.Second)
+	err = redisFuncs.SaveRoomWithTTL(r.Context(), s.redisClient, roomData, time.Duration(s.roomTTL)*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -94,12 +107,7 @@ func (s *RoomService) CreateNewRoom(r *http.Request, registryRules *rules.Regist
 	return roomData, nil
 }
 
-func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, backendService *BackendService, roomId string, playerId string) (bool, error) {
-	_, err := backendService.GetToBackend("/getUserInfoById/" + playerId)
-	if err != nil {
-		return false, fmt.Errorf("Erro ao verificar player")
-	}
-
+func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, roomId string, playerId string) (bool, error) {
 	roomData, err := redisFuncs.LoadRoom(r.Context(), rdb, roomId)
 	if err != nil {
 		return false, fmt.Errorf("Sala não encontrada")
@@ -129,18 +137,23 @@ func (s *RoomService) ValidatePlayerEntry(r *http.Request, rdb *redis.Client, ba
 	return true, nil
 }
 
-func (s *RoomService) SyncActivePlayers(r *http.Request, rdb *redis.Client, roomData *rooms.Room) error {
-	// Itera sobre os players e remove aqueles sem registro ativo
-	for playerId := range roomData.Players {
-		registeredRoom, registered, err := playerRedis.GetRegisteredRoomForPlayer(r.Context(), rdb, playerId)
-		if err != nil {
-			return err
+func (s *RoomService) SyncActivePlayers(r *http.Request, rdb *redis.Client, roomData *rooms.Room) (*rooms.Room, error) {
+	// Remove players sem registro ativo (desconectados) quando o jogo ainda não começou.
+	fresh := roomData
+	err := redisFuncs.WithRoom(r.Context(), rdb, roomData.ID, redisFuncs.CauseLeave, func(room *rooms.Room) bool {
+		fresh = room
+		aplicado := false
+		for playerId := range room.Players {
+			if !room.IsConnected(playerId) {
+				delete(room.Players, playerId)
+				room.RemoveConnected(playerId)
+				aplicado = true
+			}
 		}
-		if !registered || registeredRoom != roomData.ID {
-			delete(roomData.Players, playerId)
-		}
+		return aplicado
+	})
+	if err != nil {
+		return nil, err
 	}
-
-	// Salva a sala atualizada
-	return roomData.SaveRoom(r.Context(), rdb)
+	return fresh, nil
 }
