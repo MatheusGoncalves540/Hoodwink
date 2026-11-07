@@ -1,2 +1,2 @@
-# Segredos da instalação: vivem só na VM, nunca no Git.
+# Gerado pelo deploy a partir dos secrets do GitHub; nunca versionar.
 .env.production
