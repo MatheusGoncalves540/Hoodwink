@@ -7,7 +7,7 @@ Pré-requisitos: `client/web` com `npm install`; referência de UI: `client/tech
 
 ## Tarefas
 - [x] T1 [Frontend] Guardar no `LogEntry` a carta, o alvo, o índice e se a revelação foi para todos · arquivos: `client/web/src/game/log.ts`, `client/web/src/game/log.test.ts` · depende: — · verificar: `cd client/web && npm test -- log`
-- [ ] T2 [Frontend] Expor as cartas reveladas para todos no `selectSeatSheet` e acrescentar a linha derivada no diário do alvo · arquivos: `client/web/src/game/selectors.ts`, `client/web/src/game/selectors.test.ts` · depende: T1 · verificar: `cd client/web && npm test -- selectors`
+- [x] T2 [Frontend] Expor as cartas reveladas para todos no `selectSeatSheet` e acrescentar a linha derivada no diário do alvo · arquivos: `client/web/src/game/selectors.ts`, `client/web/src/game/selectors.test.ts` · depende: T1 · verificar: `cd client/web && npm test -- selectors`
 - [ ] T3 [Frontend] Renderizar o bloco "Carta revelada no turno N" e a linha no "o que a mesa já viu" na gaveta do camarote · arquivos: `client/web/src/features/sheets/SeatSheet.tsx`, `client/web/src/features/sheets/SeatSheet.module.css`, `client/web/src/features/sheets/Sheets.test.tsx`, `client/web/src/game/copy.ts` · depende: T2 · verificar: `cd client/web && npm test -- Sheets`
 - [ ] T4 [QA] Provar que a revelação pública aparece no alvo e a privada não aparece no alvo · arquivos: `client/web/src/features/sheets/Sheets.test.tsx`, `client/web/src/game/selectors.test.ts`, `client/web/src/game/log.test.ts` · depende: T3 · verificar: `cd client/web && npm test -- Sheets selectors log`
 

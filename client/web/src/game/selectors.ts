@@ -441,13 +441,38 @@ export type SeatSheetVM = {
   alive: boolean;
   cards: (MiniCard & { index: number })[];
   investments: number[];
+  /** cartas que a mesa viu deste jogador (revelação pública do Clarividente) */
+  revealed: RevealedCardVM[];
   log: { key: string; turn: number; text: string }[];
 };
+
+export type RevealedCardVM = { key: string; turn: number; cardIndex: number; card?: RoleId };
+
+/**
+ * Memória do diário para a gaveta do alvo: só a revelação com "mostrar para todos"
+ * conta, e duas revelações da mesma carta ficam com o turno mais recente.
+ */
+export function selectPublicReveals(v: GameView, playerId: string): RevealedCardVM[] {
+  const byCard = new Map<number, RevealedCardVM>();
+  for (const e of v.log) {
+    const r = e.reveal;
+    if (!r || !r.showToAll || r.targetId !== playerId) continue;
+    const prev = byCard.get(r.cardIndex);
+    if (!prev || e.turn >= prev.turn) byCard.set(r.cardIndex, { key: e.key, turn: e.turn, cardIndex: r.cardIndex, card: r.card });
+  }
+  return [...byCard.values()].sort((a, b) => b.turn - a.turn);
+}
 
 /** Gaveta de um camarote (telas 4 e 14): cartas no estado que a mesa vê, diário do ator e investimentos. */
 export function selectSeatSheet(v: GameView, id: string): SeatSheetVM | null {
   const p = v.room?.players[id];
   if (!p) return null;
+  const revealed = selectPublicReveals(v, id);
+  const log = [
+    ...selectLog(v, id),
+    // linha derivada: a revelação é do diário do Clarividente, não da carta
+    ...revealed.map((r) => ({ key: `REVEAL|${r.key}`, turn: r.turn, text: copy.revealLog(r.card ? roleName(r.card) : undefined) })),
+  ].sort((a, b) => b.turn - a.turn);
   return {
     id: p.id,
     name: p.name,
@@ -455,7 +480,8 @@ export function selectSeatSheet(v: GameView, id: string): SeatSheetVM | null {
     alive: p.alive,
     cards: p.cards.map((c) => ({ ...miniCard(c), index: c.index })),
     investments: p.investments,
-    log: selectLog(v, id),
+    revealed,
+    log,
   };
 }
 
