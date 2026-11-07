@@ -1,2 +1,2 @@
-# Gerado pelo deploy a partir dos secrets do GitHub; nunca versionar.
+# Legado do deploy antigo; nunca versionar. Hoje a fonte é o Secret do cluster.
 .env.production
