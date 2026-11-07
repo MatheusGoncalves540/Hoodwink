@@ -1,0 +1,138 @@
+/* Relato de problema (plano 06): botão na mesa, confirmação e cartão de detalhes.
+   Usa só tokens do jogo (skins 03) e as classes de slot existentes. */
+
+/* --- botão "Algo deu errado" e a linha de marcado --- */
+.flag {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.flag > button {
+  width: 100%;
+  min-height: 44px;
+}
+.flagMarked {
+  margin: 0;
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--hw-ouro-texto);
+}
+
+/* --- confirmação --- */
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.confirmText {
+  margin: 0;
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.35;
+}
+.confirmRow {
+  display: flex;
+  gap: 10px;
+}
+.confirmRow > * {
+  flex: 1;
+  min-height: 44px;
+}
+
+/* --- cartão de detalhes --- */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.title {
+  margin: 0;
+  font-family: var(--hw-font-display);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.group {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.legend {
+  font-family: var(--hw-font-rotulo);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--hw-ouro-texto);
+}
+.categories {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.category {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--hw-tinta) 40%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--hw-plateia) 60%, transparent);
+  color: var(--hw-tinta);
+  font-family: var(--hw-font-texto);
+  font-size: 16px;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+.category::before {
+  content: "○ ";
+  color: var(--hw-tinta-suave);
+}
+.categoryOn {
+  border-color: var(--hw-ouro-texto);
+  background: color-mix(in srgb, var(--hw-ouro) 18%, var(--hw-plateia));
+  font-weight: 700;
+}
+.categoryOn::before {
+  content: "✓ ";
+  color: var(--hw-ouro-texto);
+}
+.category:focus-visible {
+  outline: 2px solid var(--hw-ouro-texto);
+  outline-offset: 2px;
+}
+
+.device {
+  margin: 0;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+}
+.actions > * {
+  flex: 1;
+  min-height: 44px;
+}
+
+.error {
+  margin: 0;
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--hw-tinta);
+}
+.error::before {
+  content: "⚠ ";
+  color: var(--hw-ouro-texto);
+}
+
+/* Desktop: 3 colunas nas categorias (prancha Contornos). */
+@media (min-width: 1024px) {
+  .categories {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
