@@ -1,6 +1,7 @@
 import { copy } from "../../game/copy";
 import type { GameView, SeatSheetVM } from "../../game/selectors";
 import { selectSeatSheet } from "../../game/selectors";
+import { roleName } from "../../game/roles";
 import { Coin } from "../../ui/Coin/Coin";
 import { Label } from "../../ui/Label/Label";
 import { Sheet } from "../../ui/Sheet/Sheet";
@@ -55,6 +56,13 @@ export function SeatSheetBody({ vm, onPickCard }: { vm: SeatSheetVM; onPickCard?
           );
         })}
       </div>
+
+      {vm.revealed.map((r) => (
+        <div key={r.key} className={s.memory} role="note" aria-label={copy.revealMemory(r.turn)}>
+          <span className={s.memoryTitle}>{copy.revealMemory(r.turn)}</span>
+          {r.card && <span className={s.memoryCard}>{roleName(r.card)}</span>}
+        </div>
+      ))}
 
       <Label>{copy.tableSaw}</Label>
       {vm.log.length > 0 ? (
